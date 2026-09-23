@@ -1,0 +1,5 @@
+{"type":"tool_call","run_id":"duplicate-demo","call_id":"search-1","tool":"search"}
+{"type":"tool_result","run_id":"duplicate-demo","call_id":"search-1","ok":true,"sources":[{"id":"doc-1","uri":"https://example.org/first"}]}
+{"type":"tool_call","run_id":"duplicate-demo","call_id":"search-2","tool":"search"}
+{"type":"tool_result","run_id":"duplicate-demo","call_id":"search-2","ok":true,"sources":[{"id":"doc-1","uri":"https://example.org/second"}]}
+{"type":"answer","run_id":"duplicate-demo","claims":[{"text":"The report is available.","source_ids":["doc-1"]}]}
