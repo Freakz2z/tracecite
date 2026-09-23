@@ -2,10 +2,38 @@
 package "Freakz2z/tracecite"
 
 // Values
+pub fn validate_jsonl(String) -> Report
 
 // Errors
 
 // Types and methods
+pub(all) struct Diagnostic {
+  line : Int
+  code : String
+  message : String
+} derive(ToJson)
+pub fn Diagnostic::to_json(Self) -> Json
+
+pub(all) struct Report {
+  run_id : String?
+  event_count : Int
+  call_count : Int
+  source_count : Int
+  claim_count : Int
+  sources : Array[SourceRecord]
+  diagnostics : Array[Diagnostic]
+} derive(ToJson)
+pub fn Report::ok(Self) -> Bool
+pub fn Report::to_json(Self) -> Json
+
+pub(all) struct SourceRecord {
+  id : String
+  uri : String
+  title : String?
+  call_id : String
+  line : Int
+} derive(ToJson)
+pub fn SourceRecord::to_json(Self) -> Json
 
 // Type aliases
 
