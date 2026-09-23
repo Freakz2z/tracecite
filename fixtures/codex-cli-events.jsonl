@@ -1,0 +1,6 @@
+{"type":"thread.started","thread_id":"codex-cli-live-redacted-20260923"}
+{"type":"turn.started"}
+{"type":"item.started","item":{"id":"cmd-1","type":"command_execution","command":"cat facts.txt","status":"in_progress"}}
+{"type":"item.completed","item":{"id":"cmd-1","type":"command_execution","command":"cat facts.txt","aggregated_output":"answer=42\nsource=local-fixture\n","exit_code":0,"status":"completed"}}
+{"type":"item.completed","item":{"id":"answer-1","type":"agent_message","text":"42 [source-1]"}}
+{"type":"turn.completed"}

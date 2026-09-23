@@ -23,3 +23,8 @@ jobs:
           moon test --target js --deny-warn
           moon test --target wasm --deny-warn
           sh scripts/smoke.sh
+      - name: Check Codex CLI event adapter
+        run: |
+          python3 -m unittest discover -s adapters -p 'test_*.py'
+          python3 adapters/codex_cli.py fixtures/codex-cli-events.jsonl --out /tmp/codex-trace.jsonl
+          moon run cmd/main /tmp/codex-trace.jsonl

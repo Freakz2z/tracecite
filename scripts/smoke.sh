@@ -21,6 +21,7 @@ check_fixture() {
 }
 
 check_fixture fixtures/valid.jsonl 0 -
+check_fixture fixtures/codex-cli-trace.jsonl 0 -
 check_fixture fixtures/unknown-source.jsonl 2 UNKNOWN_SOURCE
 check_fixture fixtures/failed-result.jsonl 2 SOURCE_ON_FAILED_RESULT
 check_fixture fixtures/duplicate-source.jsonl 2 DUPLICATE_SOURCE

@@ -35,15 +35,27 @@ MoonBit 核心入口为 `validate_jsonl(input : String) -> Report`。`Report` �
 
 ## 开发与验证
 
+### 实际 Agent 轨迹
+
+仓库提供一次 [Codex CLI 实际运行的去标识化事件](fixtures/codex-cli-events.jsonl)。适配器读取 `codex exec --json` 的工具开始、完成及最终答复事件，将 `[source-N]` 引用连接到成功命令的输出：
+
+```sh
+python3 adapters/codex_cli.py fixtures/codex-cli-events.jsonl --out /tmp/codex-trace.jsonl
+moon run cmd/main /tmp/codex-trace.jsonl
+```
+
+该次[验证记录](docs/live-validation.md)和输入文件均已公开，可离线复现。导出的轨迹不复制命令输出或答复正文。来源 ID 按成功命令的完成顺序分配；这仍是结构关系检查。
+
 ```sh
 moon check --deny-warn
 moon test --deny-warn
 moon test --target js --deny-warn
 moon test --target wasm --deny-warn
 sh scripts/smoke.sh
+python3 -m unittest discover -s adapters -p 'test_*.py'
 ```
 
-当前仓库提供合成样例和自动化测试。尚未接入真实 Agent 的轨迹导出，也尚未发布到 Mooncakes；这些会在适配器和实际案例验证完成后处理。
+当前仓库提供合成样例、实际 Agent 轨迹适配器和自动化测试。尚未发布到 Mooncakes。
 
 ## License
 
