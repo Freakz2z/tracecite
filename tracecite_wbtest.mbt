@@ -33,6 +33,15 @@ test "answer cannot cite a missing source" {
 }
 
 ///|
+test "diagnostic does not echo claim content" {
+  let input =
+    #|{"type":"answer","run_id":"r1","claims":[{"text":"private user statement","source_ids":["missing"]}]}
+  let report = validate_jsonl(input)
+  assert_true(has_code(report, "UNKNOWN_SOURCE"))
+  assert_false(report.diagnostics[0].message.contains("private user statement"))
+}
+
+///|
 test "failed tool result never establishes provenance" {
   let input =
     #|{"type":"tool_call","run_id":"r1","call_id":"c1","tool":"search"}

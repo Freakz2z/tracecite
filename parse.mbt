@@ -162,7 +162,7 @@ fn parse_claims(
           let text = required_string(item, "text", line, diagnostics)
           let source_ids = parse_source_ids(item, line, diagnostics)
           match (text, source_ids) {
-            (Some(text), Some(source_ids)) => claims.push({ text, source_ids, })
+            (Some(_), Some(source_ids)) => claims.push({ source_ids, })
             _ => ()
           }
         } else {

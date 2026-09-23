@@ -48,7 +48,6 @@ priv struct Source {
 
 ///|
 priv struct Claim {
-  text : String
   source_ids : Array[String]
 }
 

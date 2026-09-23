@@ -120,14 +120,20 @@ pub fn validate_jsonl(input : String) -> Report {
         } else {
           answer_seen = true
           claim_count = claims.length()
-          for claim in claims {
+          for claim_index = 0
+              claim_index < claims.length()
+              claim_index = claim_index + 1 {
+            let claim = claims[claim_index]
             for id in claim.source_ids {
               if source_lines.get(id) is None {
                 add_diagnostic(
                   diagnostics,
                   line,
                   "UNKNOWN_SOURCE",
-                  "claim \"" + claim.text + "\" cites unknown source: " + id,
+                  "claim " +
+                  (claim_index + 1).to_string() +
+                  " cites unknown source: " +
+                  id,
                 )
               }
             }
