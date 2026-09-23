@@ -7,6 +7,14 @@ pub fn validate_jsonl(String) -> Report
 // Errors
 
 // Types and methods
+pub(all) struct CitationEdge {
+  claim_index : Int
+  source_id : String
+  call_id : String?
+  line : Int
+} derive(ToJson)
+pub fn CitationEdge::to_json(Self) -> Json
+
 pub(all) struct Diagnostic {
   line : Int
   code : String
@@ -21,6 +29,7 @@ pub(all) struct Report {
   source_count : Int
   claim_count : Int
   sources : Array[SourceRecord]
+  citations : Array[CitationEdge]
   diagnostics : Array[Diagnostic]
 } derive(ToJson)
 pub fn Report::ok(Self) -> Bool

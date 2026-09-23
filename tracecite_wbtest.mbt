@@ -21,6 +21,10 @@ test "valid trace links cited source to successful call" {
   assert_eq(report.source_count, 1)
   assert_eq(report.claim_count, 1)
   assert_eq(report.sources[0].call_id, "c1")
+  assert_eq(report.citations.length(), 1)
+  assert_eq(report.citations[0].claim_index, 1)
+  assert_eq(report.citations[0].source_id, "s1")
+  assert_eq(report.citations[0].call_id, Some("c1"))
 }
 
 ///|
@@ -30,6 +34,7 @@ test "answer cannot cite a missing source" {
   let report = validate_jsonl(input)
   assert_true(has_code(report, "UNKNOWN_SOURCE"))
   assert_eq(report.diagnostics[0].line, 1)
+  assert_eq(report.citations[0].call_id, None)
 }
 
 ///|

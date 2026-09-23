@@ -21,6 +21,17 @@ pub(all) struct SourceRecord {
 pub extend SourceRecord with ToJson::{to_json}
 
 ///|
+pub(all) struct CitationEdge {
+  claim_index : Int
+  source_id : String
+  call_id : String?
+  line : Int
+} derive(ToJson)
+
+///|
+pub extend CitationEdge with ToJson::{to_json}
+
+///|
 pub(all) struct Report {
   run_id : String?
   event_count : Int
@@ -28,6 +39,7 @@ pub(all) struct Report {
   source_count : Int
   claim_count : Int
   sources : Array[SourceRecord]
+  citations : Array[CitationEdge]
   diagnostics : Array[Diagnostic]
 } derive(ToJson)
 

@@ -7,7 +7,9 @@ pub fn validate_jsonl(input : String) -> Report {
   let calls : Map[String, Int] = Map([])
   let results : Map[String, Int] = Map([])
   let source_lines : Map[String, Int] = Map([])
+  let source_calls : Map[String, String] = Map([])
   let source_records : Array[SourceRecord] = []
+  let citations : Array[CitationEdge] = []
   let call_ids : Array[String] = []
   let mut run_id : String? = None
   let mut answer_seen = false
@@ -101,6 +103,7 @@ pub fn validate_jsonl(input : String) -> Report {
                 )
               } else {
                 source_lines.set(source.id, line)
+                source_calls.set(source.id, call_id)
                 source_records.push({
                   id: source.id,
                   uri: source.uri,
@@ -125,7 +128,14 @@ pub fn validate_jsonl(input : String) -> Report {
               claim_index = claim_index + 1 {
             let claim = claims[claim_index]
             for id in claim.source_ids {
-              if source_lines.get(id) is None {
+              let call_id = source_calls.get(id)
+              citations.push({
+                claim_index: claim_index + 1,
+                source_id: id,
+                call_id,
+                line,
+              })
+              if call_id is None {
                 add_diagnostic(
                   diagnostics,
                   line,
@@ -166,6 +176,7 @@ pub fn validate_jsonl(input : String) -> Report {
     source_count: source_records.length(),
     claim_count,
     sources: source_records,
+    citations,
     diagnostics,
   }
 }
