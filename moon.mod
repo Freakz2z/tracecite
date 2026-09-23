@@ -21,6 +21,10 @@ license = "Apache-2.0"
 
 keywords = [ "agent", "trace", "citation", "evidence" ]
 
-preferred_target = "wasm"
+preferred_target = "native"
 
 description = "Deterministic checks for citations in agent execution traces"
+
+import {
+  "moonbitlang/async@0.22.1",
+}

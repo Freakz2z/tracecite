@@ -1,5 +1,10 @@
-// import {
-//   "Freakz2z/hackathon2026" @lib,
-// }
+import {
+  "Freakz2z/tracecite",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/stdio",
+}
 
 pkgtype(kind: "executable")
