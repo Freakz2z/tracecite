@@ -1,0 +1,5 @@
+// import {
+//   "Freakz2z/hackathon2026" @lib,
+// }
+
+pkgtype(kind: "executable")
