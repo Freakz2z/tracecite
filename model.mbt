@@ -15,6 +15,7 @@ pub(all) struct SourceRecord {
   title : String?
   call_id : String
   line : Int
+  content_present : Bool
 } derive(ToJson)
 
 ///|
@@ -26,6 +27,7 @@ pub(all) struct CitationEdge {
   source_id : String
   call_id : String?
   line : Int
+  evidence_status : String
 } derive(ToJson)
 
 ///|
@@ -38,6 +40,7 @@ pub(all) struct Report {
   call_count : Int
   source_count : Int
   claim_count : Int
+  verified_citation_count : Int
   sources : Array[SourceRecord]
   citations : Array[CitationEdge]
   diagnostics : Array[Diagnostic]
@@ -56,11 +59,18 @@ priv struct Source {
   id : String
   uri : String
   title : String?
+  content : String?
 }
 
 ///|
 priv struct Claim {
-  source_ids : Array[String]
+  citations : Array[ClaimCitation]
+}
+
+///|
+priv struct ClaimCitation {
+  source_id : String
+  quote : String?
 }
 
 ///|

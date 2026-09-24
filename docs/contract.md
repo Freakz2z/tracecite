@@ -1,46 +1,20 @@
-# TraceCite JSONL v1
+# TraceCite JSONL 证据约定
 
-One UTF-8 file contains one Agent run. Each nonempty line is a JSON object with
-`type` and `run_id`. Events are ordered by observation time. Unknown fields are
-allowed so an adapter can retain its own metadata.
-
-## Events
+一个 UTF-8 JSONL 文件记录一次 Agent 运行。每行一个事件，按观察顺序排列；未知字段允许保留。`run_id` 在文件内一致，`call_id` 与来源 `id` 在运行内唯一。
 
 ```jsonl
-{"type":"tool_call","run_id":"r1","call_id":"c1","tool":"search"}
-{"type":"tool_result","run_id":"r1","call_id":"c1","ok":true,"sources":[{"id":"s1","uri":"https://example.org/report","title":"Report"}]}
-{"type":"answer","run_id":"r1","claims":[{"text":"The report is available.","source_ids":["s1"]}]}
+{"type":"tool_call","run_id":"r1","call_id":"c1","tool":"read"}
+{"type":"tool_result","run_id":"r1","call_id":"c1","ok":true,"sources":[{"id":"s1","uri":"file:///example/report.txt","content":"value=42\n"}]}
+{"type":"answer","run_id":"r1","claims":[{"text":"The value is 42.","citations":[{"source_id":"s1","quote":"value=42"}]}]}
 ```
 
-- `tool_call`: `call_id` and `tool` are nonempty strings. A call ID is unique
-  within the run.
-- `tool_result`: `call_id` identifies an earlier call. `ok` is a Boolean.
-  `sources` is an optional array of objects with nonempty `id` and `uri`.
-  `title` is optional. Sources from failed results are invalid.
-- `answer`: exactly one per run, after all tool events. `claims` is an array of
-  objects containing nonempty `text` and a `source_ids` array. An empty array
-  is allowed for a claim that does not need a citation; TraceCite does not
-  decide which claims require citations.
+- `tool_call`：必需 `call_id`、`tool`。
+- `tool_result`：必需 `call_id`、布尔值 `ok`；`sources[]` 每项必需 `id`、`uri`，证据模式还必需非空 `content`，即观察到的工具输出原文或其中作为来源的原文。失败结果不能提供来源。
+- `answer`：每次运行恰好一个。`claims[]` 每项必需 `text`；证据模式要求至少一条 claim，且每条 claim 至少一条 `citations[]`，每项必需 `source_id` 和非空 `quote`。校验器要求 `quote` 是对应来源 `content` 的**逐字子串**，不做大小写或空白归一化。
+- 旧格式 `source_ids[]` 仍可用普通模式检查 ID 关系；证据模式会报 `MISSING_QUOTE`，缺少 `content` 还会报 `MISSING_SOURCE_CONTENT`。报告的 `verified_citation_count` 和每条引用的 `evidence_status` 区分两种结果。
 
-The validator rejects malformed JSON, missing or mistyped required fields,
-mixed run IDs, duplicate calls or sources, orphan or duplicate results,
-unanswered calls, references to unknown sources, and tool events after the
-final answer. Diagnostics carry a stable code and one-based input line number.
+`moon run cmd/main trace.jsonl --evidence` 是证据模式。`compare old.jsonl new.jsonl` 要求两个输入都通过证据模式，再按稳定 `uri` 比较逐字内容，报告 `added`、`removed`、`changed`；内容变更退出码为 2。相同 URI 在单次运行中重复会报 `DUPLICATE_URI`，避免跨运行比较歧义。输出报告不会回显来源 `content` 或 `quote`。
 
-## Three use cases
+## 能力边界
 
-1. **RAG answer review:** an Agent cites `s1`, but retrieval returned only
-   `s2`. The validator points to the answer line and reports `UNKNOWN_SOURCE`.
-2. **Tool failure review:** a search call failed but its adapter still emitted
-   `s1`. The validator reports `SOURCE_ON_FAILED_RESULT`; it cannot be used to
-   justify a later answer.
-3. **Trace export review:** an exporter reuses `call_id` or `source.id` when
-   merging records. The validator reports the duplicate and keeps the first
-   valid record's provenance, so a later citation cannot silently change
-   meaning.
-
-## Evidence boundary
-
-This is a structural provenance check. It does not fetch URLs, inspect private
-systems, or determine whether a source's content supports a claim. It also
-does not claim to prevent an Agent from fabricating the source record itself.
+匹配成功只证明所引片段出现在**采集到的工具返回内容**中，不证明来源网页或文件在采集时真实存在，也不证明整条主张在语义上受到支持。适配器或事件流若伪造输出，离线校验器无法识别。跨运行比较依赖两次运行的来源 URI 表示同一来源；若 URI 变了，会报告添加与删除。把含有敏感内容的轨迹公开前，应先脱敏或使用无敏感数据的运行样例。

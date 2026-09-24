@@ -2,6 +2,10 @@
 package "Freakz2z/tracecite"
 
 // Values
+pub fn compare_jsonl(String, String) -> DriftReport
+
+pub fn validate_evidence_jsonl(String) -> Report
+
 pub fn validate_jsonl(String) -> Report
 
 // Errors
@@ -12,6 +16,7 @@ pub(all) struct CitationEdge {
   source_id : String
   call_id : String?
   line : Int
+  evidence_status : String
 } derive(ToJson)
 pub fn CitationEdge::to_json(Self) -> Json
 
@@ -22,12 +27,26 @@ pub(all) struct Diagnostic {
 } derive(ToJson)
 pub fn Diagnostic::to_json(Self) -> Json
 
+pub(all) struct DriftReport {
+  old_run_id : String?
+  new_run_id : String?
+  old_valid : Bool
+  new_valid : Bool
+  unchanged_count : Int
+  changes : Array[SourceChange]
+  old_diagnostics : Array[Diagnostic]
+  new_diagnostics : Array[Diagnostic]
+} derive(ToJson)
+pub fn DriftReport::ok(Self) -> Bool
+pub fn DriftReport::to_json(Self) -> Json
+
 pub(all) struct Report {
   run_id : String?
   event_count : Int
   call_count : Int
   source_count : Int
   claim_count : Int
+  verified_citation_count : Int
   sources : Array[SourceRecord]
   citations : Array[CitationEdge]
   diagnostics : Array[Diagnostic]
@@ -35,12 +54,19 @@ pub(all) struct Report {
 pub fn Report::ok(Self) -> Bool
 pub fn Report::to_json(Self) -> Json
 
+pub(all) struct SourceChange {
+  kind : String
+  uri : String
+} derive(ToJson)
+pub fn SourceChange::to_json(Self) -> Json
+
 pub(all) struct SourceRecord {
   id : String
   uri : String
   title : String?
   call_id : String
   line : Int
+  content_present : Bool
 } derive(ToJson)
 pub fn SourceRecord::to_json(Self) -> Json
 

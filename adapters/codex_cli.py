@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -25,7 +26,7 @@ def _string(value: Any, field: str) -> str:
 
 
 def export(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Use observed command start/completion events; omit command/output text."""
+    """Use observed command events and exact output excerpts as evidence."""
     thread_ids = [event.get("thread_id") for event in events if event.get("type") == "thread.started"]
     if len(thread_ids) != 1:
         raise ExportError("expected exactly one thread.started event")
@@ -55,10 +56,13 @@ def export(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 sources: list[dict[str, str]] = []
                 if ok and isinstance(output, str) and output:
                     source_number += 1
+                    command = _string(item.get("command"), "command")
+                    identity = hashlib.sha256(command.encode("utf-8")).hexdigest()
                     sources.append({
                         "id": f"source-{source_number}",
-                        "uri": f"codex://command/{call_id}",
+                        "uri": f"urn:tracecite:command:sha256:{identity}",
                         "title": f"Command result {source_number}",
+                        "content": output,
                     })
                 trace.append({"type": "tool_result", "run_id": run_id, "call_id": call_id, "ok": ok, "sources": sources})
         elif kind == "item.completed" and item.get("type") == "agent_message":
@@ -70,7 +74,13 @@ def export(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for line_number, line in enumerate(final_answer.splitlines(), start=1):
         ids = list(dict.fromkeys(CITATION_RE.findall(line)))
         if ids:
-            claims.append({"text": f"answer line {line_number} (content omitted)", "source_ids": ids})
+            quote = CITATION_RE.sub("", line).strip().strip("`\"' ")
+            if not quote:
+                raise ExportError(f"answer line {line_number} has citation but no quoted content")
+            claims.append({
+                "text": f"answer line {line_number} (content omitted)",
+                "citations": [{"source_id": source_id, "quote": quote} for source_id in ids],
+            })
     trace.append({"type": "answer", "run_id": run_id, "claims": claims})
     return trace
 

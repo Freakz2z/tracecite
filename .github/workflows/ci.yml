@@ -27,4 +27,5 @@ jobs:
         run: |
           python3 -m unittest discover -s adapters -p 'test_*.py'
           python3 adapters/codex_cli.py fixtures/codex-cli-events.jsonl --out /tmp/codex-trace.jsonl
-          moon run cmd/main /tmp/codex-trace.jsonl
+          cmp fixtures/codex-cli-trace.jsonl /tmp/codex-trace.jsonl
+          moon run cmd/main /tmp/codex-trace.jsonl --evidence

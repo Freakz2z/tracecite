@@ -19,14 +19,15 @@ class CodexCliExportTest(unittest.TestCase):
         trace = export(self.events)
         self.assertEqual([event["type"] for event in trace], ["tool_call", "tool_result", "answer"])
         self.assertEqual(trace[1]["sources"][0]["id"], "source-1")
-        self.assertEqual(trace[2]["claims"][0]["source_ids"], ["source-1"])
-        self.assertNotIn("answer=42", json.dumps(trace))
+        self.assertEqual(trace[2]["claims"][0]["citations"], [{"source_id": "source-1", "quote": "42"}])
+        self.assertEqual(trace[1]["sources"][0]["content"], "answer=42\nsource=local-fixture\n")
+        self.assertNotIn("cat facts.txt", json.dumps(trace))
 
     def test_unknown_answer_citation_stays_unknown(self) -> None:
         events = copy.deepcopy(self.events)
         events[-2]["item"]["text"] = "42 [source-99]"
         trace = export(events)
-        self.assertEqual(trace[-1]["claims"][0]["source_ids"], ["source-99"])
+        self.assertEqual(trace[-1]["claims"][0]["citations"], [{"source_id": "source-99", "quote": "42"}])
 
     def test_failed_command_cannot_supply_source(self) -> None:
         events = copy.deepcopy(self.events)

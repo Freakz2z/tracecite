@@ -11,9 +11,12 @@ Each file is a complete synthetic Agent run. URLs use the reserved
 | `duplicate-source.jsonl` | 2 | `DUPLICATE_SOURCE` |
 | `mixed-run.jsonl` | 2 | `RUN_MISMATCH`, `MISSING_RESULT`, `UNKNOWN_SOURCE` |
 | `codex-cli-trace.jsonl` | 0 | actual command event and cited answer, IDs redacted |
+| `evidence-old.jsonl` | 0 | exact quote matches captured content |
+| `evidence-new.jsonl` | 0 | same URI, changed captured content |
+| `evidence-false-quote.jsonl` | 2 | `QUOTE_NOT_IN_SOURCE` in evidence mode |
 
-These fixtures exercise structural provenance only. They are not evidence
-that a source text supports a statement.
+The evidence fixtures exercise exact excerpt matching and cross-run source
+changes. Exact matching does not establish semantic support or external truth.
 
 `codex-cli-events.jsonl` is a redacted capture of one actual Codex CLI run.
 `facts.txt` is the harmless local source used during the run. See

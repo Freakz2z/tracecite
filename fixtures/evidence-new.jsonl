@@ -1,0 +1,3 @@
+{"type":"tool_call","run_id":"new","call_id":"c1","tool":"read"}
+{"type":"tool_result","run_id":"new","call_id":"c1","ok":true,"sources":[{"id":"s1","uri":"file:///example/report.txt","content":"quarter=2\nvalue=43\n"}]}
+{"type":"answer","run_id":"new","claims":[{"text":"The value is 43.","citations":[{"source_id":"s1","quote":"value=43"}]}]}

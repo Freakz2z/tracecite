@@ -143,3 +143,62 @@ test "empty trace is invalid" {
   let report = validate_jsonl("\n \n")
   assert_true(has_code(report, "EMPTY_TRACE"))
 }
+
+///|
+test "evidence mode matches exact quote to observed content" {
+  let input =
+    #|{"type":"tool_call","run_id":"r1","call_id":"c1","tool":"read"}
+    #|{"type":"tool_result","run_id":"r1","call_id":"c1","ok":true,"sources":[{"id":"s1","uri":"file:///a","content":"value=42\n"}]}
+    #|{"type":"answer","run_id":"r1","claims":[{"text":"value=42","citations":[{"source_id":"s1","quote":"value=42"}]}]}
+  let report = validate_evidence_jsonl(input)
+  assert_true(report.ok())
+  assert_eq(report.verified_citation_count, 1)
+  assert_eq(report.citations[0].evidence_status, "matched")
+}
+
+///|
+test "evidence mode rejects fabricated quote and legacy ID only citation" {
+  let false_quote =
+    #|{"type":"tool_call","run_id":"r1","call_id":"c1","tool":"read"}
+    #|{"type":"tool_result","run_id":"r1","call_id":"c1","ok":true,"sources":[{"id":"s1","uri":"file:///a","content":"value=42"}]}
+    #|{"type":"answer","run_id":"r1","claims":[{"text":"value=99","citations":[{"source_id":"s1","quote":"value=99"}]}]}
+  assert_true(
+    has_code(validate_evidence_jsonl(false_quote), "QUOTE_NOT_IN_SOURCE"),
+  )
+  let legacy =
+    #|{"type":"tool_call","run_id":"r1","call_id":"c1","tool":"read"}
+    #|{"type":"tool_result","run_id":"r1","call_id":"c1","ok":true,"sources":[{"id":"s1","uri":"file:///a"}]}
+    #|{"type":"answer","run_id":"r1","claims":[{"text":"A","source_ids":["s1"]}]}
+  let report = validate_evidence_jsonl(legacy)
+  assert_true(has_code(report, "MISSING_SOURCE_CONTENT"))
+  assert_true(has_code(report, "MISSING_QUOTE"))
+}
+
+///|
+test "compare reports content change across valid runs" {
+  let old_input =
+    #|{"type":"tool_call","run_id":"old","call_id":"c1","tool":"read"}
+    #|{"type":"tool_result","run_id":"old","call_id":"c1","ok":true,"sources":[{"id":"s1","uri":"file:///a","content":"value=42"}]}
+    #|{"type":"answer","run_id":"old","claims":[{"text":"A","citations":[{"source_id":"s1","quote":"value=42"}]}]}
+  let new_input =
+    #|{"type":"tool_call","run_id":"new","call_id":"c1","tool":"read"}
+    #|{"type":"tool_result","run_id":"new","call_id":"c1","ok":true,"sources":[{"id":"s1","uri":"file:///a","content":"value=43"}]}
+    #|{"type":"answer","run_id":"new","claims":[{"text":"A","citations":[{"source_id":"s1","quote":"value=43"}]}]}
+  let drift = compare_jsonl(old_input, new_input)
+  assert_true(drift.old_valid && drift.new_valid)
+  assert_eq(drift.changes.length(), 1)
+  assert_eq(drift.changes[0].kind, "changed")
+  assert_eq(drift.changes[0].uri, "file:///a")
+  assert_false(drift.ok())
+  assert_true(compare_jsonl(old_input, old_input).ok())
+}
+
+///|
+test "evidence mode cannot pass an uncited answer" {
+  let input =
+    #|{"type":"answer","run_id":"r1","claims":[{"text":"unsupported","citations":[]}]}
+  assert_true(has_code(validate_evidence_jsonl(input), "UNCITED_CLAIM"))
+  let empty =
+    #|{"type":"answer","run_id":"r1","claims":[]}
+  assert_true(has_code(validate_evidence_jsonl(empty), "EMPTY_ANSWER"))
+}

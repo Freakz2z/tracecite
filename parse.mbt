@@ -88,8 +88,9 @@ fn parse_sources(
           let id = required_string(item, "id", line, diagnostics)
           let uri = required_string(item, "uri", line, diagnostics)
           let title = optional_string(item, "title", line, diagnostics)
+          let content = optional_string(item, "content", line, diagnostics)
           match (id, uri) {
-            (Some(id), Some(uri)) => sources.push({ id, uri, title, })
+            (Some(id), Some(uri)) => sources.push({ id, uri, title, content, })
             _ => ()
           }
         } else {
@@ -114,18 +115,38 @@ fn parse_sources(
 }
 
 ///|
-fn parse_source_ids(
+fn parse_citations(
   value : Json,
   line : Int,
   diagnostics : Array[Diagnostic],
-) -> Array[String]? {
+) -> Array[ClaimCitation]? {
+  if field(value, "citations") is Some(Array(items)) {
+    if field(value, "source_ids") is Some(_) {
+      add_diagnostic(
+        diagnostics, line, "INVALID_FIELD", "use citations or source_ids, not both",
+      )
+      return None
+    }
+    let citations : Array[ClaimCitation] = []
+    let before = diagnostics.length()
+    for item in items {
+      let source_id = required_string(item, "source_id", line, diagnostics)
+      let quote = required_string(item, "quote", line, diagnostics)
+      match (source_id, quote) {
+        (Some(source_id), Some(quote)) =>
+          citations.push({ source_id, quote: Some(quote), })
+        _ => ()
+      }
+    }
+    return if diagnostics.length() == before { Some(citations) } else { None }
+  }
   match field(value, "source_ids") {
     Some(Array(items)) => {
-      let ids : Array[String] = []
+      let ids : Array[ClaimCitation] = []
       let before = diagnostics.length()
       for item in items {
         match item {
-          String(id) if id != "" => ids.push(id)
+          String(id) if id != "" => ids.push({ source_id: id, quote: None, })
           _ =>
             add_diagnostic(
               diagnostics, line, "INVALID_FIELD", "expected nonempty string in source_ids",
@@ -160,9 +181,9 @@ fn parse_claims(
       for item in items {
         if item is Object(_) {
           let text = required_string(item, "text", line, diagnostics)
-          let source_ids = parse_source_ids(item, line, diagnostics)
-          match (text, source_ids) {
-            (Some(_), Some(source_ids)) => claims.push({ source_ids, })
+          let citations = parse_citations(item, line, diagnostics)
+          match (text, citations) {
+            (Some(_), Some(citations)) => claims.push({ citations, })
             _ => ()
           }
         } else {
