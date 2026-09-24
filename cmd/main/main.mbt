@@ -13,9 +13,64 @@ async fn main {
   }
   if args.length() <= index {
     @stdio.stderr.write(
-      "Usage: tracecite <trace.jsonl> [--evidence] [--json] | compare <old.jsonl> <new.jsonl> [--json]\n",
+      "Usage: tracecite <trace.jsonl> [--evidence] [--json] | compare <old.jsonl> <new.jsonl> [--json] | verify-files <trace.jsonl>\n",
     )
     process_exit(1)
+    return
+  }
+  if args[index] == "verify-files" {
+    if args.length() != index + 2 {
+      @stdio.stderr.write("Usage: tracecite verify-files <trace.jsonl>\n")
+      process_exit(1)
+      return
+    }
+    let trace_path = args[index + 1]
+    let input = @fs.read_file(trace_path).text() catch {
+      error => {
+        @stdio.stderr.write("Cannot read \{trace_path}: \{error}\n")
+        process_exit(1)
+        return
+      }
+    }
+    let report = @tracecite.validate_evidence_jsonl(input)
+    if !report.ok() {
+      for diagnostic in report.diagnostics {
+        @stdio.stdout.write(
+          "  line \{diagnostic.line} [\{diagnostic.code}] \{diagnostic.message}\n",
+        )
+      }
+      process_exit(2)
+      return
+    }
+    for source in report.sources {
+      let file_path = match source.uri.strip_prefix("file://") {
+        Some(path) => path.to_owned()
+        None =>
+          match source.uri.strip_prefix("file:") {
+            Some(path) => path.to_owned()
+            None => {
+              @stdio.stdout.write("[UNSUPPORTED_SOURCE_URI] \{source.uri}\n")
+              process_exit(2)
+              return
+            }
+          }
+      }
+      let live_content = @fs.read_file(file_path).text() catch {
+        error => {
+          @stdio.stdout.write("[SOURCE_UNAVAILABLE] \{source.uri}: \{error}\n")
+          process_exit(2)
+          return
+        }
+      }
+      if !@tracecite.source_snapshot_matches(input, source.uri, live_content) {
+        @stdio.stdout.write("[SOURCE_FILE_MISMATCH] \{source.uri}\n")
+        process_exit(2)
+        return
+      }
+    }
+    @stdio.stdout.write(
+      "PASS: \{report.source_count} source files match captured content\n",
+    )
     return
   }
   if args[index] == "compare" {

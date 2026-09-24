@@ -202,3 +202,14 @@ test "evidence mode cannot pass an uncited answer" {
     #|{"type":"answer","run_id":"r1","claims":[]}
   assert_true(has_code(validate_evidence_jsonl(empty), "EMPTY_ANSWER"))
 }
+
+///|
+test "independent source snapshot detects fabricated tool output" {
+  let input =
+    #|{"type":"tool_call","run_id":"r1","call_id":"c1","tool":"read"}
+    #|{"type":"tool_result","run_id":"r1","call_id":"c1","ok":true,"sources":[{"id":"s1","uri":"file:report.txt","content":"value=99"}]}
+    #|{"type":"answer","run_id":"r1","claims":[{"text":"value=99","citations":[{"source_id":"s1","quote":"value=99"}]}]}
+  assert_true(validate_evidence_jsonl(input).ok())
+  assert_true(source_snapshot_matches(input, "file:report.txt", "value=99"))
+  assert_false(source_snapshot_matches(input, "file:report.txt", "value=42"))
+}

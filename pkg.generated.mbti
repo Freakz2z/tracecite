@@ -4,6 +4,8 @@ package "Freakz2z/tracecite"
 // Values
 pub fn compare_jsonl(String, String) -> DriftReport
 
+pub fn source_snapshot_matches(String, String, String) -> Bool
+
 pub fn validate_evidence_jsonl(String) -> Report
 
 pub fn validate_jsonl(String) -> Report

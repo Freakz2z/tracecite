@@ -23,6 +23,18 @@ check_fixture() {
 check_fixture fixtures/valid.jsonl 0 -
 check_fixture fixtures/codex-cli-trace.jsonl 0 -
 status=0
+output=$(moon run cmd/main verify-files fixtures/codex-cli-file-trace.jsonl 2>&1) || status=$?
+if [ "$status" -ne 0 ]; then
+  printf 'independent file check failed\n%s\n' "$output" >&2
+  exit 1
+fi
+status=0
+output=$(moon run cmd/main verify-files fixtures/codex-cli-file-tampered.jsonl 2>&1) || status=$?
+if [ "$status" -ne 2 ] || ! printf '%s' "$output" | grep -q SOURCE_FILE_MISMATCH; then
+  printf 'tampered file check failed\n%s\n' "$output" >&2
+  exit 1
+fi
+status=0
 output=$(moon run cmd/main fixtures/codex-cli-trace.jsonl --evidence 2>&1) || status=$?
 if [ "$status" -ne 0 ]; then
   printf 'Codex evidence check failed\n%s\n' "$output" >&2

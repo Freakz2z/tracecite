@@ -1,0 +1,3 @@
+{"type": "tool_call", "run_id": "codex-cli-live-redacted-20260923", "call_id": "cmd-1", "tool": "command_execution"}
+{"type": "tool_result", "run_id": "codex-cli-live-redacted-20260923", "call_id": "cmd-1", "ok": true, "sources": [{"id": "source-1", "uri": "file:fixtures/facts.txt", "title": "Command result 1", "content": "answer=99\nsource=local-fixture\n"}]}
+{"type": "answer", "run_id": "codex-cli-live-redacted-20260923", "claims": [{"text": "answer line 1 (content omitted)", "citations": [{"source_id": "source-1", "quote": "99"}]}]}

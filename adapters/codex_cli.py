@@ -25,7 +25,7 @@ def _string(value: Any, field: str) -> str:
     return value
 
 
-def export(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def export(events: list[dict[str, Any]], bindings: dict[str, str] | None = None) -> list[dict[str, Any]]:
     """Use observed command events and exact output excerpts as evidence."""
     thread_ids = [event.get("thread_id") for event in events if event.get("type") == "thread.started"]
     if len(thread_ids) != 1:
@@ -39,6 +39,8 @@ def export(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
         raise ExportError("turn failed")
 
     trace: list[dict[str, Any]] = []
+    bindings = bindings or {}
+    used_bindings: set[str] = set()
     final_answer: str | None = None
     source_number = 0
     for event in events:
@@ -56,11 +58,16 @@ def export(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 sources: list[dict[str, str]] = []
                 if ok and isinstance(output, str) and output:
                     source_number += 1
+                    source_id = f"source-{source_number}"
                     command = _string(item.get("command"), "command")
                     identity = hashlib.sha256(command.encode("utf-8")).hexdigest()
+                    uri = f"urn:tracecite:command:sha256:{identity}"
+                    if source_id in bindings:
+                        uri = f"file:{bindings[source_id]}"
+                        used_bindings.add(source_id)
                     sources.append({
-                        "id": f"source-{source_number}",
-                        "uri": f"urn:tracecite:command:sha256:{identity}",
+                        "id": source_id,
+                        "uri": uri,
                         "title": f"Command result {source_number}",
                         "content": output,
                     })
@@ -70,6 +77,8 @@ def export(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
     if final_answer is None:
         raise ExportError("no final agent message")
+    if used_bindings != set(bindings):
+        raise ExportError("binding names a source absent from successful tool output")
     claims = []
     for line_number, line in enumerate(final_answer.splitlines(), start=1):
         ids = list(dict.fromkeys(CITATION_RE.findall(line)))
@@ -89,12 +98,19 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("events", type=Path, help="Codex CLI JSONL event stream")
     parser.add_argument("--out", type=Path, help="output JSONL file; default stdout")
+    parser.add_argument("--bind", action="append", default=[], metavar="SOURCE_ID=FILE", help="bind observed output to a local file for independent verification")
     args = parser.parse_args()
     try:
         events = [json.loads(line) for line in args.events.read_text(encoding="utf-8").splitlines() if line.strip()]
         if any(not isinstance(event, dict) for event in events):
             raise ExportError("every event must be a JSON object")
-        output = "".join(json.dumps(event, ensure_ascii=False) + "\n" for event in export(events))
+        bindings: dict[str, str] = {}
+        for spec in args.bind:
+            source_id, separator, file_path = spec.partition("=")
+            if not separator or not source_id or not file_path or source_id in bindings:
+                raise ExportError("--bind must be unique SOURCE_ID=FILE")
+            bindings[source_id] = file_path
+        output = "".join(json.dumps(event, ensure_ascii=False) + "\n" for event in export(events, bindings))
         if args.out:
             args.out.write_text(output, encoding="utf-8")
         else:

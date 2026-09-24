@@ -11,6 +11,15 @@ moon run cmd/main /tmp/codex-trace.jsonl --evidence
 
 重新校验结果：`PASS`，3 个事件、1 次工具调用、1 个来源、1 条引用，`1/1 matched citations`。`42` 是捕获输出 `answer=42` 的逐字子串。把回答改为 `99 [source-1]` 会触发 `QUOTE_NOT_IN_SOURCE`；把引用改成 `source-99` 会触发 `UNKNOWN_SOURCE`。
 
+再通过 `--bind source-1=fixtures/facts.txt` 把该次命令输出明确关联到[原文件](../fixtures/facts.txt)，导出[文件绑定轨迹](../fixtures/codex-cli-file-trace.jsonl)：
+
+```sh
+python3 adapters/codex_cli.py fixtures/codex-cli-events.jsonl --bind source-1=fixtures/facts.txt --out /tmp/codex-file-trace.jsonl
+moon run cmd/main verify-files /tmp/codex-file-trace.jsonl
+```
+
+结果为 `PASS: 1 source files match captured content`。另有一份明确标注为**篡改样例**的[轨迹](../fixtures/codex-cli-file-tampered.jsonl)：工具输出和引用片段都改为 `99`，因此单纯的证据模式会通过；`verify-files` 重新读取真实文件后报告 `SOURCE_FILE_MISMATCH`，退出码为 2。这个对照展示了独立文件复核的额外价值。
+
 为了演示跨运行比较，仓库另有两份明确标注为**合成**的轨迹：[旧运行](../fixtures/evidence-old.jsonl)与[新运行](../fixtures/evidence-new.jsonl)。两者来源 URI 相同，捕获内容从 `value=42` 变为 `value=43`。执行 `moon run cmd/main compare fixtures/evidence-old.jsonl fixtures/evidence-new.jsonl` 得到一个 `changed` 事件，退出码为 2。这不是第二次真实 Codex 运行。
 
-这里的证据结论止于事件流：逐字匹配不判断语义蕴含，适配器的捕获过程也仍是可信边界。
+逐字匹配不判断语义蕴含；文件复核检查的是当前文件内容，不证明它在原始运行时的历史状态。网页或其他远端来源仍需要独立采集和校验能力。

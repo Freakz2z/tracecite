@@ -40,6 +40,12 @@ class CodexCliExportTest(unittest.TestCase):
         with self.assertRaisesRegex(ExportError, "turn.completed"):
             export(self.events[:-1])
 
+    def test_bind_observed_output_to_file_for_independent_check(self) -> None:
+        trace = export(self.events, {"source-1": "fixtures/facts.txt"})
+        self.assertEqual(trace[1]["sources"][0]["uri"], "file:fixtures/facts.txt")
+        with self.assertRaisesRegex(ExportError, "absent"):
+            export(self.events, {"source-2": "fixtures/facts.txt"})
+
 
 if __name__ == "__main__":
     unittest.main()
