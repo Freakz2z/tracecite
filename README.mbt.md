@@ -24,7 +24,22 @@ $ moon run cmd/main compare fixtures/codex-two-run-before.jsonl fixtures/codex-t
 
 ## 三行输入，验证一条网页引用
 
-安装 [MoonBit 工具链](https://docs.moonbitlang.com/en/stable/tutorial/tour.html)，在仓库根目录运行下面的样例。不需要 JSONL 或适配器。
+项目要求 `moonc >= 0.10.14`。macOS/Linux 可用 [MoonBit 官方安装脚本](https://docs.moonbitlang.com/en/stable/tutorial/tour.html#installation)安装；Windows 安装方式见同一文档。
+
+```sh
+curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+```
+
+安装后重新打开终端，让 `moon` 和 `moonc` 进入 `PATH`，再获取仓库并安装依赖：
+
+```sh
+git clone https://github.com/Freakz2z/tracecite.git
+cd tracecite
+moon update
+moonc -v
+```
+
+在仓库根目录运行下面的样例。不需要 JSONL 或适配器。
 
 ```text
 claim: IANA lists example.com and example.org as documentation examples.
@@ -46,6 +61,8 @@ moon run cmd/main verify-notes fixtures/simple-citation.md
 
 仓库提供 [Codex CLI 适配器](adapters/codex_cli.py)及其[真实运行样例](docs/live-validation.md)。其他 Agent 可以生成同一 [JSONL 约定](docs/contract.md)；MoonBit 核心库支持 native、JS 和 Wasm，联网 CLI 在 native 目标运行。
 
+根目录的 MoonBit 文件实现解析、证据验证与来源比较；`cmd/main/` 提供联网命令行，`adapters/` 是可选的 Codex CLI 导出器，`fixtures/` 保留可复现样例。
+
 ## 校验边界
 
 TraceCite 确认的是**引用片段在检查时出现在独立读取的来源中**。它不判断整条 claim 的语义真假，也不能证明网页在 Agent 原始运行时的内容。跨运行比较需要稳定来源 URI。
@@ -58,6 +75,7 @@ HTTP 回源只接受默认端口的 HTTP/HTTPS URL，最多跟随五次重定向
 moon info
 moon fmt
 moon check --deny-warn
+moon build --deny-warn
 moon test --deny-warn
 moon test --target js --deny-warn
 moon test --target wasm --deny-warn

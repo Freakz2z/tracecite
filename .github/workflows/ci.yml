@@ -15,14 +15,36 @@ jobs:
         run: |
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
-      - name: Check and test
+      - name: Show MoonBit toolchain
+        run: |
+          moon version
+          moonc -v
+          python3 - <<'PY'
+          import re
+          import subprocess
+
+          version = subprocess.check_output(["moonc", "-v"], text=True).strip()
+          match = re.search(r"v?(\d+)\.(\d+)\.(\d+)", version)
+          if match is None or tuple(map(int, match.groups())) < (0, 10, 14):
+              raise SystemExit(f"moonc >= 0.10.14 required, got {version}")
+          PY
+      - name: Check
         run: |
           moon update
           moon check --deny-warn
+      - name: Build
+        run: |
+          moon build --deny-warn
+          moon build --target js --deny-warn
+          moon build --target wasm --deny-warn
+      - name: Test and run examples
+        run: |
           moon test --deny-warn
           moon test --target js --deny-warn
           moon test --target wasm --deny-warn
           sh scripts/smoke.sh
+          moon run cmd/main verify-notes fixtures/simple-citation.md
+          moon run cmd/main verify-urls fixtures/web-source-trace.jsonl
       - name: Check Codex CLI event adapter
         run: |
           python3 -m unittest discover -s adapters -p 'test_*.py'
