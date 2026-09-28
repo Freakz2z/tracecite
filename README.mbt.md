@@ -4,16 +4,16 @@
 
 # TraceCite
 
-**用 MoonBit 核对 AI Agent 的引用，并发现来源内容何时改变。** 给出一段引用和 URL，TraceCite 会重新读取当前网页，检查引用片段是否出现在页面可见文本中；对本地文件和 Agent 轨迹，它还能回读来源并比较两次运行。适合在 RAG、网页研究或 Agent 工作流的交付前运行。
+**用 MoonBit 核对 AI Agent 的引用，并发现来源内容何时改变。** TraceCite 可直接读取带“原文＋来源”引用块的 Markdown 报告，重新访问网页，检查引文是否出现在当前页面；发现错引时返回非零退出码和报告行号。对本地文件和 Agent 轨迹，它还能回读来源并比较两次运行。
 
 ## 已验证的结果
 
-以下输出来自仓库里的可复现样例。第一个命令实际请求 [IANA 示例域名页面](https://www.iana.org/help/example-domains)；第二个命令比较两次实际执行的 Codex CLI 轨迹。两次运行之间，开发者修改了同一测试文件的内容。
+以下输出来自仓库里的可复现样例。第一个命令直接检查一份 Markdown 报告并请求 [IANA 示例域名页面](https://www.iana.org/help/example-domains)；第二个命令比较两次实际执行的 Codex CLI 轨迹。两次运行之间，开发者修改了同一测试文件的内容。
 
 ```text
-$ moon run cmd/main verify-notes fixtures/simple-citation.md
-PASS: 1/1 quotes appear in live web sources
-  line 1 PASS https://www.iana.org/help/example-domains
+$ moon run cmd/main check-report examples/report.md
+PASS: 1/1 quotes appear in 1 live web source
+  examples/report.md:5 PASS https://www.iana.org/help/example-domains
 
 $ moon run cmd/main compare fixtures/codex-two-run-before.jsonl fixtures/codex-two-run-after.jsonl
 1 source changes; 0 unchanged
@@ -22,7 +22,7 @@ $ moon run cmd/main compare fixtures/codex-two-run-before.jsonl fixtures/codex-t
 
 来源变化是刻意构造的测试值；第二个命令检测到变化时返回退出码 2，便于 CI 标记需要重审的回答。[查看脱敏事件与复现过程](docs/live-validation.md)。
 
-## 三行输入，验证一条网页引用
+## 直接检查 Markdown 报告
 
 项目要求 `moonc >= 0.10.14`。macOS/Linux 可用 [MoonBit 官方安装脚本](https://docs.moonbitlang.com/en/stable/tutorial/tour.html#installation)安装；Windows 安装方式见同一文档。
 
@@ -39,7 +39,24 @@ moon update
 moonc -v
 ```
 
-在仓库根目录运行下面的样例。不需要 JSONL 或适配器。
+在报告中把需要核验的原文与来源写成相邻的引用块。不需要 JSONL 或适配器，行内代码的 Markdown 反引号会作为排版符号处理。
+
+```markdown
+> 原文：“example.com and example.org are maintained for documentation purposes.”
+> 来源：[IANA example domains](https://www.iana.org/help/example-domains)
+```
+
+在仓库根目录运行：
+
+```sh
+moon run cmd/main check-report examples/report.md
+```
+
+失败时命令指出报告行号并返回退出码 2，可以作为 PR 的 CI 门禁。[故意写错的报告](fixtures/report-wrong-quote.md)展示失败路径。完整输入约定见[格式说明](docs/contract.md)。
+
+## 单条引用也可用三行笔记
+
+不方便修改原报告时，可单独写一条 `claim + quote + URL` 记录：
 
 ```text
 claim: IANA lists example.com and example.org as documentation examples.
@@ -51,7 +68,7 @@ url: https://www.iana.org/help/example-domains
 moon run cmd/main verify-notes fixtures/simple-citation.md
 ```
 
-把这三行保存为自己的笔记文件后，传给 `verify-notes` 即可；多条记录用空行或 `---` 分隔。命令支持 `--json` 输出。[完整输入约定](docs/contract.md)。
+把这三行保存为自己的笔记文件后，传给 `verify-notes` 即可；多条记录用空行或 `---` 分隔。两个命令都支持 `--json` 输出。[完整输入约定](docs/contract.md)。
 
 ## 已有 Agent 轨迹怎么接入
 
@@ -83,4 +100,4 @@ sh scripts/smoke.sh
 python3 -m unittest discover -s adapters -p 'test_*.py'
 ```
 
-项目使用 [Apache-2.0 许可证](LICENSE)，HTML 解析依赖 `bobzhang/html_parser`（Apache-2.0）。已发布到 [Mooncakes：Freakz2z/tracecite 0.1.0](https://mooncakes.io/docs/Freakz2z/tracecite)。
+项目使用 [Apache-2.0 许可证](LICENSE)，HTML 解析依赖 `bobzhang/html_parser`（Apache-2.0）。模块发布在 [Mooncakes：Freakz2z/tracecite](https://mooncakes.io/docs/Freakz2z/tracecite)。

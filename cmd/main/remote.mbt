@@ -33,6 +33,11 @@ priv struct UrlCheckReport {
 } derive(ToJson)
 
 ///|
+priv struct CitationInputErrors {
+  diagnostics : Array[@tracecite.Diagnostic]
+} derive(ToJson)
+
+///|
 async fn verify_urls_command(path : String, json_output : Bool) -> Int {
   let input = @fs.read_file(path).text() catch {
     _ => {
@@ -120,27 +125,60 @@ async fn verify_urls_command(path : String, json_output : Bool) -> Int {
 }
 
 ///|
-async fn verify_notes_command(path : String, json_output : Bool) -> Int {
+async fn verify_notes_command(
+  path : String,
+  json_output : Bool,
+  markdown_report : Bool,
+) -> Int {
   let input = @fs.read_file(path).text() catch {
     _ => {
       @stdio.stderr.write("Cannot read input file: \{path}\n")
       return 1
     }
   }
-  let parsed = @tracecite.parse_citation_notes(input)
+  let parsed = if markdown_report {
+    @tracecite.parse_markdown_report(input)
+  } else {
+    @tracecite.parse_citation_notes(input)
+  }
   if !parsed.diagnostics.is_empty() {
-    @stdio.stdout.write("Invalid citation note input\n")
-    for diagnostic in parsed.diagnostics {
+    if json_output {
       @stdio.stdout.write(
-        "  line \{diagnostic.line} [\{diagnostic.code}] \{diagnostic.message}\n",
+        @json.to_json(CitationInputErrors::{ diagnostics: parsed.diagnostics, }).stringify(
+          indent=2,
+        ) +
+        "\n",
       )
+    } else {
+      @stdio.stdout.write(
+        if markdown_report {
+          "Invalid Markdown citation blocks\n"
+        } else {
+          "Invalid citation note input\n"
+        },
+      )
+      for diagnostic in parsed.diagnostics {
+        @stdio.stdout.write(
+          "  \{path}:\{diagnostic.line} [\{diagnostic.code}] \{diagnostic.message}\n",
+        )
+      }
     }
     return 1
   }
   let items : Array[UrlCheckItem] = []
+  let fetched : Map[String, RemoteFetch] = Map([])
+  let mut source_count = 0
   let mut matched_count = 0
   for note in parsed.notes {
-    let result = fetch_public_text(note.url)
+    let result = match fetched.get(note.url) {
+      Some(result) => result
+      None => {
+        let result = fetch_public_text(note.url)
+        fetched.set(note.url, result)
+        source_count = source_count + 1
+        result
+      }
+    }
     let diagnostics : Array[String] = []
     let matched = result.ok &&
       @tracecite.normalize_web_text(result.text).contains(
@@ -167,7 +205,7 @@ async fn verify_notes_command(path : String, json_output : Bool) -> Int {
     })
   }
   let output = UrlCheckReport::{
-    source_count: items.length(),
+    source_count,
     citation_count: items.length(),
     matched_count,
     items,
@@ -176,11 +214,11 @@ async fn verify_notes_command(path : String, json_output : Bool) -> Int {
     @stdio.stdout.write(@json.to_json(output).stringify(indent=2) + "\n")
   } else {
     @stdio.stdout.write(
-      "\{if matched_count == items.length() { "PASS" } else { "FAIL" }}: \{matched_count}/\{items.length()} quotes appear in live web sources\n",
+      "\{if matched_count == items.length() { "PASS" } else { "FAIL" }}: \{matched_count}/\{items.length()} quotes appear in \{source_count} live web \{if source_count == 1 { "source" } else { "sources" }}\n",
     )
     for item in items {
       @stdio.stdout.write(
-        "  line \{item.index} \{if item.ok { "PASS" } else { "FAIL" }} \{item.url}\n",
+        "  \{if markdown_report { path + ":" } else { "line " }}\{item.index} \{if item.ok { "PASS" } else { "FAIL" }} \{item.url}\n",
       )
       for diagnostic in item.diagnostics {
         @stdio.stdout.write("    [\{diagnostic}]\n")

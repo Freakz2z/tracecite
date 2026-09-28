@@ -11,7 +11,7 @@
 
 name = "Freakz2z/tracecite"
 
-version = "0.1.0"
+version = "0.2.0"
 
 readme = "README.mbt.md"
 
@@ -19,11 +19,11 @@ repository = "https://github.com/Freakz2z/tracecite"
 
 license = "Apache-2.0"
 
-keywords = [ "agent", "trace", "citation", "evidence" ]
+keywords = [ "agent", "markdown", "citation", "evidence" ]
 
 preferred_target = "native"
 
-description = "Independent evidence verification and source drift checks for AI agents"
+description = "Verify cited quotes in Markdown reports and detect source drift"
 
 import {
   "moonbitlang/async@0.22.1",

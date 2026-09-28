@@ -44,6 +44,7 @@ jobs:
           moon test --target wasm --deny-warn
           sh scripts/smoke.sh
           moon run cmd/main verify-notes fixtures/simple-citation.md
+          moon run cmd/main check-report examples/report.md
           moon run cmd/main verify-urls fixtures/web-source-trace.jsonl
       - name: Check Codex CLI event adapter
         run: |

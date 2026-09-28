@@ -1,6 +1,21 @@
 # TraceCite 输入约定
 
-TraceCite 提供轻量引用笔记和 Agent JSONL 两种输入。轻量笔记适合快速验证；JSONL 用于保留工具调用、来源与回答之间的关系。
+TraceCite 提供 Markdown 报告引用块、轻量引用笔记和 Agent JSONL 三种输入。报告格式适合在发布前直接检查文档；JSONL 用于保留工具调用、来源与回答之间的关系。
+
+## Markdown 报告引用块
+
+在普通 Markdown 报告中，将一段原文和其来源写成相邻的引用块：
+
+```markdown
+## 示例域名
+
+> 原文：“example.com and example.org are maintained for documentation purposes.”
+> 来源：[IANA](https://www.iana.org/help/example-domains)
+```
+
+运行 `moon run cmd/main check-report report.md`。支持 `原文：` / `引文：` 与 `来源：`，也支持英文 `Quote:` / `Source:`；来源可写 Markdown 链接或纯 HTTP/HTTPS URL。引文中的行内代码反引号是排版符号，匹配网页可见文本前会去掉。代码围栏里的示例不会被检查。每段原文必须跟随来源；未配对、无效来源和没有引用块的报告会报错。输出包含报告原文所在行号，支持 `--json`，来源不可用或引文不匹配时返回退出码 2。
+
+这是显式引用块的约定，不会从任意 Markdown 链接推断其所支持的主张；前一标题仅作上下文显示，不参与语义判断。
 
 ## 轻量引用笔记
 

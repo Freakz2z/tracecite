@@ -51,6 +51,12 @@ fi
 check_fixture fixtures/evidence-old.jsonl 0 -
 check_fixture fixtures/evidence-false-quote.jsonl 2 QUOTE_NOT_IN_SOURCE
 status=0
+output=$(moon run cmd/main check-report fixtures/report-wrong-quote.md 2>&1) || status=$?
+if [ "$status" -ne 2 ] || ! printf '%s' "$output" | grep -q 'fixtures/report-wrong-quote.md:5 FAIL'; then
+  printf 'incorrect Markdown report citation did not fail at its source line\n%s\n' "$output" >&2
+  exit 1
+fi
+status=0
 output=$(moon run cmd/main compare fixtures/evidence-old.jsonl fixtures/evidence-new.jsonl 2>&1) || status=$?
 if [ "$status" -ne 2 ] || ! printf '%s' "$output" | grep -q '\[changed\] file:///example/report.txt'; then
   printf 'source drift check failed\n%s\n' "$output" >&2
