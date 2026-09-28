@@ -60,11 +60,15 @@ test "public address screening rejects non-public IPv4 and IPv6 ranges" {
 ///|
 test "HTML extraction decodes entities and omits active script text" {
   let html = @utf8.encode(
-    "<p>alpha&nbsp;beta</p><script>secret-marker</script>",
+    "<p>alpha&nbsp;beta</p><p>MoonBit in <code>$HOME/.moon</code> and adds it to your <code>PATH</code>.</p><script>secret-marker</script>",
   )
-  let page = @html_parser.parse_bytes(html[:], sanitize=true)
-  let visible = page.to_text(separator=" ", strip=true)
+  let visible = extract_visible_html_text(html).unwrap()
   assert_true(@tracecite.normalize_web_text(visible).contains("alpha beta"))
+  assert_true(
+    @tracecite.normalize_web_text(visible).contains(
+      "MoonBit in $HOME/.moon and adds it to your PATH.",
+    ),
+  )
   assert_false(visible.contains("secret-marker"))
 }
 

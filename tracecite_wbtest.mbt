@@ -248,4 +248,5 @@ test "live source quote matching collapses HTML whitespace" {
   assert_eq(matches.length(), 1)
   assert_true(matches[0].quote_present)
   assert_eq(normalize_web_text("  alpha\n\tbeta \u{00A0}"), "alpha beta")
+  assert_eq(normalize_web_text("PATH ."), "PATH.")
 }

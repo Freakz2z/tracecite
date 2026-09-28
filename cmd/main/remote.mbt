@@ -281,10 +281,10 @@ async fn fetch_public_text_inner(raw_url : String) -> RemoteFetch {
     let text = if media_type == "text/html" ||
       media_type == "application/xhtml+xml" ||
       media_type == "" {
-      let parsed = @html_parser.parse_bytes(bytes[:], sanitize=true) catch {
-        _ => return remote_failure("HTML_PARSE_FAILED")
+      match extract_visible_html_text(bytes) {
+        Some(text) => text
+        None => return remote_failure("HTML_PARSE_FAILED")
       }
-      parsed.to_text(separator=" ", strip=true)
     } else {
       @utf8.decode(bytes) catch {
         _ => return remote_failure("SOURCE_NOT_UTF8")
@@ -293,6 +293,14 @@ async fn fetch_public_text_inner(raw_url : String) -> RemoteFetch {
     return { ok: true, text, error_code: None, }
   }
   remote_failure("TOO_MANY_REDIRECTS")
+}
+
+///|
+fn extract_visible_html_text(bytes : Bytes) -> String? {
+  let parsed = @html_parser.parse_bytes(bytes[:], sanitize=true) catch {
+    _ => return None
+  }
+  Some(parsed.to_text(separator=" ", strip=true, separator_blocks_only=true))
 }
 
 ///|

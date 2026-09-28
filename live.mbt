@@ -59,7 +59,8 @@ pub fn check_live_source_quotes(
 }
 
 ///|
-/// Collapse Unicode whitespace to a single ASCII space and trim the result.
+/// Collapse Unicode whitespace, including spaces before punctuation that HTML
+/// text extraction can introduce around inline elements.
 pub fn normalize_web_text(input : String) -> String {
   let out = StringBuilder()
   let mut has_text = false
@@ -71,7 +72,14 @@ pub fn normalize_web_text(input : String) -> String {
       }
     } else {
       if pending_space {
-        out.write_char(' ')
+        if ch != '.' &&
+          ch != ',' &&
+          ch != ';' &&
+          ch != ':' &&
+          ch != '!' &&
+          ch != '?' {
+          out.write_char(' ')
+        }
         pending_space = false
       }
       out.write_char(ch)
