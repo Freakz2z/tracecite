@@ -2,7 +2,17 @@
 
 TraceCite 提供 Markdown 报告引用块、轻量引用笔记和 Agent JSONL 三种输入。报告格式适合在发布前直接检查文档；JSONL 用于保留工具调用、来源与回答之间的关系。
 
-## Markdown 报告引用块
+## Markdown 报告引文
+
+普通行内引用支持中文弯引号包住的逐字原文，后接同一句中的 Markdown 来源链接：
+
+```markdown
+IANA explains that “example.com and example.org are maintained for documentation purposes.” ([IANA](https://www.iana.org/help/example-domains))
+```
+
+同一行可以有多条引用。链接可紧跟引号，也可位于其后的同一句短距离内；中间不得出现句号、分号或另一处开引号。代码围栏内的文字不参与检查。没有逐字引文的普通链接不会被解释成证据，工具也不会判断主张是否由引文支持。
+
+也可使用显式引用块：
 
 在普通 Markdown 报告中，将一段原文和其来源写成相邻的引用块：
 

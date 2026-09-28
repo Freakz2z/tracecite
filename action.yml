@@ -1,0 +1,30 @@
+name: TraceCite report check
+description: Verify exact quotations in a Markdown report against their live web sources
+inputs:
+  report:
+    description: Markdown report path relative to the caller repository root
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Install MoonBit
+      shell: bash
+      run: |
+        if ! command -v moon >/dev/null 2>&1; then
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+        fi
+    - name: Check report citations
+      shell: bash
+      env:
+        TRACECITE_REPORT: ${{ inputs.report }}
+      run: |
+        set -euo pipefail
+        report_path="$GITHUB_WORKSPACE/$TRACECITE_REPORT"
+        if [ ! -f "$report_path" ]; then
+          echo "Report not found: $report_path" >&2
+          exit 1
+        fi
+        cd "$GITHUB_ACTION_PATH"
+        moon update
+        moon run cmd/main check-report "$report_path"

@@ -65,6 +65,7 @@ pub fn normalize_web_text(input : String) -> String {
   let out = StringBuilder()
   let mut has_text = false
   let mut pending_space = false
+  let mut after_open_delimiter = false
   for ch in input.iter() {
     if ch.is_whitespace() {
       if has_text {
@@ -72,7 +73,10 @@ pub fn normalize_web_text(input : String) -> String {
       }
     } else {
       if pending_space {
-        if ch != '.' &&
+        if !after_open_delimiter &&
+          ch != ')' &&
+          ch != ']' &&
+          ch != '.' &&
           ch != ',' &&
           ch != ';' &&
           ch != ':' &&
@@ -84,6 +88,7 @@ pub fn normalize_web_text(input : String) -> String {
       }
       out.write_char(ch)
       has_text = true
+      after_open_delimiter = ch == '(' || ch == '['
     }
   }
   out.to_string()

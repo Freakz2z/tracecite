@@ -57,6 +57,12 @@ if [ "$status" -ne 2 ] || ! printf '%s' "$output" | grep -q 'fixtures/report-wro
   exit 1
 fi
 status=0
+output=$(moon run cmd/main check-report fixtures/inline-report-wrong-quote.md 2>&1) || status=$?
+if [ "$status" -ne 2 ] || ! printf '%s' "$output" | grep -q 'fixtures/inline-report-wrong-quote.md:3 FAIL'; then
+  printf 'incorrect inline Markdown quotation did not fail at its source line\n%s\n' "$output" >&2
+  exit 1
+fi
+status=0
 output=$(moon run cmd/main compare fixtures/evidence-old.jsonl fixtures/evidence-new.jsonl 2>&1) || status=$?
 if [ "$status" -ne 2 ] || ! printf '%s' "$output" | grep -q '\[changed\] file:///example/report.txt'; then
   printf 'source drift check failed\n%s\n' "$output" >&2

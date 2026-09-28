@@ -4,7 +4,7 @@
 
 # TraceCite
 
-**用 MoonBit 核对 AI Agent 的引用，并发现来源内容何时改变。** TraceCite 可直接读取带“原文＋来源”引用块的 Markdown 报告，重新访问网页，检查引文是否出现在当前页面；发现错引时返回非零退出码和报告行号。对本地文件和 Agent 轨迹，它还能回读来源并比较两次运行。
+**用 MoonBit 核对 AI Agent 的逐字引文，并发现来源内容何时改变。** TraceCite 直接读取普通 Markdown 报告中带来源链接的引文，重新访问网页，检查引文是否出现在当前页面；发现错引时返回非零退出码和报告行号。对本地文件和 Agent 轨迹，它还能回读来源并比较两次运行。
 
 ## 已验证的结果
 
@@ -39,7 +39,13 @@ moon update
 moonc -v
 ```
 
-在报告中把需要核验的原文与来源写成相邻的引用块。不需要 JSONL 或适配器，行内代码的 Markdown 反引号会作为排版符号处理。
+普通 Markdown 中，逐字引文后的来源链接即可被检查。下面的报告不需要专用标记、JSONL 或适配器：
+
+```markdown
+IANA explains that “example.com and example.org are maintained for documentation purposes.” ([IANA](https://www.iana.org/help/example-domains))
+```
+
+也可以把原文和来源写成相邻的引用块；行内代码反引号会作为排版符号处理。
 
 ```markdown
 > 原文：“example.com and example.org are maintained for documentation purposes.”
@@ -50,9 +56,22 @@ moonc -v
 
 ```sh
 moon run cmd/main check-report examples/report.md
+moon run cmd/main check-report examples/inline-report.md
 ```
 
-失败时命令指出报告行号并返回退出码 2，可以作为 PR 的 CI 门禁。[故意写错的报告](fixtures/report-wrong-quote.md)展示失败路径。完整输入约定见[格式说明](docs/contract.md)。
+失败时命令指出报告行号并返回退出码 2，可以作为 PR 的 CI 门禁。[故意写错的行内引用](fixtures/inline-report-wrong-quote.md)展示失败路径。完整输入约定见[格式说明](docs/contract.md)。
+
+在其他 GitHub 仓库中，只需添加一个 CI 步骤（仓库先由 `actions/checkout` 检出）：
+
+```yaml
+- uses: Freakz2z/tracecite@v0.3.0
+  with:
+    report: reports/research.md
+```
+
+这一 Action 会安装 MoonBit、编译 TraceCite 并核对报告，失败时让 CI 标红。建议为工作流设置 `permissions: contents: read`，不要向检查步骤提供密钥。
+
+一轮固定的三份 Codex CLI 自然报告盲测中，旧版对普通行内引文的覆盖率是 **0/16**；新版无需改写报告即可检查 **16/16** 条。三份报告的引文最终全部匹配，没有自然发生的错引或报告修改；一次初始不匹配来自 HTML 行内代码周围的空格，已修复。[原始报告与试验记录](examples/field-trial/README.md)可复查。这个试验说明输入准备步骤被消除，尚不能证明真实错误发现率或节省的审核时间。
 
 ## 单条引用也可用三行笔记
 

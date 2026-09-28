@@ -11,7 +11,7 @@
 
 name = "Freakz2z/tracecite"
 
-version = "0.2.0"
+version = "0.3.0"
 
 readme = "README.mbt.md"
 
@@ -23,7 +23,7 @@ keywords = [ "agent", "markdown", "citation", "evidence" ]
 
 preferred_target = "native"
 
-description = "Verify cited quotes in Markdown reports and detect source drift"
+description = "Verify inline Markdown quotations against live sources and detect drift"
 
 import {
   "moonbitlang/async@0.22.1",

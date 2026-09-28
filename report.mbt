@@ -81,6 +81,7 @@ pub fn parse_markdown_report(input : String) -> CitationNotes {
       )
       pending_quote = None
     }
+    collect_inline_report_quotes(line, heading, line_number, notes, diagnostics)
   }
   if pending_quote is Some(_) {
     add_diagnostic(
@@ -93,6 +94,112 @@ pub fn parse_markdown_report(input : String) -> CitationNotes {
     )
   }
   { notes, diagnostics, }
+}
+
+///|
+/// Find ordinary Markdown citations such as “quoted text” ([source](https://...)).
+/// A nearby link without an explicit quotation is deliberately not treated as
+/// proof for the surrounding claim.
+fn collect_inline_report_quotes(
+  line : StringView,
+  heading : String,
+  line_number : Int,
+  notes : Array[CitationNote],
+  diagnostics : Array[Diagnostic],
+) -> Unit {
+  let mut remaining = line
+  while true {
+    let after_open = match remaining.split_once("“") {
+      Some((_, rest)) => rest
+      None => break
+    }
+    let (quote, after_close) = match after_open.split_once("”") {
+      Some(parts) => parts
+      None => break
+    }
+    remaining = after_close
+    match inline_report_source(after_close) {
+      Some(url) =>
+        if url == "" {
+          add_diagnostic(
+            diagnostics, line_number, "INVALID_REPORT_SOURCE", "source needs an HTTP URL",
+          )
+        } else {
+          let cleaned = clean_report_quote(quote)
+          if cleaned == "" {
+            add_diagnostic(
+              diagnostics, line_number, "EMPTY_REPORT_QUOTE", "quote is empty",
+            )
+          } else {
+            notes.push({
+              claim: heading,
+              quote: cleaned,
+              url,
+              line: line_number,
+            })
+          }
+        }
+      None => ()
+    }
+  }
+}
+
+///|
+fn inline_report_source(after_quote : StringView) -> String? {
+  let tail = after_quote.trim()
+  let tail = match tail.strip_prefix("（") {
+    Some(rest) => rest
+    None =>
+      match tail.strip_prefix("(") {
+        Some(rest) => rest
+        None =>
+          match tail.split_once("（") {
+            Some((between, rest)) if between.length() <= 80 &&
+              !between.contains("。") &&
+              !between.contains("；") &&
+              !between.contains("“") &&
+              rest.has_prefix("[") => rest
+            _ =>
+              match tail.split_once("(") {
+                Some((between, rest)) if between.length() <= 80 &&
+                  !between.contains(".") &&
+                  !between.contains(";") &&
+                  !between.contains("\"") &&
+                  rest.has_prefix("[") => rest
+                _ => return None
+              }
+          }
+      }
+  }
+  let link = match tail.strip_prefix("[") {
+    Some(rest) => rest
+    None => return None
+  }
+  let (_, url_tail) = match link.split_once("](") {
+    Some(parts) => parts
+    None => return Some("")
+  }
+  let (url, _) = match url_tail.split_once(")") {
+    Some(parts) => parts
+    None => return Some("")
+  }
+  let url = url.trim()
+  if url.has_prefix("https://") || url.has_prefix("http://") {
+    Some(url.to_owned())
+  } else {
+    Some("")
+  }
+}
+
+///|
+fn clean_report_quote(raw : StringView) -> String {
+  let output = StringBuilder()
+  for char in raw.iter() {
+    if char != '`' {
+      output.write_char(char)
+    }
+  }
+  output.to_string().trim().to_owned()
 }
 
 ///|
@@ -122,13 +229,7 @@ fn report_quote_line(line : StringView) -> String? {
         None => raw
       }
   }
-  let output = StringBuilder()
-  for char in unquoted.iter() {
-    if char != '`' {
-      output.write_char(char)
-    }
-  }
-  output.to_string().trim().to_owned() |> Some
+  clean_report_quote(unquoted) |> Some
 }
 
 ///|

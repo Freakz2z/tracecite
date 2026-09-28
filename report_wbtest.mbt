@@ -30,3 +30,56 @@ test "Markdown report requires a citation block" {
   assert_true(parsed.notes.is_empty())
   assert_eq(parsed.diagnostics[0].code, "NO_REPORT_CITATIONS")
 }
+
+///|
+test "Markdown report extracts multiple natural inline quote links" {
+  let report = "# Memo\n“First exact quote” ([source](https://example.org/one)) and “Second `exact` quote”（[source](https://example.org/two)）.\n"
+  let parsed = parse_markdown_report(report)
+  assert_true(parsed.diagnostics.is_empty())
+  assert_eq(parsed.notes.length(), 2)
+  assert_eq(parsed.notes[0].quote, "First exact quote")
+  assert_eq(parsed.notes[0].url, "https://example.org/one")
+  assert_eq(parsed.notes[0].line, 2)
+  assert_eq(parsed.notes[1].quote, "Second exact quote")
+  assert_eq(parsed.notes[1].url, "https://example.org/two")
+}
+
+///|
+test "Markdown report ignores prose links and code examples" {
+  let report = "# Memo\nA claim with [link](https://example.org) has no quote.\n```markdown\n“example” ([source](https://example.org))\n```\n"
+  let parsed = parse_markdown_report(report)
+  assert_true(parsed.notes.is_empty())
+  assert_eq(parsed.diagnostics[0].code, "NO_REPORT_CITATIONS")
+}
+
+///|
+test "Markdown report rejects invalid inline citation URL" {
+  let parsed = parse_markdown_report(
+    "“quote” ([source](file:///private.txt))\n",
+  )
+  assert_true(parsed.notes.is_empty())
+  assert_eq(parsed.diagnostics[0].code, "INVALID_REPORT_SOURCE")
+}
+
+///|
+test "Markdown report associates a same-sentence source after a quote" {
+  let parsed = parse_markdown_report(
+    "出现“API token saved to ~/.moon/credentials.json”即表示登录成功（[账号设置](https://example.org/login)）。\n",
+  )
+  assert_true(parsed.diagnostics.is_empty())
+  assert_eq(parsed.notes.length(), 1)
+  assert_eq(
+    parsed.notes[0].quote,
+    "API token saved to ~/.moon/credentials.json",
+  )
+}
+
+///|
+test "Markdown report associates an English same-sentence link" {
+  let parsed = parse_markdown_report(
+    "The guide says “Use moon package --list” before publication ([official](https://example.org/publish)).\n",
+  )
+  assert_true(parsed.diagnostics.is_empty())
+  assert_eq(parsed.notes.length(), 1)
+  assert_eq(parsed.notes[0].url, "https://example.org/publish")
+}

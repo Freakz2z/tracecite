@@ -45,7 +45,12 @@ jobs:
           sh scripts/smoke.sh
           moon run cmd/main verify-notes fixtures/simple-citation.md
           moon run cmd/main check-report examples/report.md
+          moon run cmd/main check-report examples/inline-report.md
           moon run cmd/main verify-urls fixtures/web-source-trace.jsonl
+      - name: Exercise public report action
+        uses: ./
+        with:
+          report: examples/inline-report.md
       - name: Check Codex CLI event adapter
         run: |
           python3 -m unittest discover -s adapters -p 'test_*.py'
