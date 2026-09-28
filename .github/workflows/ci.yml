@@ -52,6 +52,10 @@ jobs:
         uses: ./
         with:
           report: examples/inline-report.md
+      - name: Exercise tagged report action
+        uses: Freakz2z/tracecite@v0.4.0
+        with:
+          report: examples/title-first-report.md
       - name: Check Codex CLI event adapter
         run: |
           python3 -m unittest discover -s adapters -p 'test_*.py'
