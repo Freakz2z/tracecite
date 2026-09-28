@@ -83,4 +83,4 @@ sh scripts/smoke.sh
 python3 -m unittest discover -s adapters -p 'test_*.py'
 ```
 
-项目使用 [Apache-2.0 许可证](LICENSE)，HTML 解析依赖 `bobzhang/html_parser`（Apache-2.0）。Mooncakes 包尚未发布。
+项目使用 [Apache-2.0 许可证](LICENSE)，HTML 解析依赖 `bobzhang/html_parser`（Apache-2.0）。已发布到 [Mooncakes：Freakz2z/tracecite 0.1.0](https://mooncakes.io/docs/Freakz2z/tracecite)。
