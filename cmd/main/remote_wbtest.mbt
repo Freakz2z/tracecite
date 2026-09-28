@@ -62,7 +62,7 @@ test "HTML extraction decodes entities and omits active script text" {
   let html = @utf8.encode(
     "<p>alpha&nbsp;beta</p><p>MoonBit in <code>$HOME/.moon</code> and adds it to your <code>PATH</code>.</p><script>secret-marker</script>",
   )
-  let visible = extract_visible_html_text(html).unwrap()
+  let visible = extract_visible_html_text(html, None).unwrap()
   assert_true(@tracecite.normalize_web_text(visible).contains("alpha beta"))
   assert_true(
     @tracecite.normalize_web_text(visible).contains(
@@ -77,7 +77,7 @@ test "HTML inline code does not create spaces inside parentheses" {
   let html = @utf8.encode(
     "<p>Some commands are module-only (for example <code>publish</code>). For those commands, run them in a specific member module directory.</p>",
   )
-  let visible = extract_visible_html_text(html).unwrap()
+  let visible = extract_visible_html_text(html, None).unwrap()
   assert_true(
     @tracecite.normalize_web_text(visible).contains(
       "Some commands are module-only (for example publish).",
@@ -92,4 +92,15 @@ test "content type parameters do not hide the media type" {
     content_type_media_type(" application/json ; charset=UTF-8 "),
     "application/json",
   )
+}
+
+///|
+test "HTTP charset is passed into HTML decoding" {
+  let html = @utf8.encode(
+    "<p>“Bad things” happen for the person accountable.</p>",
+  )
+  let visible = extract_visible_html_text(html, Some("utf-8")).unwrap()
+  assert_true(visible.contains("“Bad things”"))
+  assert_eq(content_type_charset("text/html; charset=utf-8"), Some("utf-8"))
+  assert_eq(content_type_charset("text/html"), None)
 }

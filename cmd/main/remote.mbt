@@ -181,9 +181,7 @@ async fn verify_notes_command(
     }
     let diagnostics : Array[String] = []
     let matched = result.ok &&
-      @tracecite.normalize_web_text(result.text).contains(
-        @tracecite.normalize_web_text(note.quote),
-      )
+      @tracecite.quote_appears_in_text(result.text, note.quote)
     if !result.ok {
       diagnostics.push(result.error_code.unwrap_or("SOURCE_UNAVAILABLE"))
     } else if matched {
@@ -251,7 +249,7 @@ async fn fetch_public_text_inner(raw_url : String) -> RemoteFetch {
     }
     let headers : @http.Headers = Map([])
     headers["Accept"] = "text/html,application/xhtml+xml,text/plain,application/json;q=0.8,*/*;q=0.1"
-    headers["User-Agent"] = "TraceCite/0.2 (source verification)"
+    headers["User-Agent"] = "TraceCite/0.4 (source verification)"
     let (response, client) = @http.get_stream(current.full, headers~) catch {
       _ => return remote_failure("HTTP_REQUEST_FAILED")
     }
@@ -319,7 +317,8 @@ async fn fetch_public_text_inner(raw_url : String) -> RemoteFetch {
     let text = if media_type == "text/html" ||
       media_type == "application/xhtml+xml" ||
       media_type == "" {
-      match extract_visible_html_text(bytes) {
+      match
+        extract_visible_html_text(bytes, content_type_charset(content_type)) {
         Some(text) => text
         None => return remote_failure("HTML_PARSE_FAILED")
       }
@@ -334,9 +333,16 @@ async fn fetch_public_text_inner(raw_url : String) -> RemoteFetch {
 }
 
 ///|
-fn extract_visible_html_text(bytes : Bytes) -> String? {
-  let parsed = @html_parser.parse_bytes(bytes[:], sanitize=true) catch {
-    _ => return None
+fn extract_visible_html_text(bytes : Bytes, encoding : String?) -> String? {
+  let parsed = match encoding {
+    Some(encoding) =>
+      @html_parser.parse_bytes(bytes[:], encoding~, sanitize=true) catch {
+        _ => return None
+      }
+    None =>
+      @html_parser.parse_bytes(bytes[:], sanitize=true) catch {
+        _ => return None
+      }
   }
   Some(parsed.to_text(separator=" ", strip=true, separator_blocks_only=true))
 }
@@ -351,6 +357,28 @@ fn content_type_media_type(content_type : String) -> String {
   match content_type.split_once(";") {
     Some((media_type, _)) => media_type.trim().to_lower().to_owned()
     None => content_type.trim().to_lower().to_owned()
+  }
+}
+
+///|
+fn content_type_charset(content_type : String) -> String? {
+  let lower = content_type.to_lower()
+  match lower.split_once("charset=") {
+    Some((_, charset_and_more)) => {
+      let charset = match charset_and_more.split_once(";") {
+        Some((charset, _)) => charset
+        None => charset_and_more
+      }
+      let charset = charset.trim()
+      let charset = charset.strip_prefix("\"").unwrap_or(charset)
+      let charset = charset.strip_suffix("\"").unwrap_or(charset)
+      if charset == "" {
+        None
+      } else {
+        Some(charset.to_owned())
+      }
+    }
+    None => None
   }
 }
 

@@ -83,3 +83,24 @@ test "Markdown report associates an English same-sentence link" {
   assert_eq(parsed.notes.length(), 1)
   assert_eq(parsed.notes[0].url, "https://example.org/publish")
 }
+
+///|
+test "Markdown report checks a quoted excerpt after a linked list title" {
+  let parsed = parse_markdown_report(
+    "- [Official guide](https://example.org/guide) - “Use the current package format.”\n",
+  )
+  assert_true(parsed.diagnostics.is_empty())
+  assert_eq(parsed.notes.length(), 1)
+  assert_eq(parsed.notes[0].url, "https://example.org/guide")
+  assert_eq(parsed.notes[0].quote, "Use the current package format.")
+}
+
+///|
+test "Markdown report accepts a trailing attribution link" {
+  let parsed = parse_markdown_report(
+    "- “A short exact excerpt from a source.” - An [archived slide](https://example.org/slide).\n",
+  )
+  assert_true(parsed.diagnostics.is_empty())
+  assert_eq(parsed.notes.length(), 1)
+  assert_eq(parsed.notes[0].url, "https://example.org/slide")
+}

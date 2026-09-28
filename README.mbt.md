@@ -6,6 +6,8 @@
 
 **用 MoonBit 核对 AI Agent 的逐字引文，并发现来源内容何时改变。** TraceCite 直接读取普通 Markdown 报告中带来源链接的引文，重新访问网页，检查引文是否出现在当前页面；发现错引时返回非零退出码和报告行号。对本地文件和 Agent 轨迹，它还能回读来源并比较两次运行。
 
+在一份[独立公开资料的固定取样](docs/external-audit.md)中，工具识别全部 10 条引文并指出 3 条需复核；人工确认其中 **2 条不是来源中的连续原文**，另 1 条位于无法可靠提取正文的 X 页面。只修正前两条后，回源结果从 **7/10** 变为 **9/10**；未验证的一条仍保持失败。这是实际资料中的发现，区别于仓库里的受控错误样例。
+
 ## 已验证的结果
 
 以下输出来自仓库里的可复现样例。第一个命令直接检查一份 Markdown 报告并请求 [IANA 示例域名页面](https://www.iana.org/help/example-domains)；第二个命令比较两次实际执行的 Codex CLI 轨迹。两次运行之间，开发者修改了同一测试文件的内容。
@@ -64,7 +66,7 @@ moon run cmd/main check-report examples/inline-report.md
 在其他 GitHub 仓库中，只需添加一个 CI 步骤（仓库先由 `actions/checkout` 检出）：
 
 ```yaml
-- uses: Freakz2z/tracecite@v0.3.0
+- uses: Freakz2z/tracecite@v0.4.0
   with:
     report: reports/research.md
 ```
@@ -101,7 +103,7 @@ moon run cmd/main verify-notes fixtures/simple-citation.md
 
 ## 校验边界
 
-TraceCite 确认的是**引用片段在检查时出现在独立读取的来源中**。它不判断整条 claim 的语义真假，也不能证明网页在 Agent 原始运行时的内容。跨运行比较需要稳定来源 URI。
+TraceCite 确认的是**引用片段在检查时出现在独立读取的来源中**。引号字形差异会归一化；明确写出省略号时，要求省略号两侧的较长片段按顺序出现。它不判断整条 claim 的语义真假，也不能证明网页在 Agent 原始运行时的内容。动态页面或图片中的引文可能无法由可见文本提取器验证；跨运行比较需要稳定来源 URI。
 
 HTTP 回源只接受默认端口的 HTTP/HTTPS URL，最多跟随五次重定向；单个来源限制为 20 秒和 2 MiB。当前网络库在连接时重新解析域名，因而不适合作为处理攻击者可控 URL 的服务端网络隔离层。地址筛选与内容类型规则见[输入约定](docs/contract.md)。
 

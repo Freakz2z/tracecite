@@ -109,8 +109,8 @@ fn collect_inline_report_quotes(
 ) -> Unit {
   let mut remaining = line
   while true {
-    let after_open = match remaining.split_once("“") {
-      Some((_, rest)) => rest
+    let (before_open, after_open) = match remaining.split_once("“") {
+      Some(parts) => parts
       None => break
     }
     let (quote, after_close) = match after_open.split_once("”") {
@@ -118,7 +118,11 @@ fn collect_inline_report_quotes(
       None => break
     }
     remaining = after_close
-    match inline_report_source(after_close) {
+    let source = match inline_report_source(after_close) {
+      Some(url) => Some(url)
+      None => source_before_inline_quote(before_open)
+    }
+    match source {
       Some(url) =>
         if url == "" {
           add_diagnostic(
@@ -145,6 +149,39 @@ fn collect_inline_report_quotes(
 }
 
 ///|
+/// In curated Markdown lists, the linked title often precedes its quotation.
+/// Restrict this form to a list item whose first element is a linked title.
+fn source_before_inline_quote(before_quote : StringView) -> String? {
+  let before = before_quote.trim()
+  let title = match before.strip_prefix("- [") {
+    Some(rest) => rest
+    None =>
+      match before.strip_prefix("* [") {
+        Some(rest) => rest
+        None => return None
+      }
+  }
+  let (_, url_tail) = match title.split_once("](") {
+    Some(parts) => parts
+    None => return Some("")
+  }
+  let (url, after_link) = match url_tail.split_once(")") {
+    Some(parts) => parts
+    None => return Some("")
+  }
+  let after_link = after_link.trim()
+  if !after_link.has_prefix("-") && !after_link.has_prefix("—") {
+    return None
+  }
+  let url = url.trim()
+  if url.has_prefix("https://") || url.has_prefix("http://") {
+    Some(url.to_owned())
+  } else {
+    Some("")
+  }
+}
+
+///|
 fn inline_report_source(after_quote : StringView) -> String? {
   let tail = after_quote.trim()
   let tail = match tail.strip_prefix("（") {
@@ -166,16 +203,21 @@ fn inline_report_source(after_quote : StringView) -> String? {
                   !between.contains(";") &&
                   !between.contains("\"") &&
                   rest.has_prefix("[") => rest
-                _ => return None
+                _ =>
+                  if tail.has_prefix("[") {
+                    tail
+                  } else {
+                    match tail.split_once("[") {
+                      Some((between, rest)) if between.length() <= 80 &&
+                        between.trim().has_prefix("-") => rest
+                      _ => return None
+                    }
+                  }
               }
           }
       }
   }
-  let link = match tail.strip_prefix("[") {
-    Some(rest) => rest
-    None => return None
-  }
-  let (_, url_tail) = match link.split_once("](") {
+  let (_, url_tail) = match tail.split_once("](") {
     Some(parts) => parts
     None => return Some("")
   }

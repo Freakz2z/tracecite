@@ -46,6 +46,7 @@ jobs:
           moon run cmd/main verify-notes fixtures/simple-citation.md
           moon run cmd/main check-report examples/report.md
           moon run cmd/main check-report examples/inline-report.md
+          moon run cmd/main check-report examples/title-first-report.md
           moon run cmd/main verify-urls fixtures/web-source-trace.jsonl
       - name: Exercise public report action
         uses: ./

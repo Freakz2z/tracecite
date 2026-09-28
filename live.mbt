@@ -28,7 +28,6 @@ pub fn check_live_source_quotes(
       }
     }
   }
-  let normalized_live = normalize_web_text(live_content)
   let matches : Array[LiveCitationMatch] = []
   for event in events {
     if event is Answer(_, claims, _) {
@@ -38,11 +37,7 @@ pub fn check_live_source_quotes(
         for citation in claims[claim_index].citations {
           if source_ids.get(citation.source_id) is Some(_) {
             let quote_present = match citation.quote {
-              Some(quote) => {
-                let normalized_quote = normalize_web_text(quote)
-                normalized_quote != "" &&
-                normalized_live.contains(normalized_quote)
-              }
+              Some(quote) => quote_appears_in_text(live_content, quote)
               None => false
             }
             matches.push({
@@ -56,6 +51,64 @@ pub fn check_live_source_quotes(
     }
   }
   matches
+}
+
+///|
+/// Check an exact quotation against visible source text. Typography-only quote
+/// mark differences are ignored. An explicit ellipsis permits omitted source
+/// text while requiring both substantial fragments in source order.
+pub fn quote_appears_in_text(source : String, quote : String) -> Bool {
+  let source = normalize_web_text(strip_quote_marks(normalize_web_text(source)))
+  let quote = normalize_web_text(strip_quote_marks(normalize_web_text(quote)))
+  if quote == "" {
+    return false
+  }
+  if source.contains(quote) {
+    return true
+  }
+  let marker = if quote.contains("(…)") {
+    "(…)"
+  } else if quote.contains("(...)") {
+    "(...)"
+  } else if quote.contains("…") {
+    "…"
+  } else if quote.contains("...") {
+    "..."
+  } else {
+    return false
+  }
+  let parts = quote.split(marker).to_array()
+  if parts.length() < 2 {
+    return false
+  }
+  let mut remaining = source[:]
+  for part in parts {
+    let part = part.trim()
+    if part.length() < 12 {
+      return false
+    }
+    match remaining.split_once(part) {
+      Some((_, rest)) => remaining = rest
+      None => return false
+    }
+  }
+  true
+}
+
+///|
+fn strip_quote_marks(input : String) -> String {
+  let out = StringBuilder()
+  for ch in input.iter() {
+    if ch != '“' &&
+      ch != '”' &&
+      ch != '‘' &&
+      ch != '’' &&
+      ch != '\'' &&
+      ch != '"' {
+      out.write_char(ch)
+    }
+  }
+  out.to_string()
 }
 
 ///|

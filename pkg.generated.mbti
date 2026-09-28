@@ -12,6 +12,8 @@ pub fn parse_citation_notes(String) -> CitationNotes
 
 pub fn parse_markdown_report(String) -> CitationNotes
 
+pub fn quote_appears_in_text(String, String) -> Bool
+
 pub fn source_snapshot_matches(String, String, String) -> Bool
 
 pub fn validate_evidence_jsonl(String) -> Report

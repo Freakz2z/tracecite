@@ -250,3 +250,40 @@ test "live source quote matching collapses HTML whitespace" {
   assert_eq(normalize_web_text("  alpha\n\tbeta \u{00A0}"), "alpha beta")
   assert_eq(normalize_web_text("PATH ."), "PATH.")
 }
+
+///|
+test "quote comparison tolerates typographic quote marks but not added words" {
+  assert_true(
+    quote_appears_in_text(
+      "What’s the difference? “Bad things” happen for the person accountable.",
+      "'Bad things' happen for the person accountable.",
+    ),
+  )
+  assert_true(
+    quote_appears_in_text(
+      "What’s the difference? “ Bad things ” happen for the person accountable.",
+      "'Bad things' happen for the person accountable.",
+    ),
+  )
+  assert_false(
+    quote_appears_in_text(
+      "The trick is to put them in charge, not you.", "The trick is to put them (your direct reports) in charge, not you.",
+    ),
+  )
+}
+
+///|
+test "quote comparison accepts ordered substantial fragments around ellipsis" {
+  let source = "The data indicated that psychological safety was critical to making a team work. Other observations followed. The behaviors that create psychological safety include conversational turn-taking and empathy."
+  assert_true(
+    quote_appears_in_text(
+      source, "The data indicated that psychological safety was critical to making a team work. (…) The behaviors that create psychological safety include conversational turn-taking and empathy.",
+    ),
+  )
+  assert_false(
+    quote_appears_in_text(
+      source, "The behaviors that create psychological safety include conversational turn-taking and empathy. (…) The data indicated that psychological safety was critical to making a team work.",
+    ),
+  )
+  assert_false(quote_appears_in_text(source, "The data (…) empathy."))
+}
