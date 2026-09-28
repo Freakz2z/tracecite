@@ -13,9 +13,34 @@ async fn main {
   }
   if args.length() <= index {
     @stdio.stderr.write(
-      "Usage: tracecite <trace.jsonl> [--evidence] [--json] | compare <old.jsonl> <new.jsonl> [--json] | verify-files <trace.jsonl>\n",
+      "Usage: tracecite <trace.jsonl> [--evidence] [--json] | compare <old.jsonl> <new.jsonl> [--json] | verify-files <trace.jsonl> | verify-urls <trace.jsonl> [--json] | verify-notes <notes.md> [--json]\n",
     )
     process_exit(1)
+    return
+  }
+  if args[index] == "verify-urls" || args[index] == "verify-notes" {
+    let command = args[index]
+    if args.length() != index + 2 && args.length() != index + 3 {
+      @stdio.stderr.write(
+        "Usage: tracecite \{command} <\{if command == "verify-urls" { "trace.jsonl" } else { "notes.md" }}> [--json]\n",
+      )
+      process_exit(1)
+      return
+    }
+    let json_output = args.length() == index + 3 && args[index + 2] == "--json"
+    if args.length() == index + 3 && !json_output {
+      @stdio.stderr.write("Unknown option: \{args[index + 2]}\n")
+      process_exit(1)
+      return
+    }
+    let exit_code = if command == "verify-urls" {
+      verify_urls_command(args[index + 1], json_output)
+    } else {
+      verify_notes_command(args[index + 1], json_output)
+    }
+    if exit_code != 0 {
+      process_exit(exit_code)
+    }
     return
   }
   if args[index] == "verify-files" {

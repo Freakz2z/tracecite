@@ -2,7 +2,13 @@
 package "Freakz2z/tracecite"
 
 // Values
+pub fn check_live_source_quotes(String, String, String) -> Array[LiveCitationMatch]
+
 pub fn compare_jsonl(String, String) -> DriftReport
+
+pub fn normalize_web_text(String) -> String
+
+pub fn parse_citation_notes(String) -> CitationNotes
 
 pub fn source_snapshot_matches(String, String, String) -> Bool
 
@@ -21,6 +27,20 @@ pub(all) struct CitationEdge {
   evidence_status : String
 } derive(ToJson)
 pub fn CitationEdge::to_json(Self) -> Json
+
+pub(all) struct CitationNote {
+  claim : String
+  quote : String
+  url : String
+  line : Int
+} derive(ToJson)
+pub fn CitationNote::to_json(Self) -> Json
+
+pub(all) struct CitationNotes {
+  notes : Array[CitationNote]
+  diagnostics : Array[Diagnostic]
+} derive(ToJson)
+pub fn CitationNotes::to_json(Self) -> Json
 
 pub(all) struct Diagnostic {
   line : Int
@@ -41,6 +61,13 @@ pub(all) struct DriftReport {
 } derive(ToJson)
 pub fn DriftReport::ok(Self) -> Bool
 pub fn DriftReport::to_json(Self) -> Json
+
+pub(all) struct LiveCitationMatch {
+  source_id : String
+  claim_index : Int
+  quote_present : Bool
+} derive(ToJson)
+pub fn LiveCitationMatch::to_json(Self) -> Json
 
 pub(all) struct Report {
   run_id : String?

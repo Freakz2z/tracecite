@@ -1,0 +1,3 @@
+{"type":"tool_call","run_id":"iana-demo","call_id":"c1","tool":"browser"}
+{"type":"tool_result","run_id":"iana-demo","call_id":"c1","ok":true,"sources":[{"id":"s1","uri":"https://www.iana.org/help/example-domains","title":"IANA Example Domains","content":"example.com and example.org are maintained for documentation purposes."}]}
+{"type":"answer","run_id":"iana-demo","claims":[{"text":"IANA lists example.com and example.org as documentation examples.","citations":[{"source_id":"s1","quote":"example.com and example.org are maintained for documentation purposes."}]}]}

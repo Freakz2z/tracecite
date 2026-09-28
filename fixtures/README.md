@@ -1,25 +1,20 @@
 # TraceCite fixtures
 
-Each file is a complete synthetic Agent run. URLs use the reserved
-`example.org` domain and are never fetched by the validator.
+Fixtures include synthetic validation cases and sanitized captures from real Codex CLI runs. The real source data is intentionally harmless.
 
-| File | Expected exit | Main diagnostic |
-| --- | ---: | --- |
-| `valid.jsonl` | 0 | none |
-| `unknown-source.jsonl` | 2 | `UNKNOWN_SOURCE` |
-| `failed-result.jsonl` | 2 | `SOURCE_ON_FAILED_RESULT`, `UNKNOWN_SOURCE` |
-| `duplicate-source.jsonl` | 2 | `DUPLICATE_SOURCE` |
-| `mixed-run.jsonl` | 2 | `RUN_MISMATCH`, `MISSING_RESULT`, `UNKNOWN_SOURCE` |
-| `codex-cli-trace.jsonl` | 0 | actual command event and cited answer, IDs redacted |
-| `codex-cli-file-trace.jsonl` | 0 | actual output bound to local `facts.txt` |
-| `codex-cli-file-tampered.jsonl` | 2 | `SOURCE_FILE_MISMATCH` with `verify-files` |
-| `evidence-old.jsonl` | 0 | exact quote matches captured content |
-| `evidence-new.jsonl` | 0 | same URI, changed captured content |
-| `evidence-false-quote.jsonl` | 2 | `QUOTE_NOT_IN_SOURCE` in evidence mode |
+| File | Purpose |
+| --- | --- |
+| `simple-citation.md` | Minimal `claim + quote + URL` input; live IANA page re-fetch passes |
+| `web-source-trace.jsonl` | JSONL evidence input for testing HTTP source re-fetch |
+| `codex-two-run-before-events.jsonl` | Sanitized events from first real Codex CLI run |
+| `codex-two-run-after-events.jsonl` | Sanitized events from second real Codex CLI run |
+| `codex-two-run-before.jsonl` | First real run exported with the CLI adapter |
+| `codex-two-run-after.jsonl` | Second real run exported with the same source URI |
+| `codex-live-run-source.txt` | Current source content from the second run |
+| `evidence-old.jsonl` / `evidence-new.jsonl` | Small synthetic example of a source content change |
+| `evidence-false-quote.jsonl` | Quote mismatch in offline evidence mode |
+| `codex-cli-trace.jsonl` | Earlier sanitized Codex CLI command and answer sample |
+| `codex-cli-file-trace.jsonl` | Earlier sample bound to a local file |
+| `codex-cli-file-tampered.jsonl` | Deliberately altered file capture for `verify-files` |
 
-The evidence fixtures exercise exact excerpt matching and cross-run source
-changes. Exact matching does not establish semantic support or external truth.
-
-`codex-cli-events.jsonl` is a redacted capture of one actual Codex CLI run.
-`facts.txt` is the harmless local source used during the run. See
-[`docs/live-validation.md`](../docs/live-validation.md) for the verification.
+The real two-run event files retain command status, observed output, and final answer while replacing session and item IDs. See [`docs/live-validation.md`](../docs/live-validation.md) for the method and boundaries.

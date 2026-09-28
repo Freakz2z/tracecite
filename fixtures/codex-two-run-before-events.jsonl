@@ -1,0 +1,6 @@
+{"type": "thread.started", "thread_id": "run-before"}
+{"type": "turn.started"}
+{"type": "item.started", "item": {"type": "command_execution", "id": "command-before", "command": "/bin/zsh -lc 'cat fixtures/codex-live-run-source.txt'"}}
+{"type": "item.completed", "item": {"type": "command_execution", "id": "command-before", "command": "/bin/zsh -lc 'cat fixtures/codex-live-run-source.txt'", "status": "completed", "exit_code": 0, "aggregated_output": "The archive release date is 2026-10-01.\nThe maintainer is the Documentation Group.\n"}}
+{"type": "item.completed", "item": {"type": "agent_message", "text": "The archive release date is 2026-10-01. [source-1]"}}
+{"type": "turn.completed"}

@@ -213,3 +213,39 @@ test "independent source snapshot detects fabricated tool output" {
   assert_true(source_snapshot_matches(input, "file:report.txt", "value=99"))
   assert_false(source_snapshot_matches(input, "file:report.txt", "value=42"))
 }
+
+///|
+test "simple citation notes need only claim quote and url" {
+  let parsed = parse_citation_notes(
+    "claim: The report states a value.\nquote: released in 2024\nurl: https://example.org/report\n\nclaim: A second claim\nquote: the total was 42\nurl: https://example.org/data\n",
+  )
+  assert_true(parsed.diagnostics.is_empty())
+  assert_eq(parsed.notes.length(), 2)
+  assert_eq(parsed.notes[0].claim, "The report states a value.")
+  assert_eq(parsed.notes[0].quote, "released in 2024")
+  assert_eq(parsed.notes[0].url, "https://example.org/report")
+}
+
+///|
+test "simple citation note parser reports missing and malformed fields" {
+  let parsed = parse_citation_notes(
+    "claim: unsupported\nquote: absent\nwrong line\n",
+  )
+  assert_eq(parsed.notes.length(), 0)
+  assert_eq(parsed.diagnostics[0].code, "INVALID_NOTE_LINE")
+  assert_eq(parsed.diagnostics[0].line, 3)
+}
+
+///|
+test "live source quote matching collapses HTML whitespace" {
+  let input =
+    #|{"type":"tool_call","run_id":"r1","call_id":"c1","tool":"read"}
+    #|{"type":"tool_result","run_id":"r1","call_id":"c1","ok":true,"sources":[{"id":"s1","uri":"https://example.org/a","content":"alpha\nbeta"}]}
+    #|{"type":"answer","run_id":"r1","claims":[{"text":"A","citations":[{"source_id":"s1","quote":"alpha beta"}]}]}
+  let matches = check_live_source_quotes(
+    input, "https://example.org/a", "alpha\nbeta",
+  )
+  assert_eq(matches.length(), 1)
+  assert_true(matches[0].quote_present)
+  assert_eq(normalize_web_text("  alpha\n\tbeta \u{00A0}"), "alpha beta")
+}

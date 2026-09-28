@@ -1,0 +1,2 @@
+The archive release date is 2026-10-04.
+The maintainer is the Documentation Group.

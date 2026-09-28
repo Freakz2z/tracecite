@@ -22,10 +22,18 @@ check_fixture() {
 
 check_fixture fixtures/valid.jsonl 0 -
 check_fixture fixtures/codex-cli-trace.jsonl 0 -
+check_fixture fixtures/codex-two-run-before.jsonl 0 -
+check_fixture fixtures/codex-two-run-after.jsonl 0 -
 status=0
 output=$(moon run cmd/main verify-files fixtures/codex-cli-file-trace.jsonl 2>&1) || status=$?
 if [ "$status" -ne 0 ]; then
   printf 'independent file check failed\n%s\n' "$output" >&2
+  exit 1
+fi
+status=0
+output=$(moon run cmd/main verify-files fixtures/codex-two-run-after.jsonl 2>&1) || status=$?
+if [ "$status" -ne 0 ]; then
+  printf 'latest real Codex run file check failed\n%s\n' "$output" >&2
   exit 1
 fi
 status=0
@@ -46,6 +54,12 @@ status=0
 output=$(moon run cmd/main compare fixtures/evidence-old.jsonl fixtures/evidence-new.jsonl 2>&1) || status=$?
 if [ "$status" -ne 2 ] || ! printf '%s' "$output" | grep -q '\[changed\] file:///example/report.txt'; then
   printf 'source drift check failed\n%s\n' "$output" >&2
+  exit 1
+fi
+status=0
+output=$(moon run cmd/main compare fixtures/codex-two-run-before.jsonl fixtures/codex-two-run-after.jsonl 2>&1) || status=$?
+if [ "$status" -ne 2 ] || ! printf '%s' "$output" | grep -q '\[changed\] file:fixtures/codex-live-run-source.txt'; then
+  printf 'real Codex source drift check failed\n%s\n' "$output" >&2
   exit 1
 fi
 check_fixture fixtures/unknown-source.jsonl 2 UNKNOWN_SOURCE

@@ -1,22 +1,42 @@
-# TraceCite JSONL 证据约定
+# TraceCite 输入约定
 
-一个 UTF-8 JSONL 文件记录一次 Agent 运行。每行一个事件，按观察顺序排列；未知字段允许保留。`run_id` 在文件内一致，`call_id` 与来源 `id` 在运行内唯一。
+TraceCite 提供轻量引用笔记和 Agent JSONL 两种输入。轻量笔记适合快速验证；JSONL 用于保留工具调用、来源与回答之间的关系。
 
-```jsonl
-{"type":"tool_call","run_id":"r1","call_id":"c1","tool":"read"}
-{"type":"tool_result","run_id":"r1","call_id":"c1","ok":true,"sources":[{"id":"s1","uri":"file:///example/report.txt","content":"value=42\n"}]}
-{"type":"answer","run_id":"r1","claims":[{"text":"The value is 42.","citations":[{"source_id":"s1","quote":"value=42"}]}]}
+## 轻量引用笔记
+
+每条记录各写一行 `claim:`、`quote:` 和 `url:`，字段可以换序；空行或 `---` 分隔多条记录。字段值为单行文本，冒号后面的内容按原样保留（两侧空白会去掉）。以 `#` 开头的行为注释。
+
+```text
+claim: The report lists the example domains.
+quote: example.com and example.org are maintained for documentation purposes.
+url: https://www.iana.org/help/example-domains
 ```
 
-- `tool_call`：必需 `call_id`、`tool`。
-- `tool_result`：必需 `call_id`、布尔值 `ok`；`sources[]` 每项必需 `id`、`uri`，证据模式还必需非空 `content`，即观察到的工具输出原文或其中作为来源的原文。失败结果不能提供来源。
-- `answer`：每次运行恰好一个。`claims[]` 每项必需 `text`；证据模式要求至少一条 claim，且每条 claim 至少一条 `citations[]`，每项必需 `source_id` 和非空 `quote`。校验器要求 `quote` 是对应来源 `content` 的**逐字子串**，不做大小写或空白归一化。
-- 旧格式 `source_ids[]` 仍可用普通模式检查 ID 关系；证据模式会报 `MISSING_QUOTE`，缺少 `content` 还会报 `MISSING_SOURCE_CONTENT`。报告的 `verified_citation_count` 和每条引用的 `evidence_status` 区分两种结果。
+运行 `moon run cmd/main verify-notes notes.md`。命令回源读取每个 URL，并检查 `quote` 是否出现在当前页面的可见文本中。HTML 实体与标签由 HTML5 解析器处理，匹配时会折叠空白，但保留大小写与标点。`claim` 用于让人理解记录，不进行语义蕴含判断。
 
-`moon run cmd/main trace.jsonl --evidence` 是证据模式。`compare old.jsonl new.jsonl` 要求两个输入都通过证据模式，再按稳定 `uri` 比较逐字内容，报告 `added`、`removed`、`changed`；内容变更退出码为 2。相同 URI 在单次运行中重复会报 `DUPLICATE_URI`，避免跨运行比较歧义。输出报告不会回显来源 `content` 或 `quote`。
+## Agent JSONL
 
-`verify-files trace.jsonl` 先执行证据模式，再读取每个 `file:相对路径` 或 `file:///绝对路径` 来源指定的当前文件，与轨迹中的完整 `content` 逐字比较。非文件 URI 报 `UNSUPPORTED_SOURCE_URI`；文件缺失或内容不一致分别报 `SOURCE_UNAVAILABLE`、`SOURCE_FILE_MISMATCH`。相对路径基于执行命令时的工作目录，不解析 URI 百分号转义。
+每行是一个事件，按观察顺序排列；一次运行中的 `run_id` 一致，`call_id` 和来源 `id` 唯一。未知字段允许保留。
 
-## 能力边界
+```jsonl
+{"type":"tool_call","run_id":"r1","call_id":"c1","tool":"search"}
+{"type":"tool_result","run_id":"r1","call_id":"c1","ok":true,"sources":[{"id":"s1","uri":"https://www.iana.org/help/example-domains","content":"example.com and example.org are maintained for documentation purposes."}]}
+{"type":"answer","run_id":"r1","claims":[{"text":"The report lists the example domains.","citations":[{"source_id":"s1","quote":"example.com and example.org are maintained for documentation purposes."}]}]}
+```
 
-匹配成功只证明所引片段出现在**采集到的工具返回内容**中；本地文件复核还能证明该内容与**校验时**的文件一致。它不证明来源网页真实、文件在历史采集时的状态，或整条主张在语义上受到支持。未作独立文件复核时，适配器或事件流若伪造输出，离线校验器无法识别。跨运行比较依赖两次运行的来源 URI 表示同一来源；若 URI 变了，会报告添加与删除。把含有敏感内容的轨迹公开前，应先脱敏或使用无敏感数据的运行样例。
+- `tool_call`：需要 `call_id` 和 `tool`。
+- `tool_result`：需要 `call_id`、布尔值 `ok`；成功来源包含 `id`、`uri` 和用于证据校验的 `content`。失败结果不能提供来源。
+- `answer`：每次运行恰好一个；证据模式要求至少一个 claim，每个 claim 至少一条 citation。引用需要 `source_id` 和非空 `quote`。
+
+`moon run cmd/main trace.jsonl --evidence` 核对引用片段是否是捕获内容的逐字子串。`moon run cmd/main verify-urls trace.jsonl` 先运行证据校验，再按来源 URL 回源核对引用；它不依赖轨迹里的捕获内容来判定网页当前是否包含该引用。`verify-files` 重新读取 `file:` 来源指定的当前文件。`compare old.jsonl new.jsonl` 按稳定 URI 比较捕获内容，报告 `added`、`removed` 和 `changed`。
+
+诊断使用稳定错误码，报告不回显来源正文或引用片段。校验成功退出码为 0；证据不匹配、来源不可用或来源变化为 2；命令参数或笔记格式错误为 1。可传 `--json` 获取机器可读输出。
+
+## HTTP 回源行为
+
+- 仅接受 `http://`、`https://` 和各自默认端口；不支持带用户凭据、IPv6 字面地址或非 ASCII 主机名的 URL。
+- 逐跳检查重定向目标，最多跟随五次；拒绝 HTTPS 降级到 HTTP。
+- 拒绝本地、私网和保留 IPv4/IPv6 地址；检查 DNS 返回的第一个 IPv4 和第一个 IPv6 地址。对托管执行环境，HTTPS 域名解析到 `198.18.0.0/15` 时允许该网络路由；该段的 IP 字面地址和 HTTP 请求不允许。TLS 证书仍需匹配原始主机名。
+- 每个来源请求最多 20 秒、2 MiB。HTML 会提取可见文本；支持 `text/*`、XHTML、JSON 和未声明类型的 UTF-8 页面。超出范围的内容类型、非 UTF-8 页面或 HTTP 错误会返回诊断码。
+
+异步 HTTP 库在连接时重新解析域名，当前校验器没有固定完整 DNS 答案。不要将其当作面向不可信 URL 的服务端网络隔离层。远端页面可能变化；引用出现不证明 claim 的语义真实性，也不构成网页历史快照。

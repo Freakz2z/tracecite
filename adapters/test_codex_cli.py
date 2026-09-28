@@ -4,6 +4,7 @@ import copy
 import json
 import unittest
 from pathlib import Path
+from typing import Any
 
 from codex_cli import ExportError, export
 
@@ -45,6 +46,26 @@ class CodexCliExportTest(unittest.TestCase):
         self.assertEqual(trace[1]["sources"][0]["uri"], "file:fixtures/facts.txt")
         with self.assertRaisesRegex(ExportError, "absent"):
             export(self.events, {"source-2": "fixtures/facts.txt"})
+
+    def test_two_sanitized_real_runs_preserve_a_source_change(self) -> None:
+        fixtures = Path(__file__).resolve().parents[1] / "fixtures"
+
+        def read_events(name: str) -> list[dict[str, Any]]:
+            return [
+                json.loads(line)
+                for line in (fixtures / name).read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ]
+
+        binding = {"source-1": "fixtures/codex-live-run-source.txt"}
+        before = export(read_events("codex-two-run-before-events.jsonl"), binding)
+        after = export(read_events("codex-two-run-after-events.jsonl"), binding)
+
+        self.assertEqual(before[1]["sources"][0]["uri"], after[1]["sources"][0]["uri"])
+        self.assertEqual(before[1]["sources"][0]["content"], "The archive release date is 2026-10-01.\nThe maintainer is the Documentation Group.\n")
+        self.assertEqual(after[1]["sources"][0]["content"], "The archive release date is 2026-10-04.\nThe maintainer is the Documentation Group.\n")
+        self.assertEqual(before[2]["claims"][0]["citations"][0]["quote"], "The archive release date is 2026-10-01.")
+        self.assertEqual(after[2]["claims"][0]["citations"][0]["quote"], "The archive release date is 2026-10-04.")
 
 
 if __name__ == "__main__":

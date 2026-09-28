@@ -23,8 +23,9 @@ keywords = [ "agent", "trace", "citation", "evidence" ]
 
 preferred_target = "native"
 
-description = "Deterministic checks for citations in agent execution traces"
+description = "Independent evidence verification and source drift checks for AI agents"
 
 import {
   "moonbitlang/async@0.22.1",
+  "bobzhang/html_parser@0.2.0",
 }

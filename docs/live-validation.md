@@ -1,25 +1,32 @@
-# Codex CLI 实际轨迹验证（2026-09-23；2026-09-24 重新校验）
+# 真实回源与 Agent 轨迹验证
 
-在只含 `facts.txt` 的临时目录中，以只读模式运行 `codex exec --json --ephemeral`。Codex CLI 0.149.0 实际执行 `cat facts.txt`，事件流包含命令的 `item.started` 和 `item.completed`，最终答复为 `42 [source-1]`。测试没有修改工作区文件。
+最后验证：2026-09-28。
 
-公开的 [CLI 事件样例](../fixtures/codex-cli-events.jsonl)从该次运行截取并去标识化：替换会话和事件 ID，删除无关的提示性事件及用量数据；保留命令执行状态、输出和最终答复。[导出的轨迹](../fixtures/codex-cli-trace.jsonl)现在包含命令输出原文和从最终答复提取的引用片段，因此只能用于无敏感内容的公开样例。
+## HTTP/HTTPS 网页回源
+
+使用 IANA 的[示例域名说明页](https://www.iana.org/help/example-domains)，轻量笔记中的引用为：
+
+> example.com and example.org are maintained for documentation purposes.
+
+执行 `moon run cmd/main verify-notes fixtures/simple-citation.md --json`，结果为 `source_count=1`、`citation_count=1`、`matched_count=1`，退出码 0。使用包含相同 URL、捕获片段和引用的 [`web-source-trace.jsonl`](../fixtures/web-source-trace.jsonl) 执行 `moon run cmd/main verify-urls fixtures/web-source-trace.jsonl --json`，结果同样为 `1/1 matched`、退出码 0。这两项都由新实现的 MoonBit HTTP 客户端实际请求网页并通过 HTML 解析器提取文本。
+
+## 两次真实 Codex CLI 运行
+
+使用 Codex CLI 0.149.0 和 `gpt-5.6-sol`，在只读沙箱中运行两次。两次都实际执行 `cat fixtures/codex-live-run-source.txt`，然后按工具输出给出逐字引用；两次事件流各包含一个成功命令和一条最终回答。
+
+第一次测试来源内容为 `The archive release date is 2026-10-01.`，回答为 `The archive release date is 2026-10-01. [source-1]`。更新同一路径的测试文件后，第二次来源内容为 `The archive release date is 2026-10-04.`，回答也引用新日期。这些日期是专门构造的测试值，不代表现实项目的发布计划。事件流经过脱敏，分别保存在[第一次事件](../fixtures/codex-two-run-before-events.jsonl)和[第二次事件](../fixtures/codex-two-run-after-events.jsonl)；适配器导出的[旧轨迹](../fixtures/codex-two-run-before.jsonl)与[新轨迹](../fixtures/codex-two-run-after.jsonl)保留相同 URI：`file:fixtures/codex-live-run-source.txt`。
+
+本地验证命令：
 
 ```sh
-python3 adapters/codex_cli.py fixtures/codex-cli-events.jsonl --out /tmp/codex-trace.jsonl
-moon run cmd/main /tmp/codex-trace.jsonl --evidence
+python3 adapters/codex_cli.py fixtures/codex-two-run-before-events.jsonl --bind source-1=fixtures/codex-live-run-source.txt --out /tmp/tracecite-before.jsonl
+python3 adapters/codex_cli.py fixtures/codex-two-run-after-events.jsonl --bind source-1=fixtures/codex-live-run-source.txt --out /tmp/tracecite-after.jsonl
+moon run cmd/main /tmp/tracecite-before.jsonl --evidence
+moon run cmd/main /tmp/tracecite-after.jsonl --evidence
+moon run cmd/main compare /tmp/tracecite-before.jsonl /tmp/tracecite-after.jsonl
+moon run cmd/main verify-files fixtures/codex-two-run-after.jsonl
 ```
 
-重新校验结果：`PASS`，3 个事件、1 次工具调用、1 个来源、1 条引用，`1/1 matched citations`。`42` 是捕获输出 `answer=42` 的逐字子串。把回答改为 `99 [source-1]` 会触发 `QUOTE_NOT_IN_SOURCE`；把引用改成 `source-99` 会触发 `UNKNOWN_SOURCE`。
+两份轨迹都通过证据校验（各 3 个事件、1 次调用、1 条引用，`1/1 matched`）。比较结果为 `1 source changes; 0 unchanged`，来源报告为 `changed`；第二次轨迹的文件回读也通过。
 
-再通过 `--bind source-1=fixtures/facts.txt` 把该次命令输出明确关联到[原文件](../fixtures/facts.txt)，导出[文件绑定轨迹](../fixtures/codex-cli-file-trace.jsonl)：
-
-```sh
-python3 adapters/codex_cli.py fixtures/codex-cli-events.jsonl --bind source-1=fixtures/facts.txt --out /tmp/codex-file-trace.jsonl
-moon run cmd/main verify-files /tmp/codex-file-trace.jsonl
-```
-
-结果为 `PASS: 1 source files match captured content`。另有一份明确标注为**篡改样例**的[轨迹](../fixtures/codex-cli-file-tampered.jsonl)：工具输出和引用片段都改为 `99`，因此单纯的证据模式会通过；`verify-files` 重新读取真实文件后报告 `SOURCE_FILE_MISMATCH`，退出码为 2。这个对照展示了独立文件复核的额外价值。
-
-为了演示跨运行比较，仓库另有两份明确标注为**合成**的轨迹：[旧运行](../fixtures/evidence-old.jsonl)与[新运行](../fixtures/evidence-new.jsonl)。两者来源 URI 相同，捕获内容从 `value=42` 变为 `value=43`。执行 `moon run cmd/main compare fixtures/evidence-old.jsonl fixtures/evidence-new.jsonl` 得到一个 `changed` 事件，退出码为 2。这不是第二次真实 Codex 运行。
-
-逐字匹配不判断语义蕴含；文件复核检查的是当前文件内容，不证明它在原始运行时的历史状态。网页或其他远端来源仍需要独立采集和校验能力。
+样例数据是刻意构造的无敏感内容，来源变化由开发者在两次 Agent 调用之间写入。它证明了真实 Agent 事件可被适配器采集，并能围绕真实运行的来源变化做核对；它不代表外部用户采用率，也不证明语义事实正确。完整功能边界见[输入约定](contract.md)。
