@@ -25,14 +25,21 @@ priv struct DocumentCheckReport {
 } derive(ToJson)
 
 ///|
-async fn document_command(args : Array[String], start : Int) -> Int {
+async fn document_command(
+  args : Array[String],
+  start : Int,
+  initialize? : Bool = false,
+) -> Int {
   let targets : Array[String] = []
   let excludes : Array[String] = []
   let mut root_arg = "."
   let mut snapshot_path : String? = None
   let mut baseline_path : String? = None
-  let mut online = false
-  let mut strict = false
+  let mut online_arg : Bool? = None
+  let mut strict_arg : Bool? = None
+  let mut config_arg = "tracecite.json"
+  let mut config_explicit = false
+  let mut use_config = true
   let mut json_output = false
   let mut github = false
   let mut index = start
@@ -41,6 +48,7 @@ async fn document_command(args : Array[String], start : Int) -> Int {
     if option == "--root" ||
       option == "--snapshot" ||
       option == "--baseline" ||
+      option == "--config" ||
       option == "--exclude" {
       if index + 1 >= args.length() || args[index + 1].has_prefix("--") {
         @stdio.stderr.write("Missing value for \{option}\n")
@@ -51,6 +59,10 @@ async fn document_command(args : Array[String], start : Int) -> Int {
         "--root" => root_arg = value
         "--snapshot" => snapshot_path = Some(value)
         "--baseline" => baseline_path = Some(value)
+        "--config" => {
+          config_arg = value
+          config_explicit = true
+        }
         _ =>
           excludes.push(value.strip_prefix("./").unwrap_or(value[:]).to_owned())
       }
@@ -58,13 +70,17 @@ async fn document_command(args : Array[String], start : Int) -> Int {
       continue
     }
     match option {
-      "--online" => online = true
-      "--strict" => strict = true
+      "--online" => online_arg = Some(true)
+      "--offline" => online_arg = Some(false)
+      "--strict" => strict_arg = Some(true)
+      "--no-strict" => strict_arg = Some(false)
+      "--no-config" => use_config = false
       "--json" => json_output = true
       "--github" => github = true
       "--help" => {
+        let command = if initialize { "init" } else { "check" }
         @stdio.stdout.write(
-          "Usage: tracecite check [file.md|directory ...] [--root directory] [--online] [--strict] [--json] [--github] [--exclude path] [--snapshot file.json] [--baseline file.json]\n",
+          "Usage: tracecite \{command} [file.md|directory ...] [--root directory]\n       [--config file.json | --no-config] [--online | --offline]\n       [--strict | --no-strict] [--json | --github] [--exclude path]\n       [--snapshot file.json] [--baseline file.json]\n\ncheck reads tracecite.json from the root when present. Explicit arguments override it.\ninit checks sources and creates a configuration plus baseline without replacing existing files.\n--snapshot ignores a configured baseline unless --baseline is also explicitly supplied.\n",
         )
         return 0
       }
@@ -82,6 +98,21 @@ async fn document_command(args : Array[String], start : Int) -> Int {
     @stdio.stderr.write("Use --json or --github separately\n")
     return 1
   }
+  if !use_config && (config_explicit || initialize) {
+    @stdio.stderr.write(
+      "--no-config cannot be combined with --config or init\n",
+    )
+    return 1
+  }
+  if initialize && baseline_path is Some(_) {
+    @stdio.stderr.write(
+      "init creates a new baseline; use --snapshot to choose its path\n",
+    )
+    return 1
+  }
+  if initialize && snapshot_path is None {
+    snapshot_path = Some(".tracecite-docs.json")
+  }
   if snapshot_path is Some(path) && !path.to_lower().has_suffix(".json") {
     @stdio.stderr.write("Snapshot destination must end in .json\n")
     return 1
@@ -95,6 +126,81 @@ async fn document_command(args : Array[String], start : Int) -> Int {
   if @fs.kind(root) != Directory {
     @stdio.stderr.write("Root must be a directory\n")
     return 1
+  }
+  let mut project : @tracecite.DocumentProjectConfig? = None
+  if !initialize && use_config {
+    let config_path = root_join(root, config_arg)
+    if config_explicit || @fs.exists(config_path) {
+      let input = try {
+        if @fs.file_size(config_path) <= 65_536 {
+          @fs.read_file(config_path).text()
+        } else {
+          fail("configuration exceeds 64 KiB")
+        }
+      } catch {
+        _ => {
+          @stdio.stderr.write(
+            "Cannot read project configuration: \{config_arg}\n",
+          )
+          return 1
+        }
+      }
+      let parsed = @tracecite.parse_document_project_config(input)
+      for diagnostic in parsed.diagnostics {
+        @stdio.stderr.write(
+          "\{config_arg}: [\{diagnostic.code}] \{diagnostic.message}\n",
+        )
+      }
+      match parsed.config {
+        Some(config) => project = Some(config)
+        None => return 1
+      }
+    }
+  }
+  if project is Some(config) {
+    if targets.is_empty() {
+      for path in config.paths {
+        targets.push(path)
+      }
+    }
+    for path in config.exclude {
+      excludes.push(path.strip_prefix("./").unwrap_or(path[:]).to_owned())
+    }
+    if baseline_path is None && snapshot_path is None {
+      baseline_path = config.baseline
+    }
+  }
+  let online = online_arg.unwrap_or(
+    project.map(config => config.online).unwrap_or(false),
+  )
+  let strict = strict_arg.unwrap_or(
+    project.map(config => config.strict).unwrap_or(initialize),
+  )
+  let mut init_config_path : String? = None
+  if initialize {
+    let config_path = document_creation_path(root, config_arg)
+    let baseline_destination = document_creation_path(
+      root,
+      snapshot_path.unwrap(),
+    )
+    match (config_path, baseline_destination) {
+      (Some(config), Some(snapshot)) if config != snapshot => {
+        if @fs.exists(config) || @fs.exists(snapshot) {
+          @stdio.stderr.write(
+            "init will not replace an existing configuration or baseline\n",
+          )
+          return 1
+        }
+        init_config_path = Some(config)
+        snapshot_path = Some(relative_document_path(root, snapshot))
+      }
+      _ => {
+        @stdio.stderr.write(
+          "init destinations must be distinct files inside the root with existing parent directories\n",
+        )
+        return 1
+      }
+    }
   }
   let mut baseline : @tracecite.DocumentSnapshot? = None
   if baseline_path is Some(path) {
@@ -448,17 +554,14 @@ async fn document_command(args : Array[String], start : Int) -> Int {
     let snapshot = @tracecite.DocumentSnapshot::{ version: 1, entries, }
     let destination = root_join(root, path)
     let temporary = destination + ".tmp"
-    @fs.write_file(
-      temporary,
-      @json.to_json(snapshot).stringify(indent=2) + "\n",
-      create_mode=CreateNew,
-    ) catch {
-      _ => {
-        @stdio.stderr.write("Cannot write snapshot: \{path}\n")
-        return 1
-      }
+    if !write_new_document_file(
+        temporary,
+        @json.to_json(snapshot).stringify(indent=2) + "\n",
+      ) {
+      @stdio.stderr.write("Cannot write snapshot: \{path}\n")
+      return 1
     }
-    @fs.rename(temporary, destination, replace=true) catch {
+    @fs.rename(temporary, destination, replace=!initialize) catch {
       _ => {
         @fs.remove(temporary) catch {
           _ => ()
@@ -466,6 +569,37 @@ async fn document_command(args : Array[String], start : Int) -> Int {
         @stdio.stderr.write("Cannot replace snapshot: \{path}\n")
         return 1
       }
+    }
+    if init_config_path is Some(config_path) {
+      let portable_targets : Array[String] = []
+      for target in targets {
+        portable_targets.push(
+          relative_document_path(root, @fs.realpath(root_join(root, target))),
+        )
+      }
+      let config : @tracecite.DocumentProjectConfig = {
+        version: 1,
+        paths: portable_targets,
+        exclude: excludes,
+        baseline: Some(path),
+        strict,
+        online,
+      }
+      let content = @json.to_json(config).stringify(indent=2) + "\n"
+      let validated = @tracecite.parse_document_project_config(content)
+      if validated.config is None ||
+        !write_new_document_file(config_path, content) {
+        @fs.remove(destination) catch {
+          _ => ()
+        }
+        @stdio.stderr.write(
+          "Cannot create project configuration; new baseline removed\n",
+        )
+        return 1
+      }
+      @stdio.stderr.write(
+        "Created project configuration: \{relative_document_path(root, config_path)}\n",
+      )
     }
     @stdio.stderr.write(
       "Saved document snapshot: \{path} (\{entries.length()} references)\n",
@@ -476,6 +610,44 @@ async fn document_command(args : Array[String], start : Int) -> Int {
   } else {
     2
   }
+}
+
+///|
+async fn document_creation_path(root : String, path : String) -> String? {
+  let destination = root_join(root, path)
+  let parent = @fs.realpath(document_parent(destination)) catch {
+    _ => return None
+  }
+  let name = match destination.rev_split_once("/") {
+    Some((_, name)) => name.to_owned()
+    None => return None
+  }
+  if name == "" ||
+    name == "." ||
+    name == ".." ||
+    !inside_document_root(root, parent) {
+    None
+  } else {
+    Some(root_join(parent, name))
+  }
+}
+
+///|
+async fn write_new_document_file(path : String, content : String) -> Bool {
+  let file = @fs.open(path, mode=WriteOnly, create_mode=CreateNew) catch {
+    _ => return false
+  }
+  file.write(content) catch {
+    _ => {
+      file.close()
+      @fs.remove(path) catch {
+        _ => ()
+      }
+      return false
+    }
+  }
+  file.close()
+  true
 }
 
 ///|
@@ -492,7 +664,9 @@ async fn collect_document_paths(
   }
   let relative = relative_document_path(root, canonical)
   if excludes.any(exclude => {
-      relative == exclude || relative.has_prefix(exclude + "/")
+      exclude == "." ||
+      relative == exclude ||
+      relative.has_prefix(exclude + "/")
     }) {
     return
   }

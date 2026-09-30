@@ -24,6 +24,8 @@ pub fn parse_citation_notes(String) -> CitationNotes
 
 pub fn parse_document(String) -> DocumentReferences
 
+pub fn parse_document_project_config(String) -> DocumentProjectConfigResult
+
 pub fn parse_markdown_report(String) -> CitationNotes
 
 pub fn quote_appears_in_text(String, String) -> Bool
@@ -68,6 +70,22 @@ pub(all) struct Diagnostic {
   message : String
 } derive(ToJson)
 pub fn Diagnostic::to_json(Self) -> Json
+
+pub(all) struct DocumentProjectConfig {
+  version : Int
+  paths : Array[String]
+  exclude : Array[String]
+  baseline : String?
+  strict : Bool
+  online : Bool
+} derive(ToJson)
+pub fn DocumentProjectConfig::to_json(Self) -> Json
+
+pub(all) struct DocumentProjectConfigResult {
+  config : DocumentProjectConfig?
+  diagnostics : Array[Diagnostic]
+} derive(ToJson)
+pub fn DocumentProjectConfigResult::to_json(Self) -> Json
 
 pub(all) struct DocumentReference {
   line : Int

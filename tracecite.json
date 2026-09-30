@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "paths": ["README.mbt.md", "docs/maintenance.md", "docs/publishing.md"],
+  "exclude": [],
+  "baseline": ".tracecite-docs.json",
+  "strict": true,
+  "online": false
+}

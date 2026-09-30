@@ -44,7 +44,7 @@ jobs:
           moon test --target wasm --deny-warn
           sh scripts/smoke.sh
           python3 scripts/test_document_cli.py
-          moon run cmd/main check README.mbt.md docs/maintenance.md --baseline .tracecite-docs.json --strict
+          moon run cmd/main check
           moon run cmd/main verify-notes fixtures/simple-citation.md
           moon run cmd/main check-report examples/report.md
           moon run cmd/main check-report examples/inline-report.md
@@ -56,9 +56,6 @@ jobs:
           report: examples/inline-report.md
       - name: Maintain repository documentation
         uses: ./
-        with:
-          path: README.mbt.md
-          baseline: .tracecite-docs.json
       - name: Exercise tagged report action
         uses: Freakz2z/tracecite@v0.4.0
         with:
@@ -72,3 +69,10 @@ jobs:
           python3 adapters/codex_cli.py fixtures/codex-cli-events.jsonl --bind source-1=fixtures/facts.txt --out /tmp/codex-file-trace.jsonl
           cmp fixtures/codex-cli-file-trace.jsonl /tmp/codex-file-trace.jsonl
           moon run cmd/main verify-files /tmp/codex-file-trace.jsonl
+      - name: Verify Mooncakes release archive and public API consumers
+        run: bash scripts/release.sh --package-only
+      - uses: actions/upload-artifact@v6
+        with:
+          name: tracecite-mooncakes-candidate
+          path: dist/mooncakes/*
+          if-no-files-found: error

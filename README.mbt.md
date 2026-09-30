@@ -13,12 +13,13 @@
 
 **让文档里的引用，跟上来源的变化。**
 
-用 MoonBit 检查 Markdown 中的本地文件、标题锚点、源码片段与网页引文。保存引用快照后，来源变化会定位到需要重新审阅的文档行。
+用 MoonBit 检查 Markdown 中的本地文件、标题锚点、源码片段与网页引文。保存引用快照后，来源变化会定位到需要重新审阅的文档行。一份项目配置，让本地与 CI 使用同一套规则。
 
 <p>
   <a href="#快速开始">快速开始</a> ·
   <a href="docs/maintenance.md">维护指南</a> ·
   <a href="#github-action">GitHub Action</a> ·
+  <a href="docs/publishing.md">Mooncakes 接入</a> ·
   <a href="docs/contract.md">输入约定</a>
 </p>
 
@@ -39,6 +40,7 @@ TraceCite 把引用当作文档依赖，直接读取 Markdown 与来源。**本�
 | 源码与配置片段 | 代码围栏添加 `source=路径` | 文档片段与当前来源不一致 |
 | 逐字引文 | 双引号引文配来源链接或显式引用块 | 引文不在当前来源中；网页需 `--online` |
 | 引用快照 | `--snapshot` 保存，`--baseline` 复查 | 来源区域或引用上下文改变，新增引用待复核 |
+| 项目配置 | `init` 建立配置与基线，之后只运行 `check` | 本地与 CI 复用文档范围、排除项与检查规则 |
 | CI 检查 | GitHub Action 或 `--github` | 以退出码和文件行号提示文档作者 |
 
 ## 快速开始
@@ -51,28 +53,32 @@ TraceCite 把引用当作文档依赖，直接读取 Markdown 与来源。**本�
 git clone https://github.com/Freakz2z/tracecite.git
 cd tracecite
 moon update
-moon run cmd/main check README.mbt.md docs/maintenance.md --strict
+moon run cmd/main check
 ```
 
-### 2. 检查自己的文档
+### 2. 接入自己的项目
 
-`--root` 定义工作区边界；扫描路径相对根目录，引用来源相对文档所在目录解析。一次可以检查文件、目录或多个路径：
+选择需要长期维护的文件或目录，初始化一次：
 
 ```sh
-moon run cmd/main check docs README.md --root /path/to/your/repository --strict
+moon run cmd/main init docs README.md --root /path/to/your/repository
 ```
 
-需要回访网页来源时，添加 `--online`：
+来源检查通过后，会生成 `tracecite.json` 和 `.tracecite-docs.json`。将它们一起提交到项目。之后无需重复填写扫描范围与基线：
 
 ```sh
-moon run cmd/main check examples/inline-report.md --online --strict
+moon run cmd/main check --root /path/to/your/repository
 ```
+
+**默认严格、离线检查。** 已有配置或基线时，`init` 会停止；检查失败时不会创建它们。`--root` 定义工作区边界，配置路径相对根目录，引用来源相对文档所在目录。
+
+需要回访网页来源时，在配置中设置 `online: true`，或临时添加 `--online`。配置字段与覆盖规则见 [维护指南](docs/maintenance.md#项目配置本地与-ci-用同一套规则)。
 
 ### 3. 构建独立可执行文件
 
 ```sh
 bash scripts/package.sh
-./_build/native/release/build/cmd/main/main.exe check README.mbt.md --strict
+./_build/native/release/build/cmd/main/main.exe check
 ```
 
 打包脚本在 `dist/` 生成本机压缩包。**运行独立 native 二进制无需安装 MoonBit、Python 或 Node。** [打包工作流](.github/workflows/binaries.yml)支持手动触发或版本标签触发，构建 Linux/macOS 包。
@@ -99,19 +105,20 @@ preferred_target = "native"
 
 ## 保存与复核引用快照
 
-**首次记录**：独立读取来源，保存可随仓库提交的快照。
+`init` 已完成首次记录；以后按项目配置复查：
 
 ```sh
-moon run cmd/main check README.mbt.md docs/maintenance.md --snapshot .tracecite-docs.json
+moon run cmd/main check
 ```
 
-**之后复查**：比较当前来源与已有基线。
+**来源改变后**：查看输出中的文档行号与前后内容，决定文档是否需要修改。完成复核后，更新配置所维护的完整范围：
 
 ```sh
-moon run cmd/main check README.mbt.md docs/maintenance.md --baseline .tracecite-docs.json --strict
+moon run cmd/main check --snapshot .tracecite-docs.json
+moon run cmd/main check
 ```
 
-**确认后更新**：复核来源变化，决定文档是否需要修改，再运行不带 `--baseline` 的 `--snapshot` 命令保存新基线。
+`--snapshot` 会忽略配置中的旧基线，但仍独立检查来源；显式同时传入 `--baseline` 时继续比较旧基线，发生变化便拒绝写入。
 
 - 快照使用相对文档路径；移动文档段落不会改变引用身份。
 - 引用不匹配或来源区域改变时，输出文档行号、候选片段或前后观察值；新增引用提示复核。
@@ -120,28 +127,25 @@ moon run cmd/main check README.mbt.md docs/maintenance.md --baseline .tracecite-
 
 ## GitHub Action
 
-将生成的快照提交到仓库，再添加以下工作流步骤。示例跟随 `main`，正式使用应固定到审核过的提交 SHA：
+将项目配置和快照提交到仓库，再添加以下工作流步骤；无需重复填写规则。示例跟随 `main`，正式使用应固定到审核过的提交 SHA：
 
 ```yaml
 - uses: actions/checkout@v5
 - uses: Freakz2z/tracecite@main
-  with:
-    path: docs
-    strict: 'true'
-    baseline: .tracecite-docs.json
 ```
 
 Action 安装并编译 MoonBit，在调用方仓库中解析引用，失败时产生文件行号诊断。建议设置 `permissions: contents: read`。
 
 | 输入 | 默认值 | 说明 |
 | --- | --- | --- |
-| `path` | `.` | 要扫描的 Markdown 文件或目录 |
-| `strict` | `true` | 待复核项导致检查失败 |
-| `online` | `false` | 是否回访 HTTP/HTTPS 来源 |
-| `baseline` | 无 | 可选的引用快照路径 |
-| `exclude` | 无 | 排除路径，每行一个 |
+| `config` | 自动读取 `tracecite.json` | 指定其他项目配置，路径相对调用方根目录 |
+| `path` | 配置中的 `paths`；无配置为 `.` | 指定时覆盖扫描范围 |
+| `strict` | 配置值；无配置为 `true` | 显式 `true` / `false` 覆盖规则 |
+| `online` | 配置值；无配置为 `false` | 显式 `true` / `false` 覆盖规则 |
+| `baseline` | 配置值 | 指定时覆盖引用快照路径 |
+| `exclude` | 配置值 | 追加排除路径，每行一个 |
 
-旧的 `report:` 输入仍兼容，会覆盖 `path` 并启用联网检查。完整定义见 [action.yml](action.yml)。
+旧的 `report:` 输入仍兼容，会跳过项目配置、覆盖 `path` 并启用联网检查。完整定义见 [action.yml](action.yml)。
 
 ## 检查结果与边界
 
@@ -175,6 +179,18 @@ Action 安装并编译 MoonBit，在调用方仓库中解析引用，失败时�
 
 </details>
 
+## MoonBit 包接入与发布
+
+核心库可在 MoonBit 项目中导入，支持 native、JS、Wasm；CLI 另提供独立 native 包。0.5.0 上传 Mooncakes 后，消费项目可执行：
+
+```sh
+moon add Freakz2z/tracecite@0.5.0
+```
+
+需要命令行时可安装 `moon install Freakz2z/tracecite/cmd/tracecite@0.5.0`，以后直接运行 `tracecite init` 和 `tracecite check`。
+
+维护者使用 `bash scripts/release.sh` 生成并验证源码包，包含解包后的文档检查和三个目标的消费项目测试。准备完成且登录有发布权限的 Mooncakes 账户后，使用 `bash scripts/release.sh --publish` 上传并确认版本。具体步骤见 [发布与接入指南](docs/publishing.md)。
+
 ## 开发与验证
 
 核心库支持 **native、JS 与 Wasm**；文件与联网 CLI 使用 **native**。项目的 [模块配置](moon.mod)只声明异步 I/O 与 HTML 解析两个外部 MoonBit 库。
@@ -198,6 +214,7 @@ Python 仅用于开发测试和可选的旧 Agent 适配器。JSONL 校验、`ve
 | 资料 | 内容 |
 | --- | --- |
 | [文档引用维护指南](docs/maintenance.md) | 片段绑定、标题锚点、引文与快照的完整用法 |
+| [Mooncakes 发布与接入](docs/publishing.md) | 源码包验证、公开 API 接入与发布步骤 |
 | [输入约定](docs/contract.md) | 兼容接口、输入格式与 HTTP 回源规则 |
 | [第三方资料审计](docs/external-audit.md) | 网页逐字引文的固定样本、结果与局限 |
 | [普通报告试验](examples/field-trial/README.md) | 普通 Markdown 报告的核验记录 |

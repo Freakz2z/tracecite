@@ -1,0 +1,13 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Freakz2z/tracecite/cli"
+
+// Values
+pub async fn run() -> Unit
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

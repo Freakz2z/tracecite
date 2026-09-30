@@ -27,14 +27,149 @@ class DocumentMaintenanceTests(unittest.TestCase):
         (self.root / path).write_text(text, encoding="utf-8")
 
     def run_check(self, *arguments, expected=0, structured=True):
+        return self.run_cli("check", *arguments, expected=expected, structured=structured)
+
+    def run_cli(self, operation, *arguments, expected=0, structured=True):
         binary = os.environ.get("TRACECITE_BIN")
         command = [binary] if binary else ["moon", "run", "cmd/main"]
-        command += ["check", "--root", str(self.root), *arguments]
+        command += [operation, "--root", str(self.root), *arguments]
         if structured:
             command.append("--json")
         result = subprocess.run(command, cwd=REPO, text=True, capture_output=True, timeout=90)
         self.assertEqual(result.returncode, expected, result.stdout + result.stderr)
         return json.loads(result.stdout) if structured else result
+
+    def config(self, filename="tracecite.json", **settings):
+        self.write(filename, json.dumps({"version": 1, "paths": ["docs/guide.md"], **settings}))
+
+    def run_action(self, expected=0, **inputs):
+        env = dict(os.environ, GITHUB_WORKSPACE=str(self.root), GITHUB_ACTION_PATH=str(REPO),
+                   TRACECITE_PATH="", TRACECITE_CONFIG="", TRACECITE_ONLINE="",
+                   TRACECITE_STRICT="", TRACECITE_REPORT="", TRACECITE_BASELINE="",
+                   TRACECITE_EXCLUDE="")
+        env.update({"TRACECITE_" + name.upper(): value for name, value in inputs.items()})
+        result = subprocess.run(["bash", str(REPO / "scripts/run_document_action.sh")],
+                                cwd=self.root, env=env, text=True, capture_output=True, timeout=90)
+        self.assertEqual(result.returncode, expected, result.stdout + result.stderr)
+        return result
+
+    def test_init_then_same_local_and_ci_check_detects_and_accepts_source_change(self):
+        self.run_cli("init", "docs/guide.md")
+        config = json.loads((self.root / "tracecite.json").read_text())
+        self.assertEqual(config["paths"], ["docs/guide.md"])
+        self.assertEqual(config["baseline"], ".tracecite-docs.json")
+        self.assertTrue(config["strict"])
+        self.assertFalse(config["online"])
+        self.assertNotIn(str(self.root), json.dumps(config))
+        self.run_check()
+        self.run_action()
+        source = (self.root / "docs/source.md").read_text()
+        self.write("docs/source.md", source.replace("## Other", "A new default applies.\n## Other"))
+        report = self.run_check(expected=2)
+        changed = next(item for item in report["items"] if item["status"] == "changed")
+        self.assertIn("A new default applies.", changed["actual"])
+        self.assertNotIn("A new default applies.", changed["previous"])
+        self.run_action(expected=2)
+        before = (self.root / ".tracecite-docs.json").read_bytes()
+        self.run_check("--baseline", ".tracecite-docs.json", "--snapshot", ".tracecite-docs.json", expected=2)
+        self.assertEqual((self.root / ".tracecite-docs.json").read_bytes(), before)
+        self.run_check("--snapshot", ".tracecite-docs.json")
+        self.run_check()
+        self.run_action()
+
+    def test_init_cannot_accept_a_mismatching_excerpt_or_overwrite_user_files(self):
+        self.write("config.toml", "timeout = 30\n")
+        self.run_cli("init", "docs/guide.md", expected=2)
+        self.assertFalse((self.root / "tracecite.json").exists())
+        self.assertFalse((self.root / ".tracecite-docs.json").exists())
+        self.write("config.toml", 'timeout = 20\nname = "example"\n')
+        for existing in ("tracecite.json", ".tracecite-docs.json", ".tracecite-docs.json.tmp"):
+            self.write(existing, "keep this file")
+            self.run_cli("init", "docs/guide.md", expected=1, structured=False)
+            self.assertEqual((self.root / existing).read_text(), "keep this file")
+            (self.root / existing).unlink()
+
+    def test_init_destinations_and_symlinks_cannot_escape_root(self):
+        with tempfile.TemporaryDirectory(prefix="tracecite-config-outside-") as other:
+            (self.root / "linked").symlink_to(other, target_is_directory=True)
+            for arguments in (("--config", "../outside.json"),
+                              ("--snapshot", "linked/outside.json"),
+                              ("--config", ".tracecite-docs.json"),
+                              ("--config", "missing/project.json")):
+                self.run_cli("init", "docs/guide.md", *arguments, expected=1, structured=False)
+            self.assertEqual(list(Path(other).iterdir()), [])
+            self.assertFalse((self.root / ".tracecite-docs.json").exists())
+
+    def test_init_invalid_configuration_does_not_leave_a_partial_baseline(self):
+        self.run_cli("init", "docs/guide.md", "--exclude", "../outside", expected=1, structured=False)
+        self.assertFalse((self.root / "tracecite.json").exists())
+        self.assertFalse((self.root / ".tracecite-docs.json").exists())
+        self.assertFalse((self.root / ".tracecite-docs.json.tmp").exists())
+
+    def test_excluding_the_root_does_not_silently_ignore_the_exclusion(self):
+        self.config(exclude=["docs/.."])
+        self.run_check(expected=1, structured=False)
+
+    def test_custom_config_and_baseline_resolve_from_root_not_process_directory(self):
+        self.run_cli("init", "docs/guide.md", "--config", "docs/project.json", "--snapshot", "docs/baseline.json")
+        self.run_check("--config", "docs/project.json")
+        self.run_action(config="docs/project.json")
+
+    def test_config_path_overrides_and_exclusions_are_combined(self):
+        self.write("docs/bad.md", "[broken](missing.md)\n")
+        self.write("docs/draft.md", "[broken](missing.md)\n")
+        self.config(paths=["docs"], exclude=["./docs//bad.md"])
+        report = self.run_check("--exclude", "docs/draft.md")
+        self.assertEqual(report["document_count"], 2)
+        report = self.run_check("docs/guide.md")
+        self.assertEqual(report["document_count"], 1)
+        self.run_action(exclude="docs/draft.md")
+
+    def test_explicit_false_flags_override_online_and_strict_config(self):
+        self.write("docs/guide.md", '[local](../config.toml)\n[web](https://example.org/)\n“unassociated quote”\n')
+        self.config(strict=True, online=True)
+        report = self.run_check("--offline", "--no-strict")
+        self.assertFalse(report["online"])
+        self.assertEqual(report["warning_count"], 1)
+        self.assertEqual(report["skipped_count"], 1)
+        self.run_action(online="false", strict="false")
+
+    def test_invalid_config_fails_instead_of_silently_widening_scope(self):
+        for text in ('{"version":1,"strcit":true}', '{"version":1,"paths":[]}', '[',
+                     '{"version":1,"paths":["../outside"]}', ' ' * 65537):
+            self.write("tracecite.json", text)
+            result = self.run_check(expected=1, structured=False)
+            self.assertEqual(result.stdout, "")
+        self.run_check("docs/guide.md", "--no-config")
+        self.run_check("--config", "missing.json", expected=1, structured=False)
+        self.run_check("--config", "tracecite.json", "--no-config", expected=1, structured=False)
+
+    def test_config_strict_default_and_explicit_no_config_legacy_behavior(self):
+        self.write("docs/guide.md", '[local](../config.toml)\n“unassociated quote”\n')
+        self.config()
+        self.run_check(expected=2)
+        self.run_action(expected=2)
+        self.run_check("--no-config")
+        self.run_check("--no-strict")
+        self.config(strict=False)
+        self.run_check()
+        self.run_action()
+        self.run_check("--strict", expected=2)
+        self.run_action(strict="true", expected=2)
+
+    def test_action_without_config_preserves_strict_default_and_validates_flags(self):
+        self.write("docs/guide.md", '[local](../config.toml)\n“unassociated quote”\n')
+        self.run_action(expected=2)
+        self.run_action(strict="false")
+        self.run_action(expected=1, online="sometimes")
+
+    def test_configured_baseline_override_and_legacy_action_report(self):
+        self.config(baseline="missing.json")
+        self.run_check(expected=1, structured=False)
+        self.run_check("--snapshot", "references.json")
+        self.run_check("--baseline", "references.json")
+        self.run_action(baseline="references.json")
+        self.run_action(report="docs/guide.md")
 
     def test_recursive_scan_and_strict_local_snippets(self):
         report = self.run_check("docs", "--strict")

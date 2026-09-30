@@ -4,15 +4,18 @@ inputs:
   path:
     description: Markdown file or directory relative to the caller repository root
     required: false
-    default: '.'
+    default: ''
+  config:
+    description: Project configuration relative to the caller root; auto-detects tracecite.json
+    required: false
   online:
     description: Also revisit HTTP/HTTPS sources; local checks are offline by default
     required: false
-    default: 'false'
+    default: ''
   strict:
     description: Fail when an apparent citation cannot be checked
     required: false
-    default: 'true'
+    default: ''
   baseline:
     description: Optional generated snapshot path relative to the caller repository root
     required: false
@@ -37,6 +40,7 @@ runs:
       env:
         TRACECITE_REPORT: ${{ inputs.report }}
         TRACECITE_PATH: ${{ inputs.path }}
+        TRACECITE_CONFIG: ${{ inputs.config }}
         TRACECITE_ONLINE: ${{ inputs.online }}
         TRACECITE_STRICT: ${{ inputs.strict }}
         TRACECITE_BASELINE: ${{ inputs.baseline }}

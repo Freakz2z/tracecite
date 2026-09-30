@@ -1,0 +1,15 @@
+.git/
+_build/
+target/
+.mooncakes/
+.moonagent/
+dist/
+__pycache__/
+*.py[cod]
+.DS_Store
+docs/重新申报书.md
+!.moonignore
+!.tracecite-docs.json
+!.github/
+!.github/workflows/
+!.github/workflows/*.yml
