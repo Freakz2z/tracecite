@@ -104,3 +104,12 @@ test "Markdown report accepts a trailing attribution link" {
   assert_eq(parsed.notes.length(), 1)
   assert_eq(parsed.notes[0].url, "https://example.org/slide")
 }
+
+///|
+test "mixed straight and curly quotation styles cannot hide a citation" {
+  let parsed = parse_markdown_report(
+    "“valid quotation” ([source](https://example.org))\n\"incorrect quotation\" ([source](https://example.org))\n",
+  )
+  assert_eq(parsed.notes.length(), 2)
+  assert_eq(parsed.notes[1].quote, "incorrect quotation")
+}

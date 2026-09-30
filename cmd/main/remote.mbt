@@ -249,7 +249,7 @@ async fn fetch_public_text_inner(raw_url : String) -> RemoteFetch {
     }
     let headers : @http.Headers = Map([])
     headers["Accept"] = "text/html,application/xhtml+xml,text/plain,application/json;q=0.8,*/*;q=0.1"
-    headers["User-Agent"] = "TraceCite/0.4 (source verification)"
+    headers["User-Agent"] = "TraceCite/0.5 (document maintenance)"
     let (response, client) = @http.get_stream(current.full, headers~) catch {
       _ => return remote_failure("HTTP_REQUEST_FAILED")
     }

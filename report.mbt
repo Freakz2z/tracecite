@@ -109,11 +109,7 @@ fn collect_inline_report_quotes(
 ) -> Unit {
   let mut remaining = line
   while true {
-    let (before_open, after_open) = match remaining.split_once("“") {
-      Some(parts) => parts
-      None => break
-    }
-    let (quote, after_close) = match after_open.split_once("”") {
+    let (before_open, quote, after_close) = match next_report_quote(remaining) {
       Some(parts) => parts
       None => break
     }
@@ -145,6 +141,29 @@ fn collect_inline_report_quotes(
         }
       None => ()
     }
+  }
+}
+
+///|
+fn next_report_quote(
+  line : StringView,
+) -> (StringView, StringView, StringView)? {
+  let curly = line.split_once("“")
+  let straight = line.split_once("\"")
+  let (before, after, close) = match (curly, straight) {
+    (Some((first, tail)), Some((second, rest))) =>
+      if first.length() < second.length() {
+        (first, tail, "”")
+      } else {
+        (second, rest, "\"")
+      }
+    (Some((first, tail)), None) => (first, tail, "”")
+    (None, Some((first, tail))) => (first, tail, "\"")
+    (None, None) => return None
+  }
+  match after.split_once(close) {
+    Some((quote, rest)) => Some((before, quote, rest))
+    None => None
   }
 }
 

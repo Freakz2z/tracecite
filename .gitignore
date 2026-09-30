@@ -7,3 +7,4 @@ target
 __pycache__/
 *.py[cod]
 docs/重新申报书.md
+dist/

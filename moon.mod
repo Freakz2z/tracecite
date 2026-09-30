@@ -11,7 +11,7 @@
 
 name = "Freakz2z/tracecite"
 
-version = "0.4.0"
+version = "0.5.0"
 
 readme = "README.mbt.md"
 
@@ -19,11 +19,11 @@ repository = "https://github.com/Freakz2z/tracecite"
 
 license = "Apache-2.0"
 
-keywords = [ "agent", "markdown", "citation", "evidence" ]
+keywords = [ "documentation", "markdown", "citation", "maintenance" ]
 
 preferred_target = "native"
 
-description = "Audit Markdown quotations against live sources and detect drift"
+description = "Maintain Markdown references, code excerpts and source snapshots"
 
 import {
   "moonbitlang/async@0.22.1",

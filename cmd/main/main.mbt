@@ -11,11 +11,26 @@ async fn main {
   if args.length() > 1 && args[1] == "--" {
     index = 2
   }
-  if args.length() <= index {
-    @stdio.stderr.write(
-      "Usage: tracecite <trace.jsonl> [--evidence] [--json] | compare <old.jsonl> <new.jsonl> [--json] | verify-files <trace.jsonl> | verify-urls <trace.jsonl> [--json] | verify-notes <notes.md> [--json] | check-report <report.md> [--json]\n",
+  if args.length() <= index || args[index] == "--help" || args[index] == "-h" {
+    @stdio.stdout.write(
+      "TraceCite — Markdown document reference maintenance\n\nUsage: tracecite check [file.md|directory ...] [--root directory]\n       [--strict] [--online] [--json | --github] [--exclude path]\n       [--snapshot file.json] [--baseline file.json]\n\nChecks are local by default. Use source=path on code fences to bind snippets.\nUnbound code blocks and skipped web references are counted separately.\n\nLegacy commands: check-report, verify-notes, verify-urls, verify-files, compare,\n                 <trace.jsonl> [--evidence] [--json]\n",
     )
-    process_exit(1)
+    return
+  }
+  if args[index] == "--version" {
+    @stdio.stdout.write("TraceCite 0.5.0\n")
+    return
+  }
+  if args[index] == "check" {
+    let code = document_command(args, index + 1) catch {
+      error => {
+        @stdio.stderr.write("Document check failed: \{error}\n")
+        1
+      }
+    }
+    if code != 0 {
+      process_exit(code)
+    }
     return
   }
   if args[index] == "verify-urls" ||

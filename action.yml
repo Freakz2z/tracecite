@@ -1,9 +1,27 @@
-name: TraceCite report check
-description: Verify exact quotations in a Markdown report against their live web sources
+name: TraceCite document maintenance
+description: Check Markdown file references, source-bound snippets, and reference baselines
 inputs:
+  path:
+    description: Markdown file or directory relative to the caller repository root
+    required: false
+    default: '.'
+  online:
+    description: Also revisit HTTP/HTTPS sources; local checks are offline by default
+    required: false
+    default: 'false'
+  strict:
+    description: Fail when an apparent citation cannot be checked
+    required: false
+    default: 'true'
+  baseline:
+    description: Optional generated snapshot path relative to the caller repository root
+    required: false
+  exclude:
+    description: Paths to exclude, one per line, relative to the caller repository root
+    required: false
   report:
-    description: Markdown report path relative to the caller repository root
-    required: true
+    description: Legacy report input; implies online checking and overrides path
+    required: false
 runs:
   using: composite
   steps:
@@ -14,17 +32,16 @@ runs:
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
         fi
-    - name: Check report citations
+    - name: Check document references
       shell: bash
       env:
         TRACECITE_REPORT: ${{ inputs.report }}
+        TRACECITE_PATH: ${{ inputs.path }}
+        TRACECITE_ONLINE: ${{ inputs.online }}
+        TRACECITE_STRICT: ${{ inputs.strict }}
+        TRACECITE_BASELINE: ${{ inputs.baseline }}
+        TRACECITE_EXCLUDE: ${{ inputs.exclude }}
       run: |
-        set -euo pipefail
-        report_path="$GITHUB_WORKSPACE/$TRACECITE_REPORT"
-        if [ ! -f "$report_path" ]; then
-          echo "Report not found: $report_path" >&2
-          exit 1
-        fi
         cd "$GITHUB_ACTION_PATH"
         moon update
-        moon run cmd/main check-report "$report_path"
+        bash scripts/run_document_action.sh

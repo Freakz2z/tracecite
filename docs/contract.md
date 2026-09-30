@@ -1,10 +1,12 @@
 # TraceCite 输入约定
 
+0.5.0 的文档维护主入口是 `check`，支持本地链接、来源代码片段和自动快照，见 [文档维护指南](maintenance.md)。本文件保留原来的报告、笔记与 Agent JSONL 接口约定。
+
 TraceCite 提供 Markdown 报告引用块、轻量引用笔记和 Agent JSONL 三种输入。报告格式适合在发布前直接检查文档；JSONL 用于保留工具调用、来源与回答之间的关系。
 
 ## Markdown 报告引文
 
-普通行内引用支持中文弯引号包住的逐字原文，后接同一句中的 Markdown 来源链接：
+普通行内引用支持中文弯双引号或英文直双引号包住的逐字原文，后接同一句中的 Markdown 来源链接：
 
 ```markdown
 IANA explains that “example.com and example.org are maintained for documentation purposes.” ([IANA](https://www.iana.org/help/example-domains))

@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "document": "README.mbt.md",
+      "source": "moon.mod",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "README.mbt.md",
+      "source": "moon.mod",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "README.mbt.md",
+      "source": "moon.mod",
+      "kind": "snippet",
+      "excerpt": "preferred_target = \"native\"",
+      "observed": "preferred_target = \"native\""
+    },
+    {
+      "document": "README.mbt.md",
+      "source": ".github/workflows/binaries.yml",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "README.mbt.md",
+      "source": "docs/maintenance.md",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "README.mbt.md",
+      "source": "docs/contract.md#http-回源行为",
+      "kind": "link",
+      "observed": "## HTTP 回源行为\n\n- 仅接受 `http://`、`https://` 和各自默认端口；不支持带用户凭据、IPv6 字面地址或非 ASCII 主机名的 URL。\n- 逐跳检查重定向目标，最多跟随五次；拒绝 HTTPS 降级到 HTTP。\n- 拒绝本地、私网和保留 IPv4/IPv6 地址；检查 DNS 返回的第一个 IPv4 和第一个 IPv6 地址。对托管执行环境，HTTPS 域名解析到 `198.18.0.0/15` 时允许该网络路由；该段的 IP 字面地址和 HTTP 请求不允许。TLS 证书仍需匹配原始主机名。\n- 每个来源请求最多 20 秒、2 MiB。HTML 会提取可见文本；支持 `text/*`、XHTML、JSON 和未声明类型的 UTF-8 页面。超出范围的内容类型、非 UTF-8 页面或 HTTP 错误会返回诊断码。\n\n异步 HTTP 库在连接时重新解析域名，当前校验器没有固定完整 DNS 答案。不要将其当作面向不可信 URL 的服务端网络隔离层。远端页面可能变化；引用出现不证明 claim 的语义真实性，也不构成网页历史快照。\n"
+    },
+    {
+      "document": "README.mbt.md",
+      "source": "docs/external-audit.md",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "README.mbt.md",
+      "source": "examples/field-trial/README.md",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "README.mbt.md",
+      "source": "docs/contract.md",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "README.mbt.md",
+      "source": "LICENSE",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "docs/maintenance.md",
+      "source": "../moon.mod",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "docs/maintenance.md",
+      "source": "../moon.mod",
+      "kind": "snippet",
+      "excerpt": "import {\n  \"moonbitlang/async@0.22.1\",\n  \"bobzhang/html_parser@0.2.0\",\n}",
+      "observed": "import {\n  \"moonbitlang/async@0.22.1\",\n  \"bobzhang/html_parser@0.2.0\",\n}"
+    },
+    {
+      "document": "docs/maintenance.md",
+      "source": "../README.mbt.md#快速开始",
+      "kind": "link",
+      "observed": "## 快速开始\n\n需要 `moonc >= 0.10.14`。安装方式见 [MoonBit 官方教程](https://docs.moonbitlang.com/en/stable/tutorial/tour.html#installation)。在当前源码 checkout 中执行：\n\n```sh\nmoon update\nmoon run cmd/main check README.mbt.md docs/maintenance.md --strict\n```\n\n检查自己的仓库时，`--root` 指定仓库根目录，后面的扫描路径相对这个根目录：\n\n```sh\nmoon run cmd/main check docs README.md --root /path/to/your/repository --strict\n```\n\n本地引用不会访问网络。需要检查网页引文时：\n\n```sh\nmoon run cmd/main check examples/inline-report.md --online --strict\n```\n\n也可以构建本机独立可执行文件。运行它时不需要 MoonBit、Python 或 Node：\n\n```sh\nbash scripts/package.sh\n./_build/native/release/build/cmd/main/main.exe check README.mbt.md --strict\n```\n\n打包脚本在 `dist/` 生成压缩包。GitHub 的 [打包工作流](.github/workflows/binaries.yml)会在手动触发或推送版本标签时构建 Linux/macOS 包；当前不代表这些新版本产物已经公开发布。\n"
+    },
+    {
+      "document": "docs/maintenance.md",
+      "source": "#链接与标题",
+      "kind": "link",
+      "observed": "## 链接与标题\n\n行内链接、引用式链接与图片链接都会提取本地目标；同一行 HTML 标签的 `href`、`src` 属性也会提取，例如 README 的 SVG 图片。展示属性中的引号不当作引文。文件和目录可以被检查；Markdown 标题支持 ATX 标题，自动生成小写锚点，重复标题依次加 `-1`、`-2`。支持空格路径的百分号编码，以及 `<含空格的路径>` 写法。\n\n实际入口是 [README 的快速开始](../README.mbt.md#快速开始)。自引用也可以使用 [本节](#链接与标题)。\n\n```markdown\n[安装](guide.md#安装)\n[源码](../config.toml#L2-L4)\n[配置][defaults]\n\n[defaults]: ../config.toml\n```\n\n目前不解析 Setext 标题、自定义 HTML ID 或站点特有锚点规则；这些情况要改用支持的来源范围或人工核查。目录扫描默认跳过 Git、MoonBit 构建目录、依赖目录和 Python 缓存，递归扫描不跟随符号链接；直接指定的文档符号链接会解析到根目录内的真实文件。\n"
+    },
+    {
+      "document": "docs/maintenance.md",
+      "source": "contract.md#http-回源行为",
+      "kind": "link",
+      "observed": "## HTTP 回源行为\n\n- 仅接受 `http://`、`https://` 和各自默认端口；不支持带用户凭据、IPv6 字面地址或非 ASCII 主机名的 URL。\n- 逐跳检查重定向目标，最多跟随五次；拒绝 HTTPS 降级到 HTTP。\n- 拒绝本地、私网和保留 IPv4/IPv6 地址；检查 DNS 返回的第一个 IPv4 和第一个 IPv6 地址。对托管执行环境，HTTPS 域名解析到 `198.18.0.0/15` 时允许该网络路由；该段的 IP 字面地址和 HTTP 请求不允许。TLS 证书仍需匹配原始主机名。\n- 每个来源请求最多 20 秒、2 MiB。HTML 会提取可见文本；支持 `text/*`、XHTML、JSON 和未声明类型的 UTF-8 页面。超出范围的内容类型、非 UTF-8 页面或 HTTP 错误会返回诊断码。\n\n异步 HTTP 库在连接时重新解析域名，当前校验器没有固定完整 DNS 答案。不要将其当作面向不可信 URL 的服务端网络隔离层。远端页面可能变化；引用出现不证明 claim 的语义真实性，也不构成网页历史快照。\n"
+    },
+    {
+      "document": "docs/maintenance.md",
+      "source": "contract.md",
+      "kind": "link",
+      "observed": ""
+    }
+  ]
+}

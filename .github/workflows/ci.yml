@@ -43,6 +43,8 @@ jobs:
           moon test --target js --deny-warn
           moon test --target wasm --deny-warn
           sh scripts/smoke.sh
+          python3 scripts/test_document_cli.py
+          moon run cmd/main check README.mbt.md docs/maintenance.md --baseline .tracecite-docs.json --strict
           moon run cmd/main verify-notes fixtures/simple-citation.md
           moon run cmd/main check-report examples/report.md
           moon run cmd/main check-report examples/inline-report.md
@@ -52,6 +54,11 @@ jobs:
         uses: ./
         with:
           report: examples/inline-report.md
+      - name: Maintain repository documentation
+        uses: ./
+        with:
+          path: README.mbt.md
+          baseline: .tracecite-docs.json
       - name: Exercise tagged report action
         uses: Freakz2z/tracecite@v0.4.0
         with:
