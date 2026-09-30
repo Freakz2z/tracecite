@@ -24,4 +24,7 @@ jobs:
       - uses: actions/upload-artifact@v6
         with:
           name: tracecite-${{ matrix.os }}
-          path: dist/*.tar.gz
+          path: |
+            dist/*.tar.gz
+            dist/*.tar.gz.sha256
+          if-no-files-found: error

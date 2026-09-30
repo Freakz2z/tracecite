@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "records": [
+    {
+      "component": "moonbitlang/async",
+      "file": "licenses/async-LICENSE.txt",
+      "origin": "Mooncakes moonbitlang/async@0.22.4/LICENSE",
+      "version": "0.22.4",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "component": "bobzhang/html_parser",
+      "file": "licenses/html-parser-LICENSE.txt",
+      "origin": "Mooncakes bobzhang/html_parser@0.2.0/LICENSE",
+      "version": "0.2.0",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "component": "JustHTML",
+      "file": "licenses/JustHTML-MIT.txt",
+      "origin": "bobzhang/html_parser@0.2.0/tests/fixtures/justhtml/LICENSE.justhtml",
+      "version": "attribution in port 0.2.0",
+      "sha256": "fc806f290894e4f219467135fb21f33048f8d5a817f0f8284246d72da29d572e"
+    },
+    {
+      "component": "moonbitlang/core",
+      "file": "licenses/core-LICENSE.txt",
+      "origin": "MoonBit SDK lib/core/LICENSE",
+      "version": "0.10.14+7d59c7ec9",
+      "sha256": "86460c45017ffacb9aa9e18850fa9fdb036339dc8851125465f4a3f3442fc894"
+    },
+    {
+      "component": "moonbitlang/core",
+      "file": "licenses/core-NOTICE.txt",
+      "origin": "MoonBit SDK lib/core/NOTICE",
+      "version": "0.10.14+7d59c7ec9",
+      "sha256": "047a7cd5e93c10a8a753b7f152c371ef309b523c4d9b945ec5776321e7e602fb"
+    },
+    {
+      "component": "libbacktrace",
+      "file": "licenses/libbacktrace-BSD.txt",
+      "origin": "MoonBit SDK include/backtrace.h first copyright/license comment",
+      "version": "SDK 0.10.14+7d59c7ec9; independent version unspecified",
+      "sha256": "3a656e9cc349a5fc2329637b461f1e3999d7135451dced3006c19d83a67576fa"
+    },
+    {
+      "component": "mimalloc",
+      "file": "licenses/mimalloc-LICENSE.txt",
+      "origin": "https://raw.githubusercontent.com/microsoft/mimalloc/31d034d94cdb8e22f7d7ed55967f581a2d6e831d/LICENSE",
+      "version": "license snapshot; SDK embedded component version unspecified",
+      "sha256": "82ade5d7d9b029044b5fbbc326207fc47c2d44ee4dd71e8a559c36d728217de9"
+    },
+    {
+      "component": "simdutf",
+      "file": "licenses/simdutf-LICENSE-MIT.txt",
+      "origin": "https://raw.githubusercontent.com/simdutf/simdutf/cf8715fad4d55c87aad3006a9a82531f740605b8/LICENSE-MIT",
+      "version": "license snapshot; SDK embedded component version unspecified",
+      "sha256": "fc8dbc04e03ad4efc08a647ffe7f995b811a95bc04c0e85a56d5277c6593fa5f"
+    },
+    {
+      "component": "simdutf",
+      "file": "licenses/simdutf-LICENSE-APACHE.txt",
+      "origin": "https://raw.githubusercontent.com/simdutf/simdutf/cf8715fad4d55c87aad3006a9a82531f740605b8/LICENSE-APACHE",
+      "version": "license snapshot; SDK embedded component version unspecified",
+      "sha256": "3d34610fc6b5e1b0bfe4e2f36171c2d62c28ef05cb8d704f5a0073be41a43b3d"
+    }
+  ]
+}

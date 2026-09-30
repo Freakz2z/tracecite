@@ -23,7 +23,15 @@ moon run cmd/main check --root /path/to/repository
 ```json source=../tracecite.json
 {
   "version": 1,
-  "paths": ["README.mbt.md", "docs/maintenance.md", "docs/publishing.md"],
+  "paths": [
+    "README.mbt.md",
+    "docs/maintenance.md",
+    "docs/publishing.md",
+    "docs/acceptance.md",
+    "CHANGELOG.md",
+    "THIRD_PARTY_NOTICES.md",
+    "examples/maintenance/README.md"
+  ],
   "exclude": [],
   "baseline": ".tracecite-docs.json",
   "strict": true,

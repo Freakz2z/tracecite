@@ -50,6 +50,16 @@ jobs:
           moon run cmd/main check-report examples/inline-report.md
           moon run cmd/main check-report examples/title-first-report.md
           moon run cmd/main verify-urls fixtures/web-source-trace.jsonl
+      - name: Reproduce offline maintenance acceptance case
+        run: |
+          python3 scripts/acceptance_demo.py --out _build/acceptance/ci
+          python3 scripts/test_native_package.py
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: tracecite-acceptance-evidence
+          path: _build/acceptance/ci/
+          if-no-files-found: error
       - name: Exercise public report action
         uses: ./
         with:

@@ -83,6 +83,17 @@ bash scripts/package.sh
 
 打包脚本在 `dist/` 生成本机压缩包。**运行独立 native 二进制无需安装 MoonBit、Python 或 Node。** [打包工作流](.github/workflows/binaries.yml)支持手动触发或版本标签触发，构建 Linux/macOS 包。
 
+包内保留第三方许可与构建清单；联网 HTTPS 检查使用系统 TLS 库和证书。打包与演示脚本使用 Python 3，它仅是开发工具。
+
+### 4. 运行完整维护演示
+
+```sh
+python3 scripts/acceptance_demo.py
+```
+
+[13 步离线案例](examples/maintenance/README.md)展示来源变更后检查失败、定位文档行、修正片段与锚点、复核并更新基线、恢复通过。每一步保存 JSON 报告；案例在复制的临时项目中运行。
+这是受控功能演示，实际公开资料中发现的引文问题见 [外部审计记录](docs/external-audit.md)。
+
 ## 绑定源码片段
 
 在代码围栏的语言后添加 `source=路径`。本 README 中的这段代码已绑定 [moon.mod](moon.mod)：
@@ -218,8 +229,12 @@ Python 仅用于开发测试和可选的旧 Agent 适配器。JSONL 校验、`ve
 | [输入约定](docs/contract.md) | 兼容接口、输入格式与 HTTP 回源规则 |
 | [第三方资料审计](docs/external-audit.md) | 网页逐字引文的固定样本、结果与局限 |
 | [普通报告试验](examples/field-trial/README.md) | 普通 Markdown 报告的核验记录 |
+| [离线维护演示](examples/maintenance/README.md) | 13 步维护闭环、退出码与 JSON 证据 |
+| [成果与验收说明](docs/acceptance.md) | 原申报方向、四项验收依据、固定发布身份与验证方法 |
+| [版本记录](CHANGELOG.md) | 已发布版本与后续仓库改动 |
+| [第三方许可通知](THIRD_PARTY_NOTICES.md) | 依赖、标准库及 native 运行时的许可与来源 |
 | [Mooncakes 模块](https://mooncakes.io/docs/Freakz2z/tracecite) | 平台上的已发布版本 |
 
 验证记录用于说明可执行能力，不代表用户采用率或审核工时收益。
 
-使用 [Apache-2.0 许可证](LICENSE)。HTML 解析依赖 `bobzhang/html_parser`（Apache-2.0）。
+使用 [Apache-2.0 许可证](LICENSE)。第三方组件保留各自许可和上游通知，详见 [许可清单](THIRD_PARTY_NOTICES.md)。新增验收与许可打包材料属于仓库未发布改动，尚未进入既有 0.5.0 Mooncakes 包。

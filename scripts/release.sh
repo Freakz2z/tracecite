@@ -15,6 +15,7 @@ if [[ $mode != --package-only ]]; then
   moon test --target js --deny-warn
   moon test --target wasm --deny-warn
   python3 scripts/test_document_cli.py
+  python3 scripts/test_native_package.py
   python3 -m unittest discover -s adapters -p 'test_*.py'
   sh scripts/smoke.sh
   moon run cmd/main check

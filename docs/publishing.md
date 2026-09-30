@@ -53,6 +53,9 @@ bash scripts/release.sh
 
 `moon package` 使用 [.moonignore](../.moonignore)；包内保留 README 图片、[Action 定义](../action.yml)、工作流和文档基线。构建产物与独立二进制压缩包不进入源码包。
 
+当前源码包验证也要求 [验收说明](acceptance.md)、[离线维护案例](../examples/maintenance/README.md)、版本记录与第三方许可材料完整，并使用解包后安装的 CLI 跑完案例。
+Mooncakes 0.5.0 已发布且不会覆盖；本轮材料属于 [未发布改动](../CHANGELOG.md)。当前生成的候选 ZIP 不是已发布 ZIP，下一次上传前需更新模块版本。固定发布提交及原始摘要见验收说明。
+
 ## 上传 Mooncakes
 
 确认 [moon.mod](../moon.mod) 中的模块名称、版本和许可证，在拥有 `Freakz2z` 发布权限的环境登录，再运行：
@@ -73,3 +76,9 @@ bash scripts/package.sh
 ```
 
 脚本生成当前系统的 native 压缩包，运行不需要 MoonBit、Python 或 Node。它与 Mooncakes 源码包是两个交付方式；跨系统构建入口见 [二进制工作流](../.github/workflows/binaries.yml)。
+
+打包脚本需要 Python 3，使用全新暂存目录，收集实际依赖和 SDK 的 LICENSE/NOTICE。
+缺少必要通知、上游许可副本摘要改变或解包验证失败时停止，不替换已有压缩包。
+产物附带 SHA-256 文件；包内 BUILD-INFO.json 记录源码提交、工作区修改状态、
+工具链、实际依赖版本和所有载荷摘要。发布分发应从干净的固定提交构建。
+组件清单与 TLS 系统依赖见 [第三方通知](../THIRD_PARTY_NOTICES.md)。

@@ -42,7 +42,15 @@ def verify_package(metadata):
         ".github/workflows/ci.yml", ".github/workflows/binaries.yml",
         "assets/readme/document-maintenance.svg", "docs/maintenance.md",
         "docs/publishing.md", "scripts/release.sh", "scripts/verify_release_package.py",
+        "CHANGELOG.md", "THIRD_PARTY_NOTICES.md", "third_party/provenance.json",
+        "docs/acceptance.md", "scripts/acceptance_demo.py", "scripts/package_notices.py",
+        "scripts/verify_native_package.py", "scripts/package.sh",
+        "scripts/test_native_package.py",
+        "examples/maintenance/README.md", "examples/maintenance/project/guide.md",
+        "examples/maintenance/project/source.md", "examples/maintenance/project/config.toml",
     )
+    required += tuple(path.relative_to(REPO).as_posix()
+                      for path in sorted((REPO / "third_party/licenses").glob("*.txt")))
     with tempfile.TemporaryDirectory(prefix="tracecite-release-") as temporary:
         package = Path(temporary) / "package"
         with zipfile.ZipFile(archive) as source:
@@ -55,6 +63,8 @@ def verify_package(metadata):
                     raise ValueError(f"Invalid archive path: {name}")
                 if any(part in (".git", "_build", "target", "dist", ".mooncakes", "__pycache__") for part in path.parts):
                     raise ValueError(f"Build or dependency file in archive: {name}")
+                if name == "docs/重新申报书.md":
+                    raise ValueError("Private application form must not be restored to the public package")
             for name in required:
                 if name not in names:
                     raise ValueError(f"Missing release file: {name}")
@@ -75,6 +85,8 @@ def verify_package(metadata):
         if version.strip() != "TraceCite " + metadata["version"]:
             raise ValueError("Installed CLI version differs from the module version")
         run(str(installed), "check", cwd=package)
+        run("python3", "scripts/acceptance_demo.py", "--binary", str(installed),
+            "--out", str(Path(temporary) / "acceptance"), cwd=package)
 
         consumer = Path(temporary) / "consumer"
         consumer.mkdir()
