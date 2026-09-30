@@ -1,80 +1,126 @@
+<p align="center">
+  <img src="./assets/readme/document-maintenance.svg" width="100%" alt="TraceCite 文档引用维护示意：文档片段与来源不一致时，定位到需要复核的文档行">
+</p>
+
+<p align="center">
+  <a href="https://github.com/Freakz2z/tracecite/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Freakz2z/tracecite/ci.yml?branch=main&amp;style=flat-square&amp;label=CI" alt="CI status"></a>
+  <img src="https://img.shields.io/badge/version-0.5.0--dev-317d72?style=flat-square" alt="0.5.0 development version">
+  <img src="https://img.shields.io/badge/built_with-MoonBit-4664b7?style=flat-square" alt="Built with MoonBit">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-586874?style=flat-square" alt="Apache 2.0 license"></a>
+</p>
+
 # TraceCite
 
-**用 MoonBit 检查 Markdown 文档引用是否仍然有效：本地文件、标题、源码片段，以及网页引文。** 保存一次引用快照后，来源改变会定位到需要重新审阅的文档行。
+**让文档里的引用，跟上来源的变化。**
 
-这是 0.5.0 开发版的文档；公开的 `v0.4.0` 不包含新的 `check` 入口。当前从包含此改动的源码 checkout 运行即可。
+用 MoonBit 检查 Markdown 中的本地文件、标题锚点、源码片段与网页引文。保存引用快照后，来源变化会定位到需要重新审阅的文档行。
 
-## 背景及痛点
+<p>
+  <a href="#快速开始">快速开始</a> ·
+  <a href="docs/maintenance.md">维护指南</a> ·
+  <a href="#github-action">GitHub Action</a> ·
+  <a href="docs/contract.md">输入约定</a>
+</p>
 
-代码和配置持续更新，README 中复制的片段却容易留在旧版本；文件迁移或标题改名后，文档里的相对路径和锚点也可能失效。报告引用的网页仍能打开，原文或上下文却已经改变。维护者需要知道具体哪份文档、哪一行需要复核。
+> **版本说明**：当前为 **0.5.0 开发版**。新的 `check` 入口已在 `main` 源码中；公开的 `v0.4.0` 不包含该入口。独立包与 Mooncakes 的发布状态请以平台为准。
 
-TraceCite 将这些引用视为文档的依赖。它直接读取 Markdown 和引用来源，不需要模型 API、Agent 事件导出、数据库或常驻服务。本地检查默认离线；用户明确添加 `--online` 才访问网页。根目录的 [模块配置](moon.mod)只声明异步 I/O 与 HTML 解析两个外部 MoonBit 库。
+## 为什么需要 TraceCite
 
-## 面向场景
+代码和配置更新了，README 中复制的片段却还停在旧版本；文件迁移、标题改名后，文档链接可能失效；网页仍能打开，引用的原文却已经改变。维护者需要知道具体哪份文档、哪一行需要复核。
 
-- **源码或配置更新后**：检查绑定了来源的文档代码块，发现复制片段与当前文件不一致。
-- **整理仓库文档时**：检查相对路径、Markdown 标题、指定行范围与命名区域，定位失效引用。
-- **报告发布前或再次使用时**：检查网页逐字引文，并比较上次独立读取的引用上下文。
-- **PR 合并前**：用退出码和 GitHub 文件行号诊断，把需要更新的文档交给作者复核。
+TraceCite 把引用当作文档依赖，直接读取 Markdown 与来源。**本地检查默认离线**，无需模型 API、Agent 事件导出、数据库或后台服务；明确添加 `--online` 才访问网页。
 
-## 解决方案
+## 能做什么
 
-一个入口：`tracecite check`。可以检查一个文件、一个目录或多个路径。它支持普通行内链接和引用式链接；来源路径相对文档所在目录解析。
-
-代码片段只需在代码围栏上标一次 `source=路径`。下面这段是本项目真实的模块配置，检查 README 时会直接核对 [moon.mod](moon.mod)：
-
-```text source=moon.mod
-preferred_target = "native"
-```
-
-片段按完整行比较，保留引号、标点和缩进；只统一 Windows/Unix 换行。默认在整个来源文件中寻找片段，因此来源前面增加几行不会使引用失效。
+| 检查对象 | 使用方式 | 发现的问题 |
+| --- | --- | --- |
+| 本地文件与目录 | 普通链接、引用式链接、图片或 HTML 链接 | 来源被删除、迁移或超出工作区 |
+| 标题与来源范围 | 标题锚点、`#L10-L20`、`#region:name` | 标题改名、行范围或命名区域失效 |
+| 源码与配置片段 | 代码围栏添加 `source=路径` | 文档片段与当前来源不一致 |
+| 逐字引文 | 双引号引文配来源链接或显式引用块 | 引文不在当前来源中；网页需 `--online` |
+| 引用快照 | `--snapshot` 保存，`--baseline` 复查 | 来源区域或引用上下文改变，新增引用待复核 |
+| CI 检查 | GitHub Action 或 `--github` | 以退出码和文件行号提示文档作者 |
 
 ## 快速开始
 
-需要 `moonc >= 0.10.14`。安装方式见 [MoonBit 官方教程](https://docs.moonbitlang.com/en/stable/tutorial/tour.html#installation)。在当前源码 checkout 中执行：
+### 1. 获取源码并检查仓库文档
+
+安装 [MoonBit](https://docs.moonbitlang.com/en/stable/tutorial/tour.html#installation)（`moonc >= 0.10.14`），然后执行：
 
 ```sh
+git clone https://github.com/Freakz2z/tracecite.git
+cd tracecite
 moon update
 moon run cmd/main check README.mbt.md docs/maintenance.md --strict
 ```
 
-检查自己的仓库时，`--root` 指定仓库根目录，后面的扫描路径相对这个根目录：
+### 2. 检查自己的文档
+
+`--root` 定义工作区边界；扫描路径相对根目录，引用来源相对文档所在目录解析。一次可以检查文件、目录或多个路径：
 
 ```sh
 moon run cmd/main check docs README.md --root /path/to/your/repository --strict
 ```
 
-本地引用不会访问网络。需要检查网页引文时：
+需要回访网页来源时，添加 `--online`：
 
 ```sh
 moon run cmd/main check examples/inline-report.md --online --strict
 ```
 
-也可以构建本机独立可执行文件。运行它时不需要 MoonBit、Python 或 Node：
+### 3. 构建独立可执行文件
 
 ```sh
 bash scripts/package.sh
 ./_build/native/release/build/cmd/main/main.exe check README.mbt.md --strict
 ```
 
-打包脚本在 `dist/` 生成压缩包。GitHub 的 [打包工作流](.github/workflows/binaries.yml)会在手动触发或推送版本标签时构建 Linux/macOS 包；当前不代表这些新版本产物已经公开发布。
+打包脚本在 `dist/` 生成本机压缩包。**运行独立 native 二进制无需安装 MoonBit、Python 或 Node。** [打包工作流](.github/workflows/binaries.yml)支持手动触发或版本标签触发，构建 Linux/macOS 包。
+
+## 绑定源码片段
+
+在代码围栏的语言后添加 `source=路径`。本 README 中的这段代码已绑定 [moon.mod](moon.mod)：
+
+```text source=moon.mod
+preferred_target = "native"
+```
+
+它的 Markdown 写法是：
+
+````markdown
+```text source=moon.mod
+preferred_target = "native"
+```
+````
+
+片段按完整行比较，保留引号、标点和缩进，只统一 CRLF/LF 换行。默认在整个来源文件中寻找片段，来源前面增加几行不会使仍然存在的片段失效。
+
+行范围、命名区域、空格路径与本地逐字引文的写法见 [维护指南](docs/maintenance.md)。
 
 ## 保存与复核引用快照
 
-首次独立读取来源后保存快照；之后比较同一份文档，无需运行 Agent 或准备 JSONL：
+**首次记录**：独立读取来源，保存可随仓库提交的快照。
 
 ```sh
 moon run cmd/main check README.mbt.md docs/maintenance.md --snapshot .tracecite-docs.json
+```
+
+**之后复查**：比较当前来源与已有基线。
+
+```sh
 moon run cmd/main check README.mbt.md docs/maintenance.md --baseline .tracecite-docs.json --strict
 ```
 
-快照使用相对文档路径，不把本机绝对路径写入记录。移动文档中的段落不会改变引用身份。引用内容不匹配或引用区域改变时会失败，并显示文档片段、候选来源片段或前后观察值。新增引用需要复核；检查通过后，用不带 `--baseline` 的 `--snapshot` 命令接受新的基线。
+**确认后更新**：复核来源变化，决定文档是否需要修改，再运行不带 `--baseline` 的 `--snapshot` 命令保存新基线。
 
-失败或存在未能核查的引用时不写快照，也不会自动覆盖旧基线。离线快照只覆盖实际检查过的本地引用；网页引文需要在保存和复查时都使用 `--online`。
+- 快照使用相对文档路径；移动文档段落不会改变引用身份。
+- 引用不匹配或来源区域改变时，输出文档行号、候选片段或前后观察值；新增引用提示复核。
+- 检查失败或存在待复核项时，不写快照，也不自动覆盖旧基线。
+- 离线快照仅覆盖实际检查的本地引用；网页引文在保存与复查时都需要 `--online`。
 
 ## GitHub Action
 
-本仓库使用当前 checkout 的 Action 检查自身文档。此改动发布到仓库后，其他项目可指定包含该功能的提交：
+将生成的快照提交到仓库，再添加以下工作流步骤。示例跟随 `main`，正式使用应固定到审核过的提交 SHA：
 
 ```yaml
 - uses: actions/checkout@v5
@@ -85,20 +131,53 @@ moon run cmd/main check README.mbt.md docs/maintenance.md --baseline .tracecite-
     baseline: .tracecite-docs.json
 ```
 
-正式使用应固定到审核过的提交 SHA。`online` 默认为 `false`；`exclude` 支持每行一个根目录相对路径。Action 安装并编译 MoonBit，在调用方仓库中解析引用，并产生文件行号诊断。旧的 `report:` 输入仍兼容，并启用联网检查。
+Action 安装并编译 MoonBit，在调用方仓库中解析引用，失败时产生文件行号诊断。建议设置 `permissions: contents: read`。
 
-## 覆盖范围与边界
+| 输入 | 默认值 | 说明 |
+| --- | --- | --- |
+| `path` | `.` | 要扫描的 Markdown 文件或目录 |
+| `strict` | `true` | 待复核项导致检查失败 |
+| `online` | `false` | 是否回访 HTTP/HTTPS 来源 |
+| `baseline` | 无 | 可选的引用快照路径 |
+| `exclude` | 无 | 排除路径，每行一个 |
 
-- 普通本地链接检查文件或目录是否存在。带片段的链接支持 ATX Markdown 标题、`#L10-L20` 和 `#region:name`；后者使用来源文件里的 `ANCHOR: name` / `ANCHOR_END: name` 注释。
-- 行内引文支持中文弯双引号与英文直双引号；多行或关联不明确的引文使用显式原文、来源块。详细语法见 [维护指南](docs/maintenance.md)。
-- 没有 `source=` 的代码块不运行，也不会假装已经核查：它们计入覆盖摘要。未关联的引文、无法解析的来源会提示复核，`--strict` 让这些提示导致失败。
-- 默认输出 `LOCAL_OK` 只表示本地检查通过，并列出跳过的网页引用。整个输入没有任何可检查引用时返回失败。
-- 网页引文只能确认检查时可提取的原文是否存在。图片、动态页面、登录墙可能需要人工核查；工具不判断论断的语义真假。来源变化表示需要复核，不表示文档一定错误。
-- 来源解析限制在 `--root` 中，包括符号链接的真实目标；本地正文和网页请求各限制 2 MiB。网页回源还限制默认端口、重定向、公开地址与 20 秒超时，完整行为见 [输入约定](docs/contract.md#http-回源行为)。
+旧的 `report:` 输入仍兼容，会覆盖 `path` 并启用联网检查。完整定义见 [action.yml](action.yml)。
 
-## 验证与开发
+## 检查结果与边界
 
-当前检查的是可执行能力，不能据此宣称用户采用率或节省了多少审核工时。既有网页引文的 [第三方资料审计](docs/external-audit.md)和 [普通报告试验](examples/field-trial/README.md)保留了样本、结果与局限；新文档维护流程由临时仓库集成测试覆盖。
+默认的 `LOCAL_OK` 表示实际检查的本地引用通过。每次输出会列出检查数、失败数、待复核数、跳过的网页引用，以及没有 `source=` 的代码块数量。
+
+| 退出码 | 含义 |
+| --- | --- |
+| `0` | 实际检查的引用通过；严格模式下没有待复核项 |
+| `1` | 参数、输入读取或快照写入失败 |
+| `2` | 引用失败、来源改变、没有可检查引用；严格模式下也包含待复核项 |
+
+<details>
+<summary><strong>支持范围与校验边界</strong></summary>
+
+- 本地链接检查文件或目录是否存在；片段支持 ATX 标题、行范围与命名区域。Setext 标题、自定义 HTML ID 与站点特有锚点规则暂不解析。
+- 行内引文支持中文弯双引号与英文直双引号；多行或来源关联不明确时，使用显式原文、来源块。
+- 未绑定来源的代码块只计入覆盖摘要，不执行；未关联引文或无法解析的来源会提示复核，`--strict` 让这些提示导致失败。
+- 网页引文只确认检查时可提取的原文是否存在，不判断论断的语义真假；动态页面、图片与登录墙可能需要人工复核。来源变化表示需要复核，不表示文档一定错误。
+- 本地来源受 `--root` 边界限制，包括符号链接的真实目标；文档与来源正文上限为 2 MiB。网页回源限制默认端口、公开地址、重定向、20 秒超时与 2 MiB 响应。
+
+详细约定见 [维护指南](docs/maintenance.md)和 [HTTP 回源行为](docs/contract.md#http-回源行为)。
+
+</details>
+
+<details>
+<summary><strong>网络代理</strong></summary>
+
+联网检查支持 `https_proxy` / `HTTPS_PROXY`、`http_proxy` / `HTTP_PROXY`，小写变量优先。代理地址支持不含用户名或密码的 HTTP/HTTPS URL，可使用私有地址与非默认端口。
+
+`no_proxy` / `NO_PROXY` 支持逗号分隔的域名、可选端口与 `*`，域名匹配其自身及子域名。代理通过 CONNECT 转发；TLS 证书校验、来源地址筛选和重定向限制仍然生效。错误的代理配置不会自动退回直连。
+
+</details>
+
+## 开发与验证
+
+核心库支持 **native、JS 与 Wasm**；文件与联网 CLI 使用 **native**。项目的 [模块配置](moon.mod)只声明异步 I/O 与 HTML 解析两个外部 MoonBit 库。
 
 ```sh
 moon info
@@ -112,6 +191,18 @@ python3 -m unittest discover -s adapters -p 'test_*.py'
 sh scripts/smoke.sh
 ```
 
-Python 仅用于开发测试和可选的旧 Agent 适配器。原来的 JSONL 校验、`verify-files`、`verify-urls`、`verify-notes`、`check-report` 和 `compare` 仍可使用，见 [兼容接口](docs/contract.md)。
+Python 仅用于开发测试和可选的旧 Agent 适配器。JSONL 校验、`verify-files`、`verify-urls`、`verify-notes`、`check-report` 与 `compare` 继续兼容，见 [原有输入约定](docs/contract.md)。
 
-项目以 MoonBit 为主要实现语言，核心库可用于 native、JS 和 Wasm；文件与联网 CLI 使用 native。使用 [Apache-2.0 许可证](LICENSE)，HTML 解析依赖 `bobzhang/html_parser`（Apache-2.0）。已有发布包见 [Mooncakes](https://mooncakes.io/docs/Freakz2z/tracecite)；0.5.0 发布状态请以平台为准。
+## 项目资料
+
+| 资料 | 内容 |
+| --- | --- |
+| [文档引用维护指南](docs/maintenance.md) | 片段绑定、标题锚点、引文与快照的完整用法 |
+| [输入约定](docs/contract.md) | 兼容接口、输入格式与 HTTP 回源规则 |
+| [第三方资料审计](docs/external-audit.md) | 网页逐字引文的固定样本、结果与局限 |
+| [普通报告试验](examples/field-trial/README.md) | 普通 Markdown 报告的核验记录 |
+| [Mooncakes 模块](https://mooncakes.io/docs/Freakz2z/tracecite) | 平台上的已发布版本 |
+
+验证记录用于说明可执行能力，不代表用户采用率或审核工时收益。
+
+使用 [Apache-2.0 许可证](LICENSE)。HTML 解析依赖 `bobzhang/html_parser`（Apache-2.0）。

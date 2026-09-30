@@ -54,6 +54,52 @@ class DocumentMaintenanceTests(unittest.TestCase):
         self.assertEqual(report["checked_count"], 2)
         self.assertEqual(report["failed_count"], 1)
 
+    def test_inline_code_examples_do_not_create_sources_or_hide_real_links(self):
+        self.write("docs/guide.md", 'Use ``[fake](missing.md) `literal` "example"`` with [real](source.md).\n'
+                   'Use `<!--` literally, then [config](../config.toml).\n'
+                   'An unmatched ` still allows [source](source.md).\n')
+        report = self.run_check("docs/guide.md", "--strict")
+        self.assertEqual(report["checked_count"], 3)
+        self.assertEqual(report["warning_count"], 0)
+        self.assertEqual({item["source"] for item in report["items"]}, {"source.md", "../config.toml"})
+
+    def test_inline_code_comment_marker_cannot_hide_a_broken_link(self):
+        self.write("docs/guide.md", 'Use `<!--` literally. [broken](missing.md)\n[config](../config.toml)\n')
+        report = self.run_check("docs/guide.md", "--strict", expected=2)
+        self.assertEqual(report["checked_count"], 2)
+        self.assertEqual(report["failed_count"], 1)
+        self.assertEqual(report["items"][0]["code"], "SOURCE_NOT_FOUND")
+        self.assertEqual(report["items"][0]["line"], 1)
+
+    def test_html_attribute_examples_are_not_markdown_references(self):
+        self.write("docs/guide.md", '<img src="../config.toml" alt="[fake](missing.md)"> [real](source.md)\n')
+        report = self.run_check("docs/guide.md", "--strict")
+        self.assertEqual(report["checked_count"], 2)
+        self.assertEqual(report["failed_count"], 0)
+
+    def test_commented_headings_are_not_valid_anchor_targets(self):
+        self.write("docs/source.md", '# Source\n<!--\n## Hidden\n-->\n## Visible\nText\n')
+        self.write("docs/guide.md", '[hidden](source.md#hidden)\n[visible](source.md#visible)\n')
+        report = self.run_check("docs/guide.md", "--strict", expected=2)
+        self.assertEqual(report["failed_count"], 1)
+        self.assertEqual(report["items"][0]["code"], "ANCHOR_NOT_FOUND")
+        self.assertEqual(report["items"][1]["status"], "ok")
+
+    def test_formatted_heading_anchors_and_section_baselines(self):
+        source = ('# Source\n## [Settings](../config.toml) ###\nCurrent settings.\n'
+                  '<!--\n## Hidden\n-->\nStill in settings.\n## Next\nOther content.\n')
+        self.write("docs/source.md", source)
+        self.write("docs/guide.md", '[settings](source.md#settings)\n')
+        self.run_check("docs/guide.md", "--snapshot", "references.json", "--strict")
+        self.write("docs/source.md", source.replace("Other content.", "Unrelated revision."))
+        self.run_check("docs/guide.md", "--baseline", "references.json", "--strict")
+        self.write("docs/source.md", source.replace("Still in settings.", "Changed settings."))
+        report = self.run_check("docs/guide.md", "--baseline", "references.json", "--strict", expected=2)
+        changed = report["items"][0]
+        self.assertEqual(changed["code"], "REFERENCED_SOURCE_CHANGED")
+        self.assertIn("Still in settings.", changed["previous"])
+        self.assertIn("Changed settings.", changed["actual"])
+
     def test_snapshot_is_portable_and_ignores_document_line_movement(self):
         self.run_check("docs/guide.md", "--snapshot", "references.json")
         snapshot = json.loads((self.root / "references.json").read_text())

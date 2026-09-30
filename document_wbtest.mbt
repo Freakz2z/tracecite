@@ -221,3 +221,99 @@ test "README HTML attributes are links and presentation rather than prose quotat
   assert_eq(parsed.references[0].source, "assets/hero.svg")
   assert_eq(parsed.references[1].source, "guide.md")
 }
+
+///|
+test "inline code spans require matching backtick run lengths" {
+  let parsed = parse_document(
+    "Use ``[fake](missing.md) `literal` \"example\"`` and [real](source.md).\nUse `unmatched before [another](other.md).\n",
+  )
+  assert_true(parsed.diagnostics.is_empty())
+  assert_true(parsed.warnings.is_empty())
+  assert_eq(parsed.references.length(), 2)
+  assert_eq(parsed.references[0].source, "source.md")
+  assert_eq(parsed.references[1].source, "other.md")
+}
+
+///|
+test "an even number of backslashes does not escape a Markdown link opener" {
+  let parsed = parse_document(
+    "\\[escaped](missing.md)\n\\\\[real](source.md)\n",
+  )
+  assert_true(parsed.warnings.is_empty())
+  assert_eq(parsed.references.length(), 1)
+  assert_eq(parsed.references[0].source, "source.md")
+}
+
+///|
+test "comment markers in inline code cannot hide visible dependencies" {
+  let parsed = parse_document(
+    "Use `<!--` literally. [first](first.md)\n<!-- ` --> [second](second.md)\n`<img src=\"missing.svg\">` [third](third.md)\n",
+  )
+  assert_true(parsed.warnings.is_empty())
+  assert_eq(parsed.references.length(), 3)
+  assert_eq(parsed.references[0].source, "first.md")
+  assert_eq(parsed.references[1].source, "second.md")
+  assert_eq(parsed.references[2].source, "third.md")
+}
+
+///|
+test "quotation delimiters inside inline code remain part of the quoted excerpt" {
+  let parsed = parse_document(
+    "\"Use `name = \"value\"` here.\" ([source](source.md))\n",
+  )
+  assert_true(parsed.warnings.is_empty())
+  assert_eq(parsed.references.length(), 1)
+  assert_eq(parsed.references[0].kind, "quote")
+  assert_eq(parsed.references[0].excerpt, Some("Use name = \"value\" here."))
+}
+
+///|
+test "HTML attributes do not introduce Markdown dependencies" {
+  let parsed = parse_document(
+    "<img src=\"hero.svg\" alt=\"[fake](missing.md)\"> [real](guide.md)\n",
+  )
+  assert_true(parsed.warnings.is_empty())
+  assert_eq(parsed.references.length(), 2)
+  assert_true(
+    parsed.references.any(reference => reference.source == "hero.svg"),
+  )
+  assert_true(
+    parsed.references.any(reference => reference.source == "guide.md"),
+  )
+}
+
+///|
+test "commented headings cannot create anchors or truncate visible sections" {
+  let source = "# Guide\n## Real\nFirst\n<!--\n## Hidden\n-->\nSecond\n## Next\nEnd\n"
+  assert_true(!select_document_source(source, "hidden").ok)
+  assert_eq(
+    select_document_source(source, "real").text,
+    "## Real\nFirst\n<!--\n## Hidden\n-->\nSecond",
+  )
+  let with_code = "# Guide\nUse `<!--` literally.\n## Visible\nText\n"
+  assert_true(select_document_source(with_code, "visible").ok)
+}
+
+///|
+test "ATX headings accept tabs and optional closing hashes" {
+  let source = "## Setup ###\nFirst\n##\tNext\nSecond\n## C#\nThird\n"
+  assert_eq(select_document_source(source, "setup").text, "## Setup ###\nFirst")
+  assert_eq(select_document_source(source, "next").text, "##\tNext\nSecond")
+  assert_true(select_document_source(source, "c").ok)
+}
+
+///|
+test "heading anchors use rendered labels and avoid generated slug collisions" {
+  let source = "## [Linked title](other.md)\nFirst\n## Setup\nOne\n## Setup-1\nTwo\n## Setup\nThree\n"
+  assert_eq(
+    select_document_source(source, "linked-title").text,
+    "## [Linked title](other.md)\nFirst",
+  )
+  assert_eq(select_document_source(source, "setup-1").text, "## Setup-1\nTwo")
+  assert_eq(select_document_source(source, "setup-2").text, "## Setup\nThree\n")
+  assert_eq(
+    markdown_heading_slug("A <em>formatted</em> title"),
+    "a-formatted-title",
+  )
+  assert_eq(markdown_heading_slug("`[literal](value)`"), "literalvalue")
+}

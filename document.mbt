@@ -190,15 +190,14 @@ pub fn parse_document(input : String) -> DocumentReferences {
     let used : Map[Int, Bool] = Map([])
     let chars = line.to_owned().to_array()
     let mut position = 0
-    let mut in_inline_code = false
     while position < chars.length() {
       let ch = chars[position]
       if ch == '`' {
-        in_inline_code = !in_inline_code
+        position = document_code_span_end(chars, position)
+        continue
       }
-      if in_inline_code ||
-        (ch != '“' && ch != '"') ||
-        (position > 0 && chars[position - 1] == '\\') ||
+      if (ch != '“' && ch != '"') ||
+        document_is_escaped(chars, position) ||
         links.any(link => position >= link.start && position < link.end) ||
         html_tags.any(tag => position >= tag.start && position < tag.end) {
         position = position + 1
@@ -206,8 +205,14 @@ pub fn parse_document(input : String) -> DocumentReferences {
       }
       let close = if ch == '“' { '”' } else { '"' }
       let mut end = position + 1
-      while end < chars.length() &&
-            (chars[end] != close || chars[end - 1] == '\\') {
+      while end < chars.length() {
+        if chars[end] == '`' {
+          end = document_code_span_end(chars, end)
+          continue
+        }
+        if chars[end] == close && !document_is_escaped(chars, end) {
+          break
+        }
         end = end + 1
       }
       if end == chars.length() {
@@ -349,14 +354,25 @@ fn document_links(
   nesting? : Int = 0,
 ) -> Array[MarkdownLink] {
   let chars = line.to_owned().to_array()
+  let html_tags = document_html_tags(line)
+  let mut tag_index = 0
   let links : Array[MarkdownLink] = []
   let mut index = 0
-  let mut in_code = false
   while index < chars.length() {
     if chars[index] == '`' {
-      in_code = !in_code
+      index = document_code_span_end(chars, index)
+      continue
     }
-    if in_code || chars[index] != '[' || (index > 0 && chars[index - 1] == '\\') {
+    // Skip attributes only when scanning an actual HTML tag. A Markdown link
+    // already consumes its destination, including <paths with spaces>.
+    while tag_index < html_tags.length() && html_tags[tag_index].end <= index {
+      tag_index = tag_index + 1
+    }
+    if tag_index < html_tags.length() && html_tags[tag_index].start == index {
+      index = html_tags[tag_index].end
+      continue
+    }
+    if chars[index] != '[' || document_is_escaped(chars, index) {
       index = index + 1
       continue
     }
@@ -364,7 +380,7 @@ fn document_links(
     let mut close = index + 1
     let mut bracket_depth = 1
     while close < chars.length() && bracket_depth > 0 {
-      if chars[close - 1] != '\\' {
+      if !document_is_escaped(chars, close) {
         if chars[close] == '[' {
           bracket_depth = bracket_depth + 1
         }
@@ -424,7 +440,7 @@ fn document_links(
     let mut end = close + 2
     let mut depth = 1
     while end < chars.length() && depth > 0 {
-      if end == 0 || chars[end - 1] != '\\' {
+      if !document_is_escaped(chars, end) {
         if chars[end] == '(' {
           depth = depth + 1
         }
@@ -457,6 +473,44 @@ fn document_links(
 }
 
 ///|
+fn document_is_escaped(chars : Array[Char], index : Int) -> Bool {
+  let mut before = index
+  while before > 0 && chars[before - 1] == '\\' {
+    before = before - 1
+  }
+  (index - before) % 2 == 1
+}
+
+///|
+/// Code spans close only at a backtick run of the same length. An unmatched
+/// opener is literal text, so advance only past that run instead of hiding the
+/// rest of the line. Backslashes inside a code span do not escape its closer.
+fn document_code_span_end(chars : Array[Char], start : Int) -> Int {
+  if document_is_escaped(chars, start) {
+    return start + 1
+  }
+  let mut opening_end = start + 1
+  while opening_end < chars.length() && chars[opening_end] == '`' {
+    opening_end = opening_end + 1
+  }
+  let mut index = opening_end
+  while index < chars.length() {
+    if chars[index] != '`' {
+      index = index + 1
+      continue
+    }
+    let closing_start = index
+    while index < chars.length() && chars[index] == '`' {
+      index = index + 1
+    }
+    if index - closing_start == opening_end - start {
+      return index
+    }
+  }
+  opening_end
+}
+
+///|
 /// Mask comments outside code fences, retaining the character positions of
 /// subsequent visible links on the same line.
 fn document_visible_line(raw : String, active : Bool) -> (String, Bool) {
@@ -465,6 +519,12 @@ fn document_visible_line(raw : String, active : Bool) -> (String, Bool) {
   let mut in_comment = active
   let mut index = 0
   while index < chars.length() {
+    if !in_comment && chars[index] == '`' {
+      let end = document_code_span_end(chars, index)
+      output.write_string(String::from_array(chars[index:end]))
+      index = end
+      continue
+    }
     if !in_comment &&
       index + 3 < chars.length() &&
       chars[index] == '<' &&
@@ -523,12 +583,12 @@ fn document_html_tags(line : StringView) -> Array[MarkdownLink] {
   let chars = line.to_owned().to_array()
   let tags : Array[MarkdownLink] = []
   let mut index = 0
-  let mut in_code = false
   while index < chars.length() {
     if chars[index] == '`' {
-      in_code = !in_code
+      index = document_code_span_end(chars, index)
+      continue
     }
-    if in_code || chars[index] != '<' || index + 1 >= chars.length() {
+    if chars[index] != '<' || index + 1 >= chars.length() {
       index = index + 1
       continue
     }

@@ -65,8 +65,15 @@ pub fn select_document_source(
   let mut section_start : Int? = None
   let mut section_level = 0
   let mut active_fence : (Char, Int)? = None
+  let mut in_comment = false
   for index = 0; index < lines.length(); index = index + 1 {
-    let line = lines[index].trim()
+    let (visible, next_comment) = if active_fence is None {
+      document_visible_line(lines[index], in_comment)
+    } else {
+      (lines[index], in_comment)
+    }
+    in_comment = next_comment
+    let line = visible.trim()
     if active_fence is Some((ch, size)) {
       if document_fence(line) is Some((closing, count, info)) &&
         closing == ch &&
@@ -85,16 +92,34 @@ pub fn select_document_source(
     while level < chars.length() && chars[level] == '#' {
       level = level + 1
     }
-    if level < 1 || level > 6 || level >= chars.length() || chars[level] != ' ' {
+    if level < 1 ||
+      level > 6 ||
+      level >= chars.length() ||
+      (chars[level] != ' ' && chars[level] != '\t') {
       continue
     }
     if section_start is Some(first) && level <= section_level {
       return { ok: true, text: lines[first:index].join("\n"), code: "", }
     }
-    let slug = markdown_heading_slug(String::from_array(chars[level + 1:]))
-    let count = counts.get(slug).unwrap_or(0)
-    counts.set(slug, count + 1)
-    let unique = if count == 0 { slug } else { "\{slug}-\{count}" }
+    let mut title_end = chars.length()
+    while title_end > level + 1 && chars[title_end - 1] == '#' {
+      title_end = title_end - 1
+    }
+    if title_end < chars.length() &&
+      chars[title_end - 1] != ' ' &&
+      chars[title_end - 1] != '\t' {
+      title_end = chars.length()
+    }
+    let title = String::from_array(chars[level + 1:title_end]).trim().to_owned()
+    let slug = markdown_heading_slug(title)
+    let mut count = counts.get(slug).unwrap_or(0)
+    let mut unique = slug
+    while counts.get(unique) is Some(_) {
+      count = count + 1
+      unique = "\{slug}-\{count}"
+    }
+    counts.set(slug, count)
+    counts.set(unique, 0)
     if unique == fragment {
       section_start = Some(index)
       section_level = level
@@ -123,8 +148,37 @@ fn region_marker(line : String, marker : String) -> String? {
 
 ///|
 pub fn markdown_heading_slug(title : String) -> String {
+  let chars = title.to_array()
+  let hidden : Array[(Int, Int)] = []
+  for tag in document_html_tags(title[:]) {
+    hidden.push((tag.start, tag.end))
+  }
+  for link in document_links(title[:], Map([])) {
+    let mut end = link.start + 1
+    let mut depth = 1
+    while end < link.end && depth > 0 {
+      if !document_is_escaped(chars, end) {
+        if chars[end] == '[' {
+          depth = depth + 1
+        } else if chars[end] == ']' {
+          depth = depth - 1
+        }
+      }
+      end = end + 1
+    }
+    if depth == 0 {
+      hidden.push((end, link.end))
+    }
+  }
   let output = StringBuilder()
-  for ch in title.to_lower().iter() {
+  for index = 0; index < chars.length(); index = index + 1 {
+    if !hidden.any(range => index >= range.0 && index < range.1) {
+      output.write_char(chars[index])
+    }
+  }
+  let rendered = output.to_string().to_lower()
+  output.reset()
+  for ch in rendered.iter() {
     if ch == ' ' || ch == '\t' {
       output.write_char('-')
     } else if (ch >= 'a' && ch <= 'z') ||

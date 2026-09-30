@@ -238,7 +238,10 @@ async fn fetch_public_text(raw_url : String) -> RemoteFetch {
 }
 
 ///|
-async fn fetch_public_text_inner(raw_url : String) -> RemoteFetch {
+async fn fetch_public_text_inner(
+  raw_url : String,
+  get_env? : (String) -> String? = @env.get_env_var,
+) -> RemoteFetch {
   let mut current = match parse_remote_url(raw_url) {
     Some(url) => url
     None => return remote_failure("INVALID_OR_BLOCKED_URL")
@@ -250,7 +253,21 @@ async fn fetch_public_text_inner(raw_url : String) -> RemoteFetch {
     let headers : @http.Headers = Map([])
     headers["Accept"] = "text/html,application/xhtml+xml,text/plain,application/json;q=0.8,*/*;q=0.1"
     headers["User-Agent"] = "TraceCite/0.5 (document maintenance)"
-    let (response, client) = @http.get_stream(current.full, headers~) catch {
+    let proxy : @http.Client? = match remote_proxy(current, get_env) {
+      None => None
+      Some(raw) => {
+        let uri = match parse_proxy_url(raw) {
+          Some(uri) => uri
+          None => return remote_failure("INVALID_PROXY_URL")
+        }
+        Some(
+          @http.Client(uri) catch {
+            _ => return remote_failure("PROXY_CONNECTION_FAILED")
+          },
+        )
+      }
+    }
+    let (response, client) = @http.get_stream(current.full, headers~, proxy?) catch {
       _ => return remote_failure("HTTP_REQUEST_FAILED")
     }
     defer client.close()
