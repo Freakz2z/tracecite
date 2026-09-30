@@ -31,6 +31,9 @@ jobs:
       - name: Check
         run: |
           moon update
+          moon info
+          moon fmt
+          git diff --exit-code -- '*.mbti' '*.mbt'
           moon check --deny-warn
       - name: Build
         run: |
@@ -45,6 +48,7 @@ jobs:
           sh scripts/smoke.sh
           python3 scripts/test_document_cli.py
           moon run cmd/main check
+          moon run cmd/main check guide.md --root examples/maintenance/project --no-config --strict
           moon run cmd/main verify-notes fixtures/simple-citation.md
           moon run cmd/main check-report examples/report.md
           moon run cmd/main check-report examples/inline-report.md

@@ -3,6 +3,48 @@
 整理日期：2026-09-30（北京时间）。本说明依据 Git 历史中的申报稿技术目标重建成果对照，
 正式提交的申报书仍以申报人保存的版本为准。它提供可检查的证据，不代替组委会的最终验收判断。
 
+## 九项验收清单
+
+本节逐项对应组委会提供的验收指南。功能和测试依据公开提交
+`4c459edcfc0dd66ee80f59e0936048e9fae0c0d4`；下列说明补充在该提交之后，
+当前提交的执行结果以对应 CI 为准。
+
+| 序号 | 验收要求 | 交付与复核方式 |
+| --- | --- | --- |
+| 1 | MoonBit 为主要实现语言，moonc ≥ 0.10.14 | 核心库、文件与网页 I/O、CLI 均为 MoonBit；Python/shell 用于开发测试与打包。CI 实际使用 moonc v0.10.14+7d59c7ec9，并检查最低版本。 |
+| 2 | GitHub 仓库公开可访问，提交清晰 | Freakz2z/tracecite 为 public 仓库，main 保留功能、修复、发布与验收的提交；CHANGELOG.md 列出固定提交和里程碑。 |
+| 3 | 结构清晰，实现声明的核心功能 | 根包为 portable 解析/校验/比较逻辑；cli/ 为 native 文件和 HTTP 实现；cmd/main 与 cmd/tracecite 共用实现。回源核验、追溯、变化比较和文档维护都有可执行入口。 |
+| 4 | README 包含目标、安装、用法、示例并可复现 | README.mbt.md 为主说明，README.md 指向它；包含源码启动、Mooncakes 库/CLI 安装、独立包、配置、Action、边界和维护演示。 |
+| 5 | CI 覆盖检查、构建、测试 | .github/workflows/ci.yml 执行最低版本检查、moon check、三目标构建和测试、CLI/适配器/打包测试、实例运行及源码 ZIP 消费验证。 |
+| 6 | 至少一个可运行示例 | examples/maintenance/project 提供离线最小项目，下面的一条命令可直接检查；acceptance_demo.py 提供 13 步维护闭环。 |
+| 7 | 测试覆盖核心路径 | native 79 项、JS/Wasm 各 66 项；CLI 集成 34 项、适配器 6 项、许可打包 7 项。正常路径与失败保护对应关系见下表。 |
+| 8 | 发布到 mooncakes.io | 已发布 Freakz2z/tracecite@0.5.0；库和 cmd/tracecite 均可安装。发布提交、源码摘要与安装命令见后文和发布指南。 |
+| 9 | OSI 开源许可证与上游合规 | 项目采用 Apache-2.0；moon.mod 元数据一致。THIRD_PARTY_NOTICES.md 和 third_party/ 保留依赖、移植来源与 SDK 许可；native 包完整附带 LICENSE/NOTICE 和构建清单，缺项会停止。 |
+
+该固定提交的 [常规 CI](https://github.com/Freakz2z/tracecite/actions/runs/36699193496)
+和 [Linux/macOS 独立包验证](https://github.com/Freakz2z/tracecite/actions/runs/36699193906)
+均成功。Apache-2.0 为 [OSI 认可的许可证](https://opensource.org/license/apache-2-0)。
+
+最小离线示例：在源码根目录执行 `moon update` 后运行：
+
+```sh
+moon run cmd/main check guide.md --root examples/maintenance/project --no-config --strict
+```
+
+预期退出码为 0，输出 LOCAL_OK，检查本地标题链接、绑定配置片段和逐字引文。
+CLI 从样例根目录读取真实来源，不需要模型或网页服务。CI 同样运行这条命令。
+
+| 核心路径 | 正常路径与失败保护 | 自动化测试位置 |
+| --- | --- | --- |
+| Agent 证据追溯 | 成功调用与来源关联；未知来源、失败调用、缺失结果、混合 run、重复事件拒绝 | tracecite_wbtest.mbt |
+| 引文与来源匹配 | 逐字引用、排版引号、省略号片段；伪造引文、伪造工具捕获内容拒绝 | tracecite_wbtest.mbt、scripts/smoke.sh |
+| 跨运行变化比较 | 相同 URI 的来源内容变化输出 changed，保留前后证据 | tracecite_wbtest.mbt、adapters/test_codex_cli.py |
+| Markdown 文档与报告 | 源码片段、链接、引文、标题/行/区域；围栏、注释、HTML 和引文关联边界 | document_wbtest.mbt、report_wbtest.mbt |
+| 项目配置与维护 | init/check 本地与 CI 复用；非法配置、空范围、覆盖现有文件、错误快照拒绝 | project_wbtest.mbt、scripts/test_document_cli.py |
+| 文件与工作区边界 | 文件回读、引用移动、锚点失效；越界路径与符号链接、无可检查引用拒绝 | scripts/test_document_cli.py、scripts/smoke.sh |
+| 网页与代理 | HTML/charset/重定向/代理解析；非公开地址、带凭证或异常端口来源拒绝 | cli/remote_wbtest.mbt、cli/proxy_wbtest.mbt、scripts/smoke.sh |
+| 发布与许可完整性 | 全新消费项目、CLI 安装、native 解包案例；遗漏 NOTICE、摘要改变、旧文件混入拒绝 | scripts/verify_release_package.py、scripts/test_native_package.py、scripts/verify_native_package.py |
+
 ## 申报方向与当前产品
 
 历史申报稿的方向为 **AI Agent 引用回源验证与来源变化检测**：独立读取网页或本地文件，

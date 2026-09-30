@@ -202,6 +202,27 @@ moon add Freakz2z/tracecite@0.5.0
 
 维护者使用 `bash scripts/release.sh` 生成并验证源码包，包含解包后的文档检查和三个目标的消费项目测试。准备完成且登录有发布权限的 Mooncakes 账户后，使用 `bash scripts/release.sh --publish` 上传并确认版本。具体步骤见 [发布与接入指南](docs/publishing.md)。
 
+## 源码结构与最小示例
+
+| 位置 | 职责 |
+| --- | --- |
+| 根包 .mbt 与 moon.pkg | MoonBit 核心：JSONL 解析/追溯、引文匹配、来源比较、Markdown 引用、配置与快照模型；支持 native/JS/Wasm |
+| cli/ | MoonBit native 文件回读、网页与代理、文档扫描和命令实现 |
+| cmd/main、cmd/tracecite | 共用 CLI 实现的源码运行入口与可安装入口 |
+| *_wbtest.mbt、scripts/、adapters/ | 核心与 I/O 测试、开发打包工具、可选 Agent 事件适配器 |
+| examples/、fixtures/、docs/ | 可运行示例、脱敏测试输入与使用/验收说明 |
+
+安装源码依赖后，从仓库根目录执行一个最小离线检查：
+
+```sh
+moon update
+moon run cmd/main check guide.md --root examples/maintenance/project --no-config --strict
+```
+
+预期输出 LOCAL_OK 并退出 0，直接检查样例中的本地标题链接、配置片段和逐字引文。
+它不修改样例；完整的来源变更与修复流程由 acceptance_demo.py 演示。
+文末的成果与验收说明逐项对应 9 条验收要求，并提供核心测试路径与固定 CI 证据。
+
 ## 开发与验证
 
 核心库支持 **native、JS 与 Wasm**；文件与联网 CLI 使用 **native**。项目的 [模块配置](moon.mod)只声明异步 I/O 与 HTML 解析两个外部 MoonBit 库。
