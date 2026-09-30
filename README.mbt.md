@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/Freakz2z/tracecite/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Freakz2z/tracecite/ci.yml?branch=main&amp;style=flat-square&amp;label=CI" alt="CI status"></a>
-  <img src="https://img.shields.io/badge/version-0.5.0--dev-317d72?style=flat-square" alt="0.5.0 development version">
+  <img src="https://img.shields.io/badge/version-0.5.0-317d72?style=flat-square" alt="TraceCite 0.5.0">
   <img src="https://img.shields.io/badge/built_with-MoonBit-4664b7?style=flat-square" alt="Built with MoonBit">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-586874?style=flat-square" alt="Apache 2.0 license"></a>
 </p>
@@ -23,7 +23,7 @@
   <a href="docs/contract.md">输入约定</a>
 </p>
 
-> **版本说明**：当前为 **0.5.0 开发版**。新的 `check` 入口已在 `main` 源码中；公开的 `v0.4.0` 不包含该入口。独立包与 Mooncakes 的发布状态请以平台为准。
+> **版本说明**：**0.5.0** 提供项目配置、`init` 与 `check` 文档维护入口。Mooncakes 安装请指定 `@0.5.0`；GitHub 的旧 `v0.4.0` 不包含这些入口。
 
 ## 为什么需要 TraceCite
 
@@ -181,7 +181,7 @@ Action 安装并编译 MoonBit，在调用方仓库中解析引用，失败时�
 
 ## MoonBit 包接入与发布
 
-核心库可在 MoonBit 项目中导入，支持 native、JS、Wasm；CLI 另提供独立 native 包。0.5.0 上传 Mooncakes 后，消费项目可执行：
+核心库可在 MoonBit 项目中导入，支持 native、JS、Wasm；CLI 另提供独立 native 包。消费项目可执行：
 
 ```sh
 moon add Freakz2z/tracecite@0.5.0

@@ -4,7 +4,7 @@
 
 ## 在 MoonBit 项目中使用
 
-0.5.0 上传 Mooncakes 后，在消费项目执行：
+在消费项目安装 0.5.0：
 
 ```sh
 moon add Freakz2z/tracecite@0.5.0
@@ -29,7 +29,7 @@ assert_true(project.config.unwrap().strict)
 
 消费方负责根据解析出的引用访问来源，再使用核心库进行片段匹配与基线序列化。接口列表见 [pkg.generated.mbti](../pkg.generated.mbti)。
 
-需要命令行时，0.5.0 发布后可直接安装 native 包，生成的命令名为 `tracecite`：
+需要命令行时可直接安装 native 包，生成的命令名为 `tracecite`：
 
 ```sh
 moon install Freakz2z/tracecite/cmd/tracecite@0.5.0
@@ -62,7 +62,7 @@ moon login
 bash scripts/release.sh --publish
 ```
 
-`--publish` 先完成同一套验证，再调用官方 `moon publish`；成功后查询 Mooncakes 确认目标版本可见。0.5.0 未上传前，公开版本仍为 0.4.0。不要在仓库中保存凭证。
+`--publish` 先完成同一套验证，再调用官方 `moon publish`；成功后查询 Mooncakes 确认目标版本可见。也可以运行 `moon view Freakz2z/tracecite@0.5.0` 核对已发布版本。不要在仓库中保存凭证。
 
 发布准备不使用 `moon publish --dry-run`；只构建源码包时使用 `moon package`。发布新版本应先修改模块版本，更新相关文档，复核引用后刷新基线，并提交源码。
 
