@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "module": "Freakz2z/tracecite",
+  "version": "0.6.0",
+  "status": "development",
+  "revision": "d5baa31f16811953f4bc9cf9376575d6baa51b34",
+  "published_to_mooncakes": false,
+  "github_release_created": false,
+  "latest_published_version": "0.5.1",
+  "ci": {
+    "checks": "https://github.com/Freakz2z/tracecite/actions/runs/36886731368",
+    "native_packages": "https://github.com/Freakz2z/tracecite/actions/runs/36886730284"
+  },
+  "validation": {
+    "native_tests": 89,
+    "js_tests": 76,
+    "wasm_tests": 76,
+    "cli_integration_tests": 50,
+    "adapter_tests": 6,
+    "native_license_tests": 7,
+    "release_guard_tests": 12,
+    "public_api_consumer_tests_per_target": 4,
+    "maintenance_steps": 13,
+    "review_steps": 14,
+    "local_source_archive_verified": true,
+    "local_linux_archive_verified": true,
+    "ci_native_platforms": [
+      "linux-x86_64",
+      "darwin-arm64"
+    ]
+  },
+  "scope": "Controlled feature and package validation; no registry consumption of 0.6.0 or adoption claims.",
+  "ci_checks_passed": true,
+  "ci_native_packages_passed": true
+}

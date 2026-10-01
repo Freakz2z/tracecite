@@ -115,7 +115,11 @@ tracecite-acceptance-evidence。测试异常时已有报告也保留。案例中
 开发测试为 native 89 项、JS/Wasm 各 76 项、CLI 集成 50 项；
 便携 API 消费样例扩展为每目标 4 项，发布与独立包检查同时跑原 13 步和新 14 步演示。
 相应源码见 maintenance_v060_wbtest.mbt、scripts/test_document_cli.py 和 scripts/maintenance_review_demo.py；
-最终结果以对应固定提交的 CI 为准。
+已推送的实现提交为 `d5baa31f16811953f4bc9cf9376575d6baa51b34`；
+[常规 CI](https://github.com/Freakz2z/tracecite/actions/runs/36886731368) 和
+[Linux/macOS 独立包工作流](https://github.com/Freakz2z/tracecite/actions/runs/36886730284) 均成功。
+本地源码 ZIP 解包消费与 Linux 独立包验证也通过；[开发验证记录](releases/0.6.0-development.json) 明确保留开发状态，
+不将候选包或本地消费推定为 0.6.0 注册表正式发布。
 
 ## 发布身份与复核方式
 
