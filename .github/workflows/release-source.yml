@@ -45,7 +45,28 @@ jobs:
       - name: Verify source ZIP and actual registry consumers
         run: |
           moon update
-          bash scripts/release.sh --package-only
+          python3 - <<'PY'
+          import hashlib
+          import sys
+          import urllib.request
+          from pathlib import Path
+          from urllib.parse import quote
+
+          sys.path.insert(0, 'scripts')
+          from verify_release_package import module_metadata, registry_module
+
+          metadata = module_metadata(Path('moon.mod').read_text())
+          published = registry_module(metadata)
+          url = 'https://download.mooncakes.io/user/' + quote(metadata['name'], safe='/') + '/' + metadata['version'] + '.zip'
+          with urllib.request.urlopen(url, timeout=60) as response:
+              archive = response.read()
+          if hashlib.sha256(archive).hexdigest() != published['metadata']['checksum']:
+              raise SystemExit('Downloaded archive differs from the registry checksum')
+          destination = Path('_build/publish') / (metadata['name'].replace('/', '-') + '-' + metadata['version'] + '.zip')
+          destination.parent.mkdir(parents=True, exist_ok=True)
+          destination.write_bytes(archive)
+          PY
+          python3 scripts/verify_release_package.py
           python3 scripts/verify_release_package.py --consume-registry
       - name: Attach verified source and receipts
         env:
