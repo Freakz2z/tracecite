@@ -4,10 +4,10 @@
 
 ## 在 MoonBit 项目中使用
 
-在消费项目安装 0.5.0：
+在消费项目安装 0.5.1：
 
 ```sh
-moon add Freakz2z/tracecite@0.5.0
+moon add Freakz2z/tracecite@0.5.1
 ```
 
 在 `moon.pkg` 中导入根包：
@@ -32,7 +32,7 @@ assert_true(project.config.unwrap().strict)
 需要命令行时可直接安装 native 包，生成的命令名为 `tracecite`：
 
 ```sh
-moon install Freakz2z/tracecite/cmd/tracecite@0.5.0
+moon install Freakz2z/tracecite/cmd/tracecite@0.5.1
 tracecite init docs README.md
 tracecite check
 ```
@@ -54,18 +54,20 @@ bash scripts/release.sh
 `moon package` 使用 [.moonignore](../.moonignore)；包内保留 README 图片、[Action 定义](../action.yml)、工作流和文档基线。构建产物与独立二进制压缩包不进入源码包。
 
 当前源码包验证也要求 [验收说明](acceptance.md)、[离线维护案例](../examples/maintenance/README.md)、版本记录与第三方许可材料完整，并使用解包后安装的 CLI 跑完案例。
-Mooncakes 0.5.0 已发布且不会覆盖；本轮材料属于 [未发布改动](../CHANGELOG.md)。当前生成的候选 ZIP 不是已发布 ZIP，下一次上传前需更新模块版本。固定发布提交及原始摘要见验收说明。
+0.5.1 将此前的验收、许可与 Roadmap 材料纳入源码包，变化见 [版本记录](../CHANGELOG.md)。每个发布版本使用独立版本号和固定标签，不覆盖已有版本。ZIP 的 .sha256 与 .json 侧文件记录摘要和源码身份。
 
 ## 上传 Mooncakes
 
-确认 [moon.mod](../moon.mod) 中的模块名称、版本和许可证，在拥有 `Freakz2z` 发布权限的环境登录，再运行：
+确认 [moon.mod](../moon.mod) 中的模块名称、版本和许可证，在拥有 `Freakz2z` 发布权限的环境登录，完成测试并提交、推送源码，确认该提交 CI 通过后，创建与模块版本对应的标签，再运行：
 
 ```sh
+git tag v0.5.1
+git push origin v0.5.1
 moon login
 bash scripts/release.sh --publish
 ```
 
-`--publish` 先完成同一套验证，再调用官方 `moon publish`；成功后查询 Mooncakes 确认目标版本可见。也可以运行 `moon view Freakz2z/tracecite@0.5.0` 核对已发布版本。不要在仓库中保存凭证。
+`--publish` 先要求工作区干净、CLI 与模块版本一致、版本标签指向当前 HEAD，并查询注册表。只有明确的 404 才视为新版本；已有版本、权限错误、服务异常或未知响应均停止。随后完成同一套验证，在上传前再次核对源码提交和版本，再调用官方 `moon publish`；成功后核对注册表摘要、从真实注册表安装库和 CLI，验证 native/JS/Wasm API 及 13 步维护流程。也可以运行 `moon view Freakz2z/tracecite@0.5.1` 核对已发布版本。不要在仓库中保存凭证。
 
 发布准备不使用 `moon publish --dry-run`；只构建源码包时使用 `moon package`。发布新版本应先修改模块版本，更新相关文档，复核引用后刷新基线，并提交源码。
 
@@ -82,3 +84,19 @@ bash scripts/package.sh
 产物附带 SHA-256 文件；包内 BUILD-INFO.json 记录源码提交、工作区修改状态、
 工具链、实际依赖版本和所有载荷摘要。发布分发应从干净的固定提交构建。
 组件清单与 TLS 系统依赖见 [第三方通知](../THIRD_PARTY_NOTICES.md)。
+
+## 正式 GitHub Release
+
+版本标签触发两平台构建。工作流核对两份压缩包的版本、源码 SHA、干净工作区标记、许可载荷与 SHA-256；全部通过后创建 **草稿** Release，上传 Linux/macOS 包、校验文件及 release-assets.json。
+
+维护者完成 Mooncakes 发布与真实消费验证后，将 dist/mooncakes/ 中的 ZIP、摘要、源码身份和发布验证回执上传同一草稿。复核该标签的 CI 与两平台工作流结果后，将草稿公开发布。工作流不会自动替换已存在的 Release 资产。
+
+正式包名称包含版本，例如 tracecite-0.5.1-linux-x86_64.tar.gz。解压后执行其中的 tracecite，无需 MoonBit、Python 或 Node；联网检查仍使用系统 TLS 库与证书。
+
+独立复查注册表安装：
+
+```sh
+python3 scripts/verify_release_package.py --consume-registry
+```
+
+复查需要本地 dist/mooncakes/ 中已验证的对应源码 ZIP，以核对注册表摘要。维护流程证据保存在 _build/acceptance/published-版本/，成功回执写入 ZIP 同目录的 .published.json 文件。

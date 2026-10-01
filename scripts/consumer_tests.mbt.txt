@@ -1,0 +1,26 @@
+///|
+test "public document parser and portable project policy" {
+  let document = @tracecite.parse_document("[配置](config.toml)\n")
+  assert_eq(document.references.length(), 1)
+  assert_eq(document.references[0].source, "config.toml")
+  let project = @tracecite.parse_document_project_config("{\"version\":1,\"paths\":[\"docs\"]}")
+  assert_true(project.config.unwrap().strict)
+  assert_false(project.config.unwrap().online)
+  assert_true(project.diagnostics.is_empty())
+  let json = @json.to_json(project.config.unwrap()).stringify()
+  assert_true(@tracecite.parse_document_project_config(json).config is Some(_))
+}
+
+///|
+test "public source selection, excerpt matching and baseline serialization" {
+  let selected = @tracecite.select_document_source("# Settings\ntimeout = 20\n# Other\nUnused.\n", "settings")
+  assert_true(selected.ok)
+  assert_true(@tracecite.document_excerpt_matches(selected.text, "timeout = 20", "snippet"))
+  assert_false(@tracecite.document_excerpt_matches(selected.text, "timeout = 30", "snippet"))
+  let baseline = @tracecite.DocumentSnapshot::{
+    version: 1,
+    entries: [{ document: "README.md", source: "config.toml", kind: "snippet", excerpt: Some("timeout = 20"), observed: "timeout = 20" }],
+  }
+  let decoded : @tracecite.DocumentSnapshot = @json.from_json(@json.to_json(baseline))
+  assert_eq(decoded.entries[0].observed, "timeout = 20")
+}

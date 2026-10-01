@@ -8,6 +8,11 @@ if [[ $# -gt 1 || ( $mode != prepare && $mode != --package-only && $mode != --pu
   exit 1
 fi
 
+if [[ $mode == --publish ]]; then
+  release_revision=$(git rev-parse HEAD)
+  python3 scripts/release_guard.py --unpublished --expected-revision "$release_revision"
+fi
+
 if [[ $mode != --package-only ]]; then
   moon update
   moon check --deny-warn
@@ -16,6 +21,7 @@ if [[ $mode != --package-only ]]; then
   moon test --target wasm --deny-warn
   python3 scripts/test_document_cli.py
   python3 scripts/test_native_package.py
+  python3 scripts/test_release.py
   python3 -m unittest discover -s adapters -p 'test_*.py'
   sh scripts/smoke.sh
   moon run cmd/main check
@@ -33,6 +39,7 @@ if [[ $mode == --publish ]]; then
     printf '%s\n' 'Package verified. Run moon login with the module owner account, then rerun with --publish.' >&2
     exit 1
   fi
+  python3 scripts/release_guard.py --unpublished --expected-revision "$release_revision"
   moon publish
-  python3 scripts/verify_release_package.py --registry
+  python3 scripts/verify_release_package.py --consume-registry
 fi

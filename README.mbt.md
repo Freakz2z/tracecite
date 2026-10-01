@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/Freakz2z/tracecite/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Freakz2z/tracecite/ci.yml?branch=main&amp;style=flat-square&amp;label=CI" alt="CI status"></a>
-  <img src="https://img.shields.io/badge/version-0.5.0-317d72?style=flat-square" alt="TraceCite 0.5.0">
+  <img src="https://img.shields.io/badge/version-0.5.1-317d72?style=flat-square" alt="TraceCite 0.5.1">
   <img src="https://img.shields.io/badge/built_with-MoonBit-4664b7?style=flat-square" alt="Built with MoonBit">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-586874?style=flat-square" alt="Apache 2.0 license"></a>
 </p>
@@ -23,7 +23,7 @@
   <a href="docs/contract.md">输入约定</a>
 </p>
 
-> **版本说明**：**0.5.0** 提供项目配置、`init` 与 `check` 文档维护入口。Mooncakes 安装请指定 `@0.5.0`；GitHub 的旧 `v0.4.0` 不包含这些入口。
+> **版本说明**：**0.5.1** 保留项目配置、`init` 与 `check`，补齐许可、验收材料与正式发布验证。Mooncakes 安装请指定 `@0.5.1`；GitHub 的旧 `v0.4.0` 不包含这些入口。
 
 ## 为什么需要 TraceCite
 
@@ -81,7 +81,7 @@ bash scripts/package.sh
 ./_build/native/release/build/cmd/main/main.exe check
 ```
 
-打包脚本在 `dist/` 生成本机压缩包。**运行独立 native 二进制无需安装 MoonBit、Python 或 Node。** [打包工作流](.github/workflows/binaries.yml)支持手动触发或版本标签触发，构建 Linux/macOS 包。
+打包脚本在 `dist/` 生成本机压缩包。**运行独立 native 二进制无需安装 MoonBit、Python 或 Node。** [打包工作流](.github/workflows/binaries.yml)支持手动触发或版本标签触发，构建 Linux/macOS 包。正式独立包与校验文件在 [GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.5.1) 下载；解压后直接运行其中的 `tracecite`。
 
 包内保留第三方许可与构建清单；联网 HTTPS 检查使用系统 TLS 库和证书。打包与演示脚本使用 Python 3，它仅是开发工具。
 
@@ -195,10 +195,10 @@ Action 安装并编译 MoonBit，在调用方仓库中解析引用，失败时�
 核心库可在 MoonBit 项目中导入，支持 native、JS、Wasm；CLI 另提供独立 native 包。消费项目可执行：
 
 ```sh
-moon add Freakz2z/tracecite@0.5.0
+moon add Freakz2z/tracecite@0.5.1
 ```
 
-需要命令行时可安装 `moon install Freakz2z/tracecite/cmd/tracecite@0.5.0`，以后直接运行 `tracecite init` 和 `tracecite check`。
+需要命令行时可安装 `moon install Freakz2z/tracecite/cmd/tracecite@0.5.1`，以后直接运行 `tracecite init` 和 `tracecite check`。
 
 维护者使用 `bash scripts/release.sh` 生成并验证源码包，包含解包后的文档检查和三个目标的消费项目测试。准备完成且登录有发布权限的 Mooncakes 账户后，使用 `bash scripts/release.sh --publish` 上传并确认版本。具体步骤见 [发布与接入指南](docs/publishing.md)。
 
@@ -259,4 +259,4 @@ Python 仅用于开发测试和可选的旧 Agent 适配器。JSONL 校验、`ve
 
 验证记录用于说明可执行能力，不代表用户采用率或审核工时收益。
 
-使用 [Apache-2.0 许可证](LICENSE)。第三方组件保留各自许可和上游通知，详见 [许可清单](THIRD_PARTY_NOTICES.md)。新增验收与许可打包材料属于仓库未发布改动，尚未进入既有 0.5.0 Mooncakes 包。
+使用 [Apache-2.0 许可证](LICENSE)。第三方组件保留各自许可和上游通知，详见 [许可清单](THIRD_PARTY_NOTICES.md)。0.5.1 源码包纳入验收材料与许可说明，独立包附完整通知、构建清单和校验文件。

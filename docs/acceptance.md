@@ -1,6 +1,6 @@
 # TraceCite 成果与验收说明
 
-整理日期：2026-09-30（北京时间）。本说明依据 Git 历史中的申报稿技术目标重建成果对照，
+整理日期：2026-10-01（北京时间）。本说明依据 Git 历史中的申报稿技术目标重建成果对照，
 正式提交的申报书仍以申报人保存的版本为准。它提供可检查的证据，不代替组委会的最终验收判断。
 
 ## 九项验收清单
@@ -17,8 +17,8 @@
 | 4 | README 包含目标、安装、用法、示例并可复现 | README.mbt.md 为主说明，README.md 指向它；包含源码启动、Mooncakes 库/CLI 安装、独立包、配置、Action、边界和维护演示。 |
 | 5 | CI 覆盖检查、构建、测试 | .github/workflows/ci.yml 执行最低版本检查、moon check、三目标构建和测试、CLI/适配器/打包测试、实例运行及源码 ZIP 消费验证。 |
 | 6 | 至少一个可运行示例 | examples/maintenance/project 提供离线最小项目，下面的一条命令可直接检查；acceptance_demo.py 提供 13 步维护闭环。 |
-| 7 | 测试覆盖核心路径 | native 79 项、JS/Wasm 各 66 项；CLI 集成 34 项、适配器 6 项、许可打包 7 项。正常路径与失败保护对应关系见下表。 |
-| 8 | 发布到 mooncakes.io | 已发布 Freakz2z/tracecite@0.5.0；库和 cmd/tracecite 均可安装。发布提交、源码摘要与安装命令见后文和发布指南。 |
+| 7 | 测试覆盖核心路径 | native 79 项、JS/Wasm 各 66 项；CLI 集成 34 项、适配器 6 项、许可打包 7 项、发布保护 12 项。正常路径与失败保护对应关系见下表。 |
+| 8 | 发布到 mooncakes.io | 本轮交付 Freakz2z/tracecite@0.5.1；库和 cmd/tracecite 均有安装验证。发布提交、源码摘要与安装命令见后文和发布指南。 |
 | 9 | OSI 开源许可证与上游合规 | 项目采用 Apache-2.0；moon.mod 元数据一致。THIRD_PARTY_NOTICES.md 和 third_party/ 保留依赖、移植来源与 SDK 许可；native 包完整附带 LICENSE/NOTICE 和构建清单，缺项会停止。 |
 
 该固定提交的 [常规 CI](https://github.com/Freakz2z/tracecite/actions/runs/36699193496)
@@ -43,7 +43,7 @@ CLI 从样例根目录读取真实来源，不需要模型或网页服务。CI �
 | 项目配置与维护 | init/check 本地与 CI 复用；非法配置、空范围、覆盖现有文件、错误快照拒绝 | project_wbtest.mbt、scripts/test_document_cli.py |
 | 文件与工作区边界 | 文件回读、引用移动、锚点失效；越界路径与符号链接、无可检查引用拒绝 | scripts/test_document_cli.py、scripts/smoke.sh |
 | 网页与代理 | HTML/charset/重定向/代理解析；非公开地址、带凭证或异常端口来源拒绝 | cli/remote_wbtest.mbt、cli/proxy_wbtest.mbt、scripts/smoke.sh |
-| 发布与许可完整性 | 全新消费项目、CLI 安装、native 解包案例；遗漏 NOTICE、摘要改变、旧文件混入拒绝 | scripts/verify_release_package.py、scripts/test_native_package.py、scripts/verify_native_package.py |
+| 发布与许可完整性 | 全新消费项目、CLI 安装、native 解包案例；遗漏 NOTICE、摘要改变、旧文件混入、重复版本和错位标签拒绝 | scripts/verify_release_package.py、scripts/test_native_package.py、scripts/test_release.py、scripts/verify_native_package.py |
 
 ## 申报方向与当前产品
 
@@ -62,7 +62,7 @@ CLI 从样例根目录读取真实来源，不需要模型或网页服务。CI �
 | 来源追溯与结构化事件关联 | validate_jsonl / validate_evidence_jsonl，调用与来源关联诊断 | [证据校验实现](../validate.mbt)、[JSONL 测试](../tracecite_wbtest.mbt) |
 | 两次运行间发现来源增删与变化 | compare_jsonl / compare；稳定 URI 对比 | [变化比较实现](../compare.mbt)、[两次实际 Codex 运行](live-validation.md) |
 | Agent 接入示例 | 可选 Codex CLI 事件适配器，脱敏事件与轨迹夹具 | [适配器](../adapters/codex_cli.py)、[适配器测试](../adapters/test_codex_cli.py) |
-| 可交付的 MoonBit 工具与开源包 | portable 核心库、native CLI、Mooncakes 0.5.0、GitHub Action | [公开 API](../pkg.generated.mbti)、[发布与消费验证](publishing.md)、[CI](../.github/workflows/ci.yml) |
+| 可交付的 MoonBit 工具与开源包 | portable 核心库、native CLI、Mooncakes 0.5.1、GitHub Action | [公开 API](../pkg.generated.mbti)、[发布与消费验证](publishing.md)、[CI](../.github/workflows/ci.yml) |
 | 降低团队重复核验的门槛 | init / check；一份配置供本地和 CI 使用，定位文档行与变化上下文 | [维护指南](maintenance.md)、[CLI 集成测试](../scripts/test_document_cli.py)、[维护闭环演示](../examples/maintenance/README.md) |
 
 ## 可复现验收
@@ -106,6 +106,15 @@ tracecite-acceptance-evidence。测试异常时已有报告也保留。案例中
 
 ## 发布身份与复核方式
 
+### 0.5.1
+
+本轮交付使用固定标签 v0.5.1；源码与独立包的身份、摘要保存在发布资产中。
+[GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.5.1) 提供 Linux/macOS 包、源码 ZIP、校验文件与消费验证回执。
+运行 `moon view Freakz2z/tracecite@0.5.1` 查询注册表；安装和发布保护见 [发布指南](publishing.md)。
+发布后执行真实注册表消费测试，核对已发布 ZIP 与本地验证包摘要一致，验证三目标 API 和 CLI 的 13 步维护流程。
+
+### 历史发布 0.5.0
+
 已发布模块为 **Freakz2z/tracecite@0.5.0**，对应源码提交
 [49f87d781d4fd71a218eba38121fa12a59b30594](https://github.com/Freakz2z/tracecite/commit/49f87d781d4fd71a218eba38121fa12a59b30594)。
 该提交的 [CI 运行](https://github.com/Freakz2z/tracecite/actions/runs/36694688818) 已通过。
@@ -117,8 +126,8 @@ tracecite-acceptance-evidence。测试异常时已有报告也保留。案例中
 
 可执行 `moon view Freakz2z/tracecite@0.5.0` 查询注册表，并按
 [安装说明](publishing.md)消费实际发布的库或 CLI。
-本轮新增验收材料与许可打包在 [版本记录](../CHANGELOG.md) 中列为未发布改动；
-它们属于新的仓库提交，不声称已经进入既有的 0.5.0 Mooncakes ZIP，也不覆盖该版本。
+0.5.1 将后续验收与许可材料纳入新版本，详见 [版本记录](../CHANGELOG.md)。
+历史 0.5.0 的提交与摘要保持原样。
 
 最终交付时保存审核过的源码 SHA、该 SHA 的 CI 链接、源码/二进制包及 SHA-256。
 native 包的 BUILD-INFO.json 会记录源码 SHA、工作区是否修改、工具链和实际依赖版本；

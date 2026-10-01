@@ -58,6 +58,7 @@ jobs:
         run: |
           python3 scripts/acceptance_demo.py --out _build/acceptance/ci
           python3 scripts/test_native_package.py
+          python3 scripts/test_release.py
       - uses: actions/upload-artifact@v6
         if: always()
         with:

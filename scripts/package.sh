@@ -4,7 +4,8 @@ cd "$(dirname "$0")/.."
 moon build --target native --release --deny-warn
 platform=$(uname -s | tr '[:upper:]' '[:lower:]')
 architecture=$(uname -m)
-bundle="tracecite-$platform-$architecture"
+version=$(python3 -c 'from scripts.package_notices import metadata; from pathlib import Path; print(metadata(Path("moon.mod"), "version"))')
+bundle="tracecite-$version-$platform-$architecture"
 mkdir -p dist _build
 staging=$(mktemp -d _build/native-package.XXXXXX)
 trap 'rm -rf "$staging"' EXIT
