@@ -2,9 +2,15 @@
 
 ## Unreleased
 
-暂无新变更。
+- 增加手动发布源码验证工作流：签出固定标签，下载注册表原始 ZIP，核对源码和摘要，验证真实消费后附加 Release 资产。
+- 补齐 0.5.1 发布后的固定提交、资产摘要与验收回执；原版本标签和已发布源码包保持不变。
 
 ## 0.5.1 — 2026-10-01
+
+已发布 [GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.5.1) 和
+[Freakz2z/tracecite@0.5.1](https://mooncakes.io/docs/Freakz2z/tracecite)。
+源码提交：[d4090a5](https://github.com/Freakz2z/tracecite/commit/d4090a5ffa8fb1fdf01fe48a6b27801f72753683)。
+交付摘要与消费验证见 [验收说明](docs/acceptance.md)。
 
 - 同步模块、CLI 与安装说明版本，保留 0.5.0 的公开接口和维护行为。
 - 发布前要求干净的固定标签提交；已有版本与注册表异常会阻止上传。

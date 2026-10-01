@@ -450,6 +450,12 @@
     },
     {
       "document": "docs/acceptance.md",
+      "source": "releases/0.5.1.json",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "docs/acceptance.md",
       "source": "publishing.md",
       "kind": "link",
       "observed": ""
@@ -475,6 +481,12 @@
     {
       "document": "docs/acceptance.md",
       "source": "../THIRD_PARTY_NOTICES.md",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "CHANGELOG.md",
+      "source": "docs/acceptance.md",
       "kind": "link",
       "observed": ""
     },

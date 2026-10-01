@@ -7,24 +7,26 @@
 
 ## 当前基础
 
-0.5.1 为本轮交付版本，继承 0.5.0 的项目配置、init/check、GitHub Action 和 portable 核心库。
-本轮将验收说明、第三方许可及 13 步离线维护演示纳入正式包，按下面的清单完成发布与验证。
+0.5.1 已发布到 Mooncakes 和 GitHub，继承 0.5.0 的项目配置、init/check、GitHub Action 和 portable 核心库。
+验收说明、第三方许可及 13 步离线维护演示已纳入正式源码包；实际注册表安装与两平台独立包均已验证。
 已发布内容与后续改动见 [版本记录](CHANGELOG.md)，交付证据见 [验收说明](docs/acceptance.md)。
 
 下列版本为规划目标，尚未完成的事项保持未勾选；执行顺序与范围根据实际反馈调整。
 
-## 0.5.1：发布收口
+## 0.5.1：发布收口（已完成）
 
 优先让 GitHub 和 Mooncakes 的正式交付材料一致。
 
-- [ ] 将新增验收材料、许可通知纳入正式 Mooncakes 包。
+- [x] 将新增验收材料、许可通知纳入正式 Mooncakes 包。
 - [x] 同步模块、CLI、安装示例和版本记录中的版本号。
-- [ ] 创建 GitHub 版本标签和正式 Release，长期提供 Linux/macOS 独立包与 SHA-256 校验文件。
+- [x] 创建 GitHub 版本标签和正式 Release，长期提供 Linux/macOS 独立包与 SHA-256 校验文件。
 - [x] 发布脚本防止重复发布已有版本，核对构建来源与交付身份。
-- [ ] 从实际注册表安装发布后的库和 CLI，验证公开 API 与维护流程。
+- [x] 从实际注册表安装发布后的库和 CLI，验证公开 API 与维护流程。
 
 **完成标准**：Mooncakes 安装、源码构建、独立包运行均通过，发布版本可对应固定提交。
 执行步骤以 [发布指南](docs/publishing.md)为基础。
+
+发布成果：[GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.5.1)、[Mooncakes](https://mooncakes.io/docs/Freakz2z/tracecite)。固定提交、摘要和验证回执见 [0.5.1 交付记录](docs/releases/0.5.1.json)。
 
 ## 0.6.0：降低维护成本
 
@@ -69,5 +71,5 @@
 优先保持现有公开 API、命令和项目配置的兼容性；发生兼容性变化时，在版本记录中明确说明。
 第三方组件继续保留各自许可和来源，具体要求见 [第三方通知](THIRD_PARTY_NOTICES.md)。
 
-实施顺序为：先完成 0.5.1，再改善变化复核体验，同时尽早积累真实仓库反馈。
+后续从 0.6.0 的维护体验改进开始，同时尽早积累真实仓库反馈。
 项目安装与当前用法见 [README](README.mbt.md)。

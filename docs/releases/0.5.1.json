@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "module": "Freakz2z/tracecite",
+  "version": "0.5.1",
+  "tag": "v0.5.1",
+  "revision": "d4090a5ffa8fb1fdf01fe48a6b27801f72753683",
+  "modified_checkout": false,
+  "release_url": "https://github.com/Freakz2z/tracecite/releases/tag/v0.5.1",
+  "mooncakes_url": "https://mooncakes.io/docs/Freakz2z/tracecite",
+  "registry_created_at": "2026-10-01T13:51:25.850987+00:00",
+  "source": {
+    "schema": 1,
+    "module": "Freakz2z/tracecite",
+    "version": "0.5.1",
+    "revision": "d4090a5ffa8fb1fdf01fe48a6b27801f72753683",
+    "modified_checkout": false,
+    "archive": "Freakz2z-tracecite-0.5.1.zip",
+    "sha256": "7cf18e24f54f8fefd035da318a7d268e2dabbcd5767e2b2c20791af8880e0c14"
+  },
+  "registry_consumption": {
+    "schema": 1,
+    "module": "Freakz2z/tracecite",
+    "version": "0.5.1",
+    "registry_sha256": "7cf18e24f54f8fefd035da318a7d268e2dabbcd5767e2b2c20791af8880e0c14",
+    "targets": [
+      "native",
+      "js",
+      "wasm"
+    ],
+    "cli_install": "registry",
+    "maintenance_steps": 13,
+    "passed": true
+  },
+  "native_assets": [
+    {
+      "file": "tracecite-0.5.1-darwin-arm64.tar.gz",
+      "sha256": "e4075bc32c25e3b4ee4ab18059168a855150bcdc97cee70bec39693b49e861ee",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "moonc": "v0.10.14+7d59c7ec9 (2026-09-18)",
+      "moon": "moon 0.1.20260920 (914d7da 2026-09-20)\n\nFeature flags enabled: rr_moon_mod,rr_moon_pkg"
+    },
+    {
+      "file": "tracecite-0.5.1-linux-x86_64.tar.gz",
+      "sha256": "a9bfd34ffd30995ef42b405c04a1ffb9fa01281456ac86f7d6b0512dcc1f3fac",
+      "platform": "linux",
+      "architecture": "x86_64",
+      "moonc": "v0.10.14+7d59c7ec9 (2026-09-18)",
+      "moon": "moon 0.1.20260920 (914d7da 2026-09-20)\n\nFeature flags enabled: rr_moon_mod,rr_moon_pkg"
+    }
+  ],
+  "ci": {
+    "tag_checks": "https://github.com/Freakz2z/tracecite/actions/runs/36871509146",
+    "native_packages": "https://github.com/Freakz2z/tracecite/actions/runs/36871509316",
+    "source_attachment": "https://github.com/Freakz2z/tracecite/actions/runs/36874157757"
+  },
+  "validation": {
+    "native_tests": 79,
+    "js_tests": 66,
+    "wasm_tests": 66,
+    "cli_integration_tests": 34,
+    "adapter_tests": 6,
+    "native_license_tests": 7,
+    "release_guard_tests": 12,
+    "duplicate_publish_rejected": true,
+    "downloaded_native_digests_verified": true,
+    "downloaded_linux_maintenance_steps": 13
+  },
+  "scope": "Controlled maintenance demonstrations and release validation; no adoption or time-saving claims.",
+  "release_public": true,
+  "release_published_at": "2026-10-01T14:14:18Z",
+  "record_location": "Post-release verification record on main; the published tag and source archive remain unchanged."
+}
