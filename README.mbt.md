@@ -253,6 +253,7 @@ Python 仅用于开发测试和可选的旧 Agent 适配器。JSONL 校验、`ve
 | [离线维护演示](examples/maintenance/README.md) | 13 步维护闭环、退出码与 JSON 证据 |
 | [成果与验收说明](docs/acceptance.md) | 原申报方向、四项验收依据、固定发布身份与验证方法 |
 | [版本记录](CHANGELOG.md) | 已发布版本与后续仓库改动 |
+| [更新计划](ROADMAP.md) | 0.5.1 发布收口、维护体验、真实项目验证与生态接入 |
 | [第三方许可通知](THIRD_PARTY_NOTICES.md) | 依赖、标准库及 native 运行时的许可与来源 |
 | [Mooncakes 模块](https://mooncakes.io/docs/Freakz2z/tracecite) | 平台上的已发布版本 |
 
