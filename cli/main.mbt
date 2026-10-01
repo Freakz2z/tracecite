@@ -13,12 +13,12 @@ pub async fn run() -> Unit {
   }
   if args.length() <= index || args[index] == "--help" || args[index] == "-h" {
     @stdio.stdout.write(
-      "TraceCite — Markdown document reference maintenance\n\nUsage: tracecite init [file.md|directory ...] [--root directory]\n       tracecite check [file.md|directory ...] [--root directory]\n       [--config file.json | --no-config] [--strict | --no-strict]\n       [--online | --offline] [--json | --github] [--exclude path]\n       [--snapshot file.json] [--baseline file.json]\n\ninit checks sources and creates tracecite.json plus a reference baseline.\ncheck reuses the project configuration. Explicit arguments override it.\nChecks are local by default. Use source=path on code fences to bind snippets.\nUnbound code blocks and skipped web references are counted separately.\n\nLegacy commands: check-report, verify-notes, verify-urls, verify-files, compare,\n                 <trace.jsonl> [--evidence] [--json]\n",
+      "TraceCite — Markdown document reference maintenance\n\nUsage: tracecite init [file.md|directory ...] [--root directory]\n       tracecite check [file.md|directory ...] [--root directory]\n       [--config file.json | --no-config] [--strict | --no-strict]\n       [--online | --offline] [--json | --github] [--exclude path]\n       [--snapshot file.json] [--baseline file.json]\n       [--review] [--preview-baseline]\n       [--max-skipped-web N] [--max-unbound-snippets N]\n\ninit checks sources and creates tracecite.json plus a reference baseline.\ncheck reuses the project configuration. Explicit arguments override it.\nChecks are local by default. Use source=path on code fences to bind snippets.\nUnbound code blocks and skipped web references are counted separately.\nUse quoted glob patterns for automatic document discovery.\n--review groups affected document locations by source.\n--preview-baseline shows a candidate and its changes without writing files.\n\nLegacy commands: check-report, verify-notes, verify-urls, verify-files, compare,\n                 <trace.jsonl> [--evidence] [--json]\n",
     )
     return
   }
   if args[index] == "--version" {
-    @stdio.stdout.write("TraceCite 0.5.1\n")
+    @stdio.stdout.write("TraceCite 0.6.0\n")
     return
   }
   if args[index] == "check" || args[index] == "init" {

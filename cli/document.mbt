@@ -22,6 +22,25 @@ priv struct DocumentCheckReport {
   unbound_snippets : Int
   online : Bool
   items : Array[DocumentCheckItem]
+  review : Array[DocumentReviewGroup]
+  baseline_preview : DocumentBaselinePreview?
+} derive(ToJson)
+
+///|
+priv struct DocumentReviewGroup {
+  source : String
+  locations : Array[DocumentCheckItem]
+} derive(ToJson)
+
+///|
+priv struct DocumentBaselinePreview {
+  can_update : Bool
+  added_count : Int
+  changed_count : Int
+  removed_count : Int
+  changes : Array[@tracecite.DocumentSnapshotChange]
+  scanned_documents : Array[String]
+  snapshot : @tracecite.DocumentSnapshot?
 } derive(ToJson)
 
 ///|
@@ -42,6 +61,10 @@ async fn document_command(
   let mut use_config = true
   let mut json_output = false
   let mut github = false
+  let mut review_output = false
+  let mut preview_baseline = false
+  let mut max_skipped_web : Int? = None
+  let mut max_unbound_snippets : Int? = None
   let mut index = start
   while index < args.length() {
     let option = args[index]
@@ -49,7 +72,9 @@ async fn document_command(
       option == "--snapshot" ||
       option == "--baseline" ||
       option == "--config" ||
-      option == "--exclude" {
+      option == "--exclude" ||
+      option == "--max-skipped-web" ||
+      option == "--max-unbound-snippets" {
       if index + 1 >= args.length() || args[index + 1].has_prefix("--") {
         @stdio.stderr.write("Missing value for \{option}\n")
         return 1
@@ -62,6 +87,20 @@ async fn document_command(
         "--config" => {
           config_arg = value
           config_explicit = true
+        }
+        "--max-skipped-web" | "--max-unbound-snippets" => {
+          let limit = @string.parse_int(value) catch { _ => -1 }
+          if limit < 0 {
+            @stdio.stderr.write(
+              "Expected a nonnegative integer for \{option}\n",
+            )
+            return 1
+          }
+          if option == "--max-skipped-web" {
+            max_skipped_web = Some(limit)
+          } else {
+            max_unbound_snippets = Some(limit)
+          }
         }
         _ =>
           excludes.push(value.strip_prefix("./").unwrap_or(value[:]).to_owned())
@@ -77,10 +116,15 @@ async fn document_command(
       "--no-config" => use_config = false
       "--json" => json_output = true
       "--github" => github = true
+      "--review" => review_output = true
+      "--preview-baseline" => {
+        preview_baseline = true
+        review_output = true
+      }
       "--help" => {
         let command = if initialize { "init" } else { "check" }
         @stdio.stdout.write(
-          "Usage: tracecite \{command} [file.md|directory ...] [--root directory]\n       [--config file.json | --no-config] [--online | --offline]\n       [--strict | --no-strict] [--json | --github] [--exclude path]\n       [--snapshot file.json] [--baseline file.json]\n\ncheck reads tracecite.json from the root when present. Explicit arguments override it.\ninit checks sources and creates a configuration plus baseline without replacing existing files.\n--snapshot ignores a configured baseline unless --baseline is also explicitly supplied.\n",
+          "Usage: tracecite \{command} [file.md|directory ...] [--root directory]\n       [--config file.json | --no-config] [--online | --offline]\n       [--strict | --no-strict] [--json | --github] [--exclude path]\n       [--snapshot file.json] [--baseline file.json]\n       [--review] [--preview-baseline]\n       [--max-skipped-web N] [--max-unbound-snippets N]\n\ncheck reads tracecite.json from the root when present. Explicit arguments override it.\ninit checks sources and creates a configuration plus baseline without replacing existing files.\n--snapshot ignores a configured baseline unless --baseline is also explicitly supplied.\n--preview-baseline is read-only and cannot be combined with init or --snapshot.\n--review groups problems by source; coverage limits apply even with --no-strict.\n",
         )
         return 0
       }
@@ -93,6 +137,12 @@ async fn document_command(
       }
     }
     index = index + 1
+  }
+  if preview_baseline && (initialize || snapshot_path is Some(_)) {
+    @stdio.stderr.write(
+      "--preview-baseline is read-only; use it separately from init or --snapshot\n",
+    )
+    return 1
   }
   if json_output && github {
     @stdio.stderr.write("Use --json or --github separately\n")
@@ -176,6 +226,27 @@ async fn document_command(
   let strict = strict_arg.unwrap_or(
     project.map(config => config.strict).unwrap_or(initialize),
   )
+  let configured_coverage = project
+    .map(config => config.coverage)
+    .unwrap_or({ max_skipped_web: None, max_unbound_snippets: None, })
+  let coverage : @tracecite.DocumentCoveragePolicy = {
+    max_skipped_web: if max_skipped_web is Some(_) {
+      max_skipped_web
+    } else {
+      configured_coverage.max_skipped_web
+    },
+    max_unbound_snippets: if max_unbound_snippets is Some(_) {
+      max_unbound_snippets
+    } else {
+      configured_coverage.max_unbound_snippets
+    },
+  }
+  for exclude in excludes {
+    if !@tracecite.valid_document_path_pattern(exclude) {
+      @stdio.stderr.write("Invalid exclusion pattern: \{exclude}\n")
+      return 1
+    }
+  }
   let mut init_config_path : String? = None
   if initialize {
     let config_path = document_creation_path(root, config_arg)
@@ -230,10 +301,45 @@ async fn document_command(
   let paths : Array[String] = []
   let seen : Map[String, Bool] = Map([])
   for target in targets {
-    collect_document_paths(root_join(root, target), root, excludes, paths, seen) catch {
+    let matched : Array[String] = []
+    let local_seen : Map[String, Bool] = Map([])
+    let pattern = if @tracecite.document_path_has_glob(target) {
+      Some(target)
+    } else {
+      None
+    }
+    if pattern is Some(value) && !@tracecite.valid_document_path_pattern(value) {
+      @stdio.stderr.write("Invalid scan pattern: \{target}\n")
+      return 1
+    }
+    let search_root = if pattern is Some(_) {
+      document_glob_root(root, target)
+    } else {
+      root_join(root, target)
+    }
+    collect_document_paths(
+      search_root,
+      root,
+      excludes,
+      matched,
+      local_seen,
+      pattern~,
+    ) catch {
       _ => {
         @stdio.stderr.write("Cannot scan document target: \{target}\n")
         return 1
+      }
+    }
+    if pattern is Some(_) && matched.is_empty() {
+      @stdio.stderr.write(
+        "Scan pattern matched no Markdown documents after exclusions: \{target}\n",
+      )
+      return 1
+    }
+    for path in matched {
+      if seen.get(path) is None {
+        seen.set(path, true)
+        paths.push(path)
       }
     }
   }
@@ -246,6 +352,7 @@ async fn document_command(
   let fetched : Map[String, RemoteFetch] = Map([])
   let mut unbound_snippets = 0
   let mut checked_count = 0
+  let mut first_unbound : String? = None
   for path in paths {
     let document = relative_document_path(root, path)
     if @fs.file_size(path) > 2_097_152 {
@@ -268,6 +375,9 @@ async fn document_command(
     }
     let parsed = @tracecite.parse_document(content)
     unbound_snippets = unbound_snippets + parsed.unbound_snippets
+    if first_unbound is None && parsed.unbound_snippets > 0 {
+      first_unbound = Some(document)
+    }
     for diagnostic in parsed.diagnostics {
       items.push(
         document_problem(
@@ -456,7 +566,19 @@ async fn document_command(
           message: "document excerpt was not found in the selected source; review the candidate excerpt",
           expected,
           actual: Some(@tracecite.bounded_document_text(observed)),
-          previous: None,
+          previous: if baseline is Some(snapshot) {
+            snapshot.entries
+            .iter()
+            .find_first(old => {
+              old.document == document &&
+              old.source == reference.source &&
+              old.kind == reference.kind &&
+              old.excerpt == reference.excerpt
+            })
+            .map(old => @tracecite.bounded_document_text(old.observed))
+          } else {
+            None
+          },
         })
         continue
       }
@@ -513,6 +635,77 @@ async fn document_command(
       })
     }
   }
+  let skipped_count = items.filter(item => item.status == "skipped").length()
+  if coverage.max_skipped_web is Some(limit) && skipped_count > limit {
+    let first = items
+      .iter()
+      .find_first(item => item.status == "skipped")
+      .unwrap()
+    items.push(
+      document_problem(
+        first.document,
+        first.line,
+        "coverage",
+        "error",
+        "SKIPPED_WEB_LIMIT_EXCEEDED",
+        "\{skipped_count} web references skipped; configured maximum is \{limit}",
+      ),
+    )
+  }
+  if coverage.max_unbound_snippets is Some(limit) && unbound_snippets > limit {
+    items.push(
+      document_problem(
+        first_unbound.unwrap(),
+        1,
+        "coverage",
+        "error",
+        "UNBOUND_SNIPPET_LIMIT_EXCEEDED",
+        "\{unbound_snippets} code blocks without source=; configured maximum is \{limit}",
+      ),
+    )
+  }
+  let independently_verified = checked_count > 0 &&
+    !items.any(item => {
+      item.status != "ok" &&
+      item.status != "skipped" &&
+      item.status != "changed" &&
+      item.code != "REFERENCE_NOT_IN_BASELINE"
+    })
+  let candidate = @tracecite.DocumentSnapshot::{ version: 1, entries, }
+  let changes = if preview_baseline && independently_verified {
+    @tracecite.compare_document_snapshots(
+      baseline.unwrap_or({ version: 1, entries: [], }),
+      candidate,
+    )
+  } else {
+    []
+  }
+  let preview : DocumentBaselinePreview? = if preview_baseline {
+    Some({
+      can_update: independently_verified,
+      added_count: changes.filter(change => change.change == "added").length(),
+      changed_count: changes
+      .filter(change => change.change == "changed")
+      .length(),
+      removed_count: changes
+      .filter(change => change.change == "removed")
+      .length(),
+      changes,
+      scanned_documents: paths.map(path => relative_document_path(root, path)),
+      snapshot: if independently_verified {
+        Some(candidate)
+      } else {
+        None
+      },
+    })
+  } else {
+    None
+  }
+  let review = if review_output {
+    document_review_groups(items, root)
+  } else {
+    []
+  }
   let failed_count = items
     .filter(item => {
       item.status == "error" ||
@@ -522,7 +715,6 @@ async fn document_command(
     })
     .length()
   let warning_count = items.filter(item => item.status == "warning").length()
-  let skipped_count = items.filter(item => item.status == "skipped").length()
   let report = DocumentCheckReport::{
     document_count: paths.length(),
     checked_count,
@@ -532,6 +724,8 @@ async fn document_command(
     unbound_snippets,
     online,
     items,
+    review,
+    baseline_preview: preview,
   }
   let passed = failed_count == 0 &&
     (!strict || warning_count == 0) &&
@@ -539,7 +733,7 @@ async fn document_command(
   if json_output {
     @stdio.stdout.write(@json.to_json(report).stringify(indent=2) + "\n")
   } else {
-    render_document_report(report, github)
+    render_document_report(report, github, review_output~)
   }
   if checked_count == 0 {
     @stdio.stderr.write("No checkable references; nothing has been verified\n")
@@ -574,7 +768,11 @@ async fn document_command(
       let portable_targets : Array[String] = []
       for target in targets {
         portable_targets.push(
-          relative_document_path(root, @fs.realpath(root_join(root, target))),
+          if @tracecite.document_path_has_glob(target) {
+            target
+          } else {
+            relative_document_path(root, @fs.realpath(root_join(root, target)))
+          },
         )
       }
       let config : @tracecite.DocumentProjectConfig = {
@@ -584,6 +782,7 @@ async fn document_command(
         baseline: Some(path),
         strict,
         online,
+        coverage,
       }
       let content = @json.to_json(config).stringify(indent=2) + "\n"
       let validated = @tracecite.parse_document_project_config(content)
@@ -651,12 +850,77 @@ async fn write_new_document_file(path : String, content : String) -> Bool {
 }
 
 ///|
+fn document_glob_root(root : String, pattern : String) -> String {
+  let parts : Array[String] = []
+  for part in pattern.split("/") {
+    if @tracecite.document_path_has_glob(part.to_owned()) {
+      break
+    }
+    if part != "" && part != "." {
+      parts.push(part.to_owned())
+    }
+  }
+  if parts.is_empty() {
+    root
+  } else {
+    root_join(root, parts.join("/"))
+  }
+}
+
+///|
+async fn document_review_groups(
+  items : Array[DocumentCheckItem],
+  root : String,
+) -> Array[DocumentReviewGroup] {
+  let groups : Array[DocumentReviewGroup] = []
+  let indices : Map[String, Int] = Map([])
+  for item in items {
+    if item.status == "ok" || item.status == "skipped" {
+      continue
+    }
+    let (source_path, _) = split_document_source(item.source)
+    let source = if item.code == "SKIPPED_WEB_LIMIT_EXCEEDED" ||
+      item.code == "UNBOUND_SNIPPET_LIMIT_EXCEEDED" {
+      "coverage"
+    } else if source_path == "" {
+      item.document
+    } else if source_path.contains(":") {
+      source_path
+    } else {
+      let decoded = decode_document_path(source_path).unwrap_or(source_path)
+      let relative = @tracecite.normalize_document_path_pattern(
+        document_parent(item.document) + "/" + decoded,
+      )
+      let canonical = @fs.realpath(
+        root_join(document_parent(root_join(root, item.document)), decoded),
+      ) catch {
+        _ => ""
+      }
+      if canonical != "" && inside_document_root(root, canonical) {
+        relative_document_path(root, canonical)
+      } else {
+        relative.unwrap_or(item.document + " -> " + source_path)
+      }
+    }
+    match indices.get(source) {
+      Some(index) => groups[index].locations.push(item)
+      None => {
+        indices.set(source, groups.length())
+        groups.push({ source, locations: [item], })
+      }
+    }
+  }
+  groups
+}
+
+///|
 async fn collect_document_paths(
   path : String,
   root : String,
   excludes : Array[String],
   paths : Array[String],
   seen : Map[String, Bool],
+  pattern? : String? = None,
 ) -> Unit {
   let canonical = @fs.realpath(path)
   if !inside_document_root(root, canonical) {
@@ -664,9 +928,7 @@ async fn collect_document_paths(
   }
   let relative = relative_document_path(root, canonical)
   if excludes.any(exclude => {
-      exclude == "." ||
-      relative == exclude ||
-      relative.has_prefix(exclude + "/")
+      @tracecite.document_path_pattern_matches(exclude, relative)
     }) {
     return
   }
@@ -683,10 +945,14 @@ async fn collect_document_paths(
         if @fs.kind(child, follow_symlink=false) == SymLink {
           continue
         }
-        collect_document_paths(child, root, excludes, paths, seen)
+        collect_document_paths(child, root, excludes, paths, seen, pattern~)
       }
     Regular | SymLink => {
       if !path.to_lower().has_suffix(".md") {
+        return
+      }
+      if pattern is Some(value) &&
+        !@tracecite.document_path_pattern_matches(value, relative) {
         return
       }
       if seen.get(canonical) is None {
@@ -807,6 +1073,7 @@ fn document_problem(
 async fn render_document_report(
   report : DocumentCheckReport,
   github : Bool,
+  review_output? : Bool = false,
 ) -> Unit {
   let status = if report.failed_count > 0 {
     "FAIL"
@@ -825,21 +1092,67 @@ async fn render_document_report(
   @stdio.stdout.write(
     "Coverage: \{report.skipped_count} web references skipped; \{report.unbound_snippets} code blocks without source= (not checked)\n",
   )
+  if review_output {
+    @stdio.stdout.write("Review: \{report.review.length()} source groups\n")
+    for group in report.review {
+      @stdio.stdout.write(
+        "  Source: \{group.source} (\{group.locations.length()} locations)\n",
+      )
+      for item in group.locations {
+        @stdio.stdout.write(
+          "    \{item.document}:\{item.line} [\{item.code}] \{item.message}\n",
+        )
+        if item.expected is Some(text) {
+          render_document_excerpt("document excerpt", text)
+        }
+        if item.previous is Some(text) {
+          render_document_excerpt("previously observed", text)
+        }
+        if item.actual is Some(text) {
+          render_document_excerpt("current source candidate", text)
+        }
+      }
+    }
+  }
+  if report.baseline_preview is Some(preview) {
+    @stdio.stdout.write(
+      "Baseline preview: can_update=\{preview.can_update}; \{preview.added_count} added, \{preview.changed_count} changed, \{preview.removed_count} removed; no files written\n",
+    )
+    for change in preview.changes {
+      @stdio.stdout.write(
+        "  \{change.change}: \{change.document} -> \{change.source} (\{change.kind})\n",
+      )
+      if change.previous is Some(text) {
+        render_document_excerpt(
+          "previously observed",
+          @tracecite.bounded_document_text(text),
+        )
+      }
+      if change.current is Some(text) {
+        render_document_excerpt(
+          "current source",
+          @tracecite.bounded_document_text(text),
+        )
+      }
+    }
+  }
   for item in report.items {
     if item.status == "skipped" || item.status == "ok" {
       continue
     }
-    @stdio.stdout.write(
-      "  \{item.document}:\{item.line} [\{item.code}] \{item.source}\n    \{item.message}\n",
-    )
-    if item.expected is Some(expected) {
-      render_document_excerpt("document excerpt", expected)
-    }
-    if item.previous is Some(previous) {
-      render_document_excerpt("previously observed", previous)
-    }
-    if item.actual is Some(actual) {
-      render_document_excerpt("current source candidate", actual)
+    if !review_output {
+      @stdio.stdout.write(
+        "  \{item.document}:\{item.line} [\{item.code}] \{item.source}\n    \{item.message}\n",
+      )
+      if item.expected is Some(expected) {
+        render_document_excerpt("document excerpt", expected)
+      }
+      if item.previous is Some(previous) {
+        render_document_excerpt("previously observed", previous)
+      }
+      if item.actual is Some(actual) {
+        render_document_excerpt("current source candidate", actual)
+      }
     }
     if github {
       let level = if item.status == "warning" { "warning" } else { "error" }

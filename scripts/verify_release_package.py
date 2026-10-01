@@ -68,6 +68,10 @@ def verify_package(metadata):
         "scripts/test_native_package.py",
         "scripts/release_guard.py", "scripts/test_release.py", "scripts/prepare_github_release.py",
         "scripts/consumer_tests.mbt.txt",
+        "document_glob.mbt", "document_review.mbt", "scripts/maintenance_review_demo.py",
+        "examples/review/README.md", "examples/review/project/docs/guide.md",
+        "examples/review/project/docs/drafts/draft.md", "examples/review/project/source.md",
+        "examples/review/project/config.toml", "maintenance_v060_wbtest.mbt",
         "examples/maintenance/README.md", "examples/maintenance/project/guide.md",
         "examples/maintenance/project/source.md", "examples/maintenance/project/config.toml",
     )
@@ -112,6 +116,8 @@ def verify_package(metadata):
         run(str(installed), "check", cwd=package)
         run("python3", "scripts/acceptance_demo.py", "--binary", str(installed),
             "--out", str(Path(temporary) / "acceptance"), cwd=package)
+        run("python3", "scripts/maintenance_review_demo.py", "--binary", str(installed),
+            "--out", str(Path(temporary) / "review"), cwd=package)
 
         verify_consumer(Path(temporary), metadata, package=package)
 
@@ -154,6 +160,7 @@ def verify_registry(metadata, consume=False):
     if not archive.is_file() or checksum != hashlib.sha256(archive.read_bytes()).hexdigest():
         raise ValueError("Published checksum differs from the verified source archive")
     from acceptance_demo import demonstrate
+    from maintenance_review_demo import demonstrate_review
     with tempfile.TemporaryDirectory(prefix="tracecite-registry-") as temporary:
         root = Path(temporary)
         # No moon.work and no local package override: consume the actual registry.
@@ -167,9 +174,10 @@ def verify_registry(metadata, consume=False):
             raise ValueError("Registry-installed CLI version mismatch")
         evidence = REPO / "_build/acceptance" / ("published-" + metadata["version"])
         demonstrate(evidence / os.path.basename(temporary), binary)
+        demonstrate_review(evidence / (os.path.basename(temporary) + "-review"), binary)
     receipt = {"schema": 1, "module": metadata["name"], "version": metadata["version"],
                "registry_sha256": checksum, "targets": ["native", "js", "wasm"],
-               "cli_install": "registry", "maintenance_steps": 13, "passed": True}
+               "cli_install": "registry", "maintenance_steps": 13, "review_steps": 14, "passed": True}
     archive.with_suffix(".published.json").write_text(json.dumps(receipt, indent=2) + "\n")
     print("Actual registry consumers and installed CLI verified")
 

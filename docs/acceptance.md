@@ -104,6 +104,19 @@ CLI 集成 **34** 项、适配器 **6** 项。数字对应固定提交，后续�
 tracecite-acceptance-evidence。测试异常时已有报告也保留。案例中的接受来源变化步骤是
 显式模拟人工复核，产品不会自动替维护者接受变化。
 
+## 0.6.0 开发验证
+
+当前源码模块与 CLI 为 0.6.0；正式 Mooncakes 和 GitHub Release 仍为下文的 0.5.1。
+新能力包括通配符自动发现、覆盖数量要求、Setext 标题、来源影响集中复核和只读基线预览。
+原来的项目配置、Action 入口和快照更新方式继续兼容。
+
+新增 [14 步离线复核演示](../examples/review/README.md)验证新增文档、来源变化、多文档影响归并、
+覆盖超限阻止候选/写入、修复绑定、删除文档与最终恢复。它保留逐步 JSON 报告，不替代真实项目采用数据。
+开发测试为 native 89 项、JS/Wasm 各 76 项、CLI 集成 50 项；
+便携 API 消费样例扩展为每目标 4 项，发布与独立包检查同时跑原 13 步和新 14 步演示。
+相应源码见 maintenance_v060_wbtest.mbt、scripts/test_document_cli.py 和 scripts/maintenance_review_demo.py；
+最终结果以对应固定提交的 CI 为准。
+
 ## 发布身份与复核方式
 
 ### 0.5.1

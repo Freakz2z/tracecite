@@ -1,5 +1,7 @@
 # 文档引用维护指南
 
+本页描述当前 0.6.0 开发源码。正式发布的 0.5.1 保留原有用法；通配符、覆盖要求、Setext 和复核预览需使用 0.6.0 源码构建。
+
 `check` 直接读取 Markdown 和来源文件。引用来源相对当前文档的目录解析；`--root` 定义整个工作区的边界，而不是改变每条来源的相对目录。
 
 ## 项目配置：本地与 CI 用同一套规则
@@ -30,31 +32,63 @@ moon run cmd/main check --root /path/to/repository
     "docs/acceptance.md",
     "CHANGELOG.md",
     "THIRD_PARTY_NOTICES.md",
-    "examples/maintenance/README.md"
+    "examples/maintenance/README.md",
+    "examples/review/README.md"
   ],
   "exclude": [],
   "baseline": ".tracecite-docs.json",
   "strict": true,
-  "online": false
+  "online": false,
+  "coverage": {
+    "max_skipped_web": 31,
+    "max_unbound_snippets": 40
+  }
 }
 ```
 
 | 字段 | 省略时的值 | 含义 |
 | --- | --- | --- |
 | `version` | 必填 | 当前为 `1`，未知版本和字段会报错 |
-| `paths` | `["."]` | 文件或目录的数组，不能为空 |
-| `exclude` | `[]` | 排除文件或目录，目录包含其子路径；不支持通配符 |
+| `paths` | `["."]` | 文件、目录或通配符的数组，不能为空 |
+| `exclude` | `[]` | 排除文件、目录或通配符；字面目录包含其子路径 |
 | `baseline` | 无 | 可选的 `.json` 基线路径；`null` 表示不比较基线 |
 | `strict` | `true` | 待复核项导致失败 |
 | `online` | `false` | 是否访问网页来源 |
+| `coverage` | 不设置上限 | `max_skipped_web` / `max_unbound_snippets` 指定允许的跳过数量 |
 
 配置里的路径相对 `--root`，不相对配置文件所在目录；只接受根目录内的相对路径。即使 Action 的进程在工具目录运行，也读取调用方仓库的配置。配置文件上限为 64 KiB。
 
-参数覆盖规则：指定文件或目录时替换配置中的 `paths`；`--exclude` 追加排除项；`--baseline` 覆盖基线；`--online` / `--offline`、`--strict` / `--no-strict` 覆盖对应开关。输出格式只由 `--json` 或 `--github` 控制。
+参数覆盖规则：指定文件或目录时替换配置中的 `paths`；`--exclude` 追加排除项；`--baseline` 覆盖基线；`--online` / `--offline`、`--strict` / `--no-strict` 覆盖对应开关。`--max-skipped-web` / `--max-unbound-snippets` 覆盖对应数量上限。输出格式由 `--json` 或 `--github` 控制；`--review` 增加按来源汇总，`--preview-baseline` 增加只读候选与变化清单。
 
 `--config rules/project.json` 选择其他配置，明确指定的文件不存在时会报错；`init --config rules/project.json --snapshot rules/baseline.json` 可定制首次创建位置，父目录需已存在。`--no-config` 跳过自动加载，也保留旧版未配置的 CLI 默认值：离线、非严格、扫描当前根目录。
 
 GitHub Action 不填写输入时复用调用方配置；没有配置时保留严格、离线检查的原有默认行为。`report:` 兼容入口跳过项目配置。
+
+## 通配符与覆盖要求
+
+```json
+{
+  "version": 1,
+  "paths": ["README.md", "docs/**/*.md"],
+  "exclude": ["docs/drafts/**", "docs/**/*generated*.md"],
+  "baseline": ".tracecite-docs.json",
+  "coverage": {"max_skipped_web": 0, "max_unbound_snippets": 0}
+}
+```
+
+`*` 匹配同一目录段中的零个或多个字符，`?` 匹配一个 Unicode 字符；完整段 `**`
+匹配零层或多层目录，所以 `docs/**/*.md` 同时包含 docs/guide.md 与 docs/a/guide.md。
+匹配区分大小写，`[]`、`{}` 按字面处理。`**` 不能嵌入其他字符，通配符路径不能含 `..`。
+模式相对工作区根目录。排除规则先于文件选择；重叠范围不会重复计算同一文件。
+
+每个通配符目标在排除后未匹配 Markdown 时返回退出码 1，即使其他目标有匹配也不静默忽略。
+扫描按目录名称排序，跳过已有默认构建/依赖目录和递归扫描中的符号链接；显式目标仍核对真实路径在根目录内。
+配置中的模式保留到后续检查，新文档会自动纳入。命令行模式必须加引号，避免 shell 先展开成固定文件列表。
+
+覆盖上限必须是非负整数；省略或 `null` 表示不上限。设为 0 可以要求不跳过网页、不遗漏未绑定的代码块；
+示例中的离线网页将触发 SKIPPED_WEB_LIMIT_EXCEEDED，修复方式是启用 `--online`、调整范围或显式调整预算。
+未绑定代码块超过预算触发 UNBOUND_SNIPPET_LIMIT_EXCEEDED。超限在 `--no-strict` 下也失败，并阻止快照更新与候选生成。
+覆盖要求可只填写其中一项；旧配置不设置上限，行为保持兼容。示例代码围栏也会计入未绑定数量。
 
 ## 本地代码或配置片段
 
@@ -95,7 +129,9 @@ timeout = 20
 
 ## 链接与标题
 
-行内链接、引用式链接与图片链接都会提取本地目标；同一行 HTML 标签的 `href`、`src` 属性也会提取，例如 README 的 SVG 图片。展示属性中的引号和 Markdown 示例不当作引文或链接。文件和目录可以被检查；Markdown 标题支持 ATX 标题，自动生成小写锚点，重复标题依次加 `-1`、`-2`，并避开已有锚点。支持空格路径的百分号编码，以及 `<含空格的路径>` 写法。
+行内链接、引用式链接与图片链接都会提取本地目标；同一行 HTML 标签的 `href`、`src` 属性也会提取，例如 README 的 SVG 图片。展示属性中的引号和 Markdown 示例不当作引文或链接。文件和目录可以被检查；Markdown 标题支持 ATX 和 Setext 标题，自动生成小写锚点，重复标题依次加 `-1`、`-2`，并避开已有锚点。支持空格路径的百分号编码，以及 `<含空格的路径>` 写法。
+
+Setext 标题使用紧随段落的 `===` 或 `---` 下划线，可包含多行标题；软换行按空格参与锚点生成，与 ATX 共用重复锚点规则。代码围栏、缩进代码、注释、HTML 块和列表标记不生成 Setext 锚点。选中的区域包含标题及下划线，到下一个同级或更高层级标题前结束。
 
 ATX 标题支持 `#` 后的空格或制表符，以及可选的结尾 `#`；标题中的行内链接使用展示文字生成锚点，HTML 排版标签不计入标题文字。HTML 注释中的标题不会生成锚点，也不会截断正在引用的正文区域。
 
@@ -111,7 +147,7 @@ ATX 标题支持 `#` 后的空格或制表符，以及可选的结尾 `#`；标�
 [defaults]: ../config.toml
 ```
 
-目前不解析 Setext 标题、自定义 HTML ID 或站点特有锚点规则；这些情况要改用支持的来源范围或人工核查。目录扫描默认跳过 Git、MoonBit 构建目录、依赖目录和 Python 缓存，递归扫描不跟随符号链接；直接指定的文档符号链接会解析到根目录内的真实文件。
+目前不解析自定义 HTML ID 或站点特有锚点规则；这些情况要改用支持的来源范围或人工核查。目录扫描默认跳过 Git、MoonBit 构建目录、依赖目录和 Python 缓存，递归扫描不跟随符号链接；直接指定的文档符号链接会解析到根目录内的真实文件。
 
 ## 逐字引文
 
@@ -147,6 +183,36 @@ moon run cmd/main check
 基线比较发现变化时返回退出码 2，展示之前观察到的内容和当前内容。先人工决定文档是否需要修改；确认后，用 `--snapshot` 命令保存新基线。它忽略配置中的旧基线，仍独立检查引用与来源是否匹配。显式同时提供 `--baseline` 时仍会比较旧基线；发现变化或待复核项会拒绝写入。工具不会把失败检查自动接受成新基线。
 
 来源片段在来源中出现多次时，无范围的逐字引文以首次匹配位置提取上下文；需要精确限制本地引用位置时应指定标题、行范围或命名区域。已有基线中的引用被从文档删除后，该引用不再检查；下一次保存基线会去掉它。比较文档子集只读取相关引用；保存快照会替换整个快照文件，应使用准备维护的完整文档范围。
+
+## 集中复核与基线预览
+
+```sh
+moon run cmd/main check --review
+moon run cmd/main check --preview-baseline --json
+```
+
+`--review` 将非成功、非跳过项按实际来源文件或 URL 分组，保留每个文档位置、诊断码、文档片段和前后来源内容。
+不同相对路径指向同一文件时会归并。JSON 中的 review 数组包含 source 和 locations；普通 items 字段继续保留。
+缺失值按现有 JSON 约定省略，不应假定所有可选字段都存在。
+
+`--preview-baseline` 仍加载配置基线并检查来源，返回 baseline_preview：
+
+| 字段 | 含义 |
+| --- | --- |
+| `can_update` | 当前来源匹配、覆盖要求、待复核解析诊断与非零检查范围均满足候选生成条件 |
+| `scanned_documents` | 本次实际扫描的文档，便于复核范围 |
+| `added_count` / `changed_count` / `removed_count` | 按引用身份去重后的新增、来源变化、删除数量 |
+| `changes` | 每条变化的 document/source/kind/excerpt、change、previous/current |
+| `snapshot` | 完整候选快照；检查不完整时省略，changes 为空，不把失败误标为删除 |
+
+引用片段编辑表现为旧身份删除、新身份增加；段落行号移动不会产生变化。
+来源变化和新增引用仍保留 check 的退出码，不因预览模式绕过失败；can_update 可以为 true，但退出码仍为 2。
+这表示来源当前匹配且候选可生成，仍需要人工接受变化。
+
+预览不会写入配置、基线或临时文件，不能与 init 或 `--snapshot` 同时使用。
+快照更新替换整个文件；缩小扫描范围会在预览中列出范围外旧条目的删除，务必核对 scanned_documents 和 removed_count。
+确认后以同一范围和覆盖规则执行 `--snapshot`，然后再次 check；两次运行之间来源变化时必须重新复核。
+可运行闭环见 [14 步演示](../examples/review/README.md)。
 
 ## 输出与退出码
 

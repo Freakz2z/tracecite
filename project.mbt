@@ -8,7 +8,17 @@ pub(all) struct DocumentProjectConfig {
   baseline : String?
   strict : Bool
   online : Bool
+  coverage : DocumentCoveragePolicy
 } derive(ToJson)
+
+///|
+pub(all) struct DocumentCoveragePolicy {
+  max_skipped_web : Int?
+  max_unbound_snippets : Int?
+} derive(ToJson)
+
+///|
+pub extend DocumentCoveragePolicy with ToJson::{to_json}
 
 ///|
 pub extend DocumentProjectConfig with ToJson::{to_json}
@@ -40,9 +50,9 @@ pub fn parse_document_project_config(
   }
   if value is Object(object) {
     for key, _ in object {
-      if !["version", "paths", "exclude", "baseline", "strict", "online"].contains(
-          key,
-        ) {
+      if ![
+          "version", "paths", "exclude", "baseline", "strict", "online", "coverage",
+        ].contains(key) {
         add_diagnostic(
           diagnostics,
           1,
@@ -70,6 +80,7 @@ pub fn parse_document_project_config(
     None => None
     Some(Null) => None
     Some(String(path)) if valid_document_config_path(path) &&
+      !document_path_has_glob(path) &&
       path.to_lower().has_suffix(".json") => Some(path)
     _ => {
       add_diagnostic(
@@ -80,9 +91,10 @@ pub fn parse_document_project_config(
   }
   let strict = document_config_bool(value, "strict", true, diagnostics)
   let online = document_config_bool(value, "online", false, diagnostics)
+  let coverage = document_config_coverage(value, diagnostics)
   {
     config: if diagnostics.is_empty() {
-      Some({ version: 1, paths, exclude, baseline, strict, online, })
+      Some({ version: 1, paths, exclude, baseline, strict, online, coverage, })
     } else {
       None
     },
@@ -126,7 +138,7 @@ fn document_config_paths(
     Some(Array(items)) => {
       let paths : Array[String] = []
       for item in items {
-        if item is String(path) && valid_document_config_path(path) {
+        if item is String(path) && valid_document_path_pattern(path) {
           paths.push(normalize_document_config_path(path))
         } else {
           add_diagnostic(
@@ -152,6 +164,70 @@ fn document_config_paths(
         "expected an array of paths: " + key,
       )
       []
+    }
+  }
+}
+
+///|
+fn document_config_coverage(
+  value : Json,
+  diagnostics : Array[Diagnostic],
+) -> DocumentCoveragePolicy {
+  let empty : DocumentCoveragePolicy = {
+    max_skipped_web: None,
+    max_unbound_snippets: None,
+  }
+  match field(value, "coverage") {
+    None => empty
+    Some(Object(object)) => {
+      for key, _ in object {
+        if !["max_skipped_web", "max_unbound_snippets"].contains(key) {
+          add_diagnostic(
+            diagnostics,
+            1,
+            "UNKNOWN_COVERAGE_FIELD",
+            "unknown coverage field: " + key,
+          )
+        }
+      }
+      let policy = field(value, "coverage").unwrap()
+      {
+        max_skipped_web: document_config_limit(
+          policy, "max_skipped_web", diagnostics,
+        ),
+        max_unbound_snippets: document_config_limit(
+          policy, "max_unbound_snippets", diagnostics,
+        ),
+      }
+    }
+    _ => {
+      add_diagnostic(
+        diagnostics, 1, "INVALID_CONFIG_COVERAGE", "coverage must be an object",
+      )
+      empty
+    }
+  }
+}
+
+///|
+fn document_config_limit(
+  value : Json,
+  key : String,
+  diagnostics : Array[Diagnostic],
+) -> Int? {
+  match field(value, key) {
+    None | Some(Null) => None
+    Some(Number(number, ..)) if number >= 0.0 &&
+      number <= 2147483647.0 &&
+      number == number.to_int().to_double() => Some(number.to_int())
+    _ => {
+      add_diagnostic(
+        diagnostics,
+        1,
+        "INVALID_COVERAGE_LIMIT",
+        "expected a nonnegative integer or null: " + key,
+      )
+      None
     }
   }
 }

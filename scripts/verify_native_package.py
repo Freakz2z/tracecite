@@ -9,6 +9,7 @@ import tarfile
 import tempfile
 
 from acceptance_demo import demonstrate
+from maintenance_review_demo import demonstrate_review
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -74,6 +75,7 @@ def verify(archive):
         if version != "TraceCite " + manifest["version"]:
             raise ValueError("Native executable version differs from manifest")
         demonstrate(root / "acceptance", binary)
+        demonstrate_review(root / "review", binary)
     print(f"Verified native archive: {archive}")
 
 

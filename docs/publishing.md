@@ -4,7 +4,8 @@
 
 ## 在 MoonBit 项目中使用
 
-在消费项目安装 0.5.1：
+当前正式版本为 0.5.1；0.6.0 新接口处于开发源码，尚未上传注册表。
+在消费项目安装正式版本：
 
 ```sh
 moon add Freakz2z/tracecite@0.5.1
@@ -61,8 +62,8 @@ bash scripts/release.sh
 确认 [moon.mod](../moon.mod) 中的模块名称、版本和许可证，在拥有 `Freakz2z` 发布权限的环境登录，完成测试并提交、推送源码，确认该提交 CI 通过后，创建与模块版本对应的标签，再运行：
 
 ```sh
-git tag v0.5.1
-git push origin v0.5.1
+git tag v0.6.0
+git push origin v0.6.0
 moon login
 bash scripts/release.sh --publish
 ```

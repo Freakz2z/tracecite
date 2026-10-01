@@ -24,3 +24,23 @@ test "public source selection, excerpt matching and baseline serialization" {
   let decoded : @tracecite.DocumentSnapshot = @json.from_json(@json.to_json(baseline))
   assert_eq(decoded.entries[0].observed, "timeout = 20")
 }
+
+///|
+test "public glob policy and Setext source selection" {
+  assert_true(@tracecite.document_path_pattern_matches("docs/**/*.md", "docs/guide.md"))
+  assert_false(@tracecite.document_path_pattern_matches("docs/*.md", "docs/a/guide.md"))
+  let config = @tracecite.parse_document_project_config("{\"version\":1,\"coverage\":{\"max_skipped_web\":0}}").config.unwrap()
+  assert_eq(config.coverage.max_skipped_web, Some(0))
+  assert_true(@tracecite.select_document_source("Settings\n--------\nCurrent.\n", "settings").ok)
+}
+
+///|
+test "public snapshot delta preserves previous and current evidence" {
+  let entry : @tracecite.DocumentSnapshotEntry = {document: "guide.md", source: "source.md", kind: "link", excerpt: None, observed: "before"}
+  let next : @tracecite.DocumentSnapshotEntry = {..entry, observed: "after"}
+  let changes = @tracecite.compare_document_snapshots({version: 1, entries: [entry]}, {version: 1, entries: [next]})
+  assert_eq(changes.length(), 1)
+  assert_eq(changes[0].change, "changed")
+  assert_eq(changes[0].previous, Some("before"))
+  assert_eq(changes[0].current, Some("after"))
+}

@@ -342,6 +342,158 @@ class DocumentMaintenanceTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("3 references checked", result.stdout)
 
+    def test_glob_config_discovers_new_documents_at_zero_and_nested_depth(self):
+        self.config(paths=["docs/**/*.md"])
+        initial = self.run_check()
+        (self.root / "docs/nested").mkdir()
+        self.write("docs/nested/new.md", "[config](../../config.toml)\n")
+        report = self.run_check()
+        self.assertEqual(report["document_count"], initial["document_count"] + 1)
+        self.assertEqual(report["checked_count"], initial["checked_count"] + 1)
+        self.run_action()
+
+    def test_init_keeps_glob_patterns_and_action_shares_exclusions(self):
+        self.write("docs/draft.md", "[bad](missing.md)\n")
+        self.run_cli("init", "docs/**/*.md", "--exclude", "docs/**/*draft*.md")
+        config = json.loads((self.root / "tracecite.json").read_text())
+        self.assertEqual(config["paths"], ["docs/**/*.md"])
+        self.assertEqual(self.run_check()["document_count"], 2)
+        self.run_action()
+
+    def test_every_empty_glob_fails_even_when_another_target_is_valid(self):
+        result = self.run_check("docs/guide.md", "docs/no-match*.md", expected=1, structured=False)
+        self.assertIn("matched no Markdown", result.stderr)
+        self.config(paths=["docs/**/*.md"], exclude=["docs/**"])
+        self.run_check(expected=1, structured=False)
+
+    def test_glob_question_mark_and_overlapping_targets_are_deduplicated(self):
+        self.write("docs/中.md", "[config](../config.toml)\n")
+        report = self.run_check("docs/?.md", "docs/中.md")
+        self.assertEqual(report["document_count"], 1)
+        self.assertEqual(report["checked_count"], 1)
+        report = self.run_check("docs/*.md", "docs/**/*.md")
+        self.assertEqual(report["document_count"], 3)
+
+    def test_invalid_globs_are_rejected_before_init_writes_files(self):
+        for pattern in ("docs/**/../*.md", "docs/a**.md", "../*.md"):
+            self.run_cli("init", pattern, expected=1, structured=False)
+        self.assertFalse((self.root / "tracecite.json").exists())
+        self.assertFalse((self.root / ".tracecite-docs.json").exists())
+
+    def test_globs_do_not_follow_linked_directories_outside_the_root(self):
+        with tempfile.TemporaryDirectory() as other:
+            Path(other, "bad.md").write_text("[outside](missing.md)\n")
+            (self.root / "docs/linked").symlink_to(other, target_is_directory=True)
+            report = self.run_check("docs/**/*.md")
+            self.assertEqual(report["document_count"], 2)
+            self.run_check("docs/linked/**/*.md", expected=1, structured=False)
+
+    def test_coverage_budgets_fail_even_without_strict_and_block_snapshots(self):
+        self.write("docs/guide.md", '[local](../config.toml)\n[web](https://example.org/)\n```sh\nexample\n```\n')
+        self.config(strict=False, coverage={"max_skipped_web": 0, "max_unbound_snippets": 0})
+        report = self.run_check("--no-strict", expected=2)
+        codes = {item["code"] for item in report["items"]}
+        self.assertIn("SKIPPED_WEB_LIMIT_EXCEEDED", codes)
+        self.assertIn("UNBOUND_SNIPPET_LIMIT_EXCEEDED", codes)
+        self.assertEqual(report["skipped_count"], 1)
+        self.assertEqual(report["unbound_snippets"], 1)
+        self.run_action(expected=2)
+        self.run_check("--snapshot", "references.json", expected=2)
+        self.assertFalse((self.root / "references.json").exists())
+        preview = self.run_check("--preview-baseline", expected=2)["baseline_preview"]
+        self.assertFalse(preview["can_update"])
+        self.assertIsNone(preview.get("snapshot"))
+
+    def test_cli_coverage_override_and_init_round_trip(self):
+        self.write("docs/guide.md", '[local](../config.toml)\n[web](https://example.org/)\n```sh\nexample\n```\n')
+        self.config(coverage={"max_skipped_web": 0, "max_unbound_snippets": 0})
+        self.run_check("--max-skipped-web", "1", "--max-unbound-snippets", "1")
+        (self.root / "tracecite.json").unlink()
+        self.run_cli("init", "docs/guide.md", "--max-skipped-web", "1", "--max-unbound-snippets", "1")
+        config = json.loads((self.root / "tracecite.json").read_text())
+        self.assertEqual(config["coverage"], {"max_skipped_web": 1, "max_unbound_snippets": 1})
+        self.run_check()
+
+    def test_invalid_coverage_values_are_configuration_errors(self):
+        for value in (-1, 0.5, True, "0"):
+            self.config(coverage={"max_skipped_web": value})
+            self.run_check(expected=1, structured=False)
+        for value in ("-1", "half", "2147483648"):
+            self.run_check("--no-config", "--max-unbound-snippets", value, expected=1, structured=False)
+
+    def test_setext_sections_participate_in_baseline_drift_checks(self):
+        self.write("docs/source.md", "Source\n======\n\nSettings\n--------\nCurrent default.\n\nOther\n-----\nOther text.\n")
+        self.write("docs/guide.md", "[settings](source.md#settings)\n")
+        self.run_cli("init", "docs/guide.md")
+        self.write("docs/source.md", (self.root / "docs/source.md").read_text().replace("Current default.", "New default."))
+        report = self.run_check("--review", expected=2)
+        self.assertEqual(report["review"][0]["source"], "docs/source.md")
+        changed = report["review"][0]["locations"][0]
+        self.assertIn("Current default.", changed["previous"])
+        self.assertIn("New default.", changed["actual"])
+
+    def test_review_groups_different_relative_links_to_the_same_source(self):
+        (self.root / "docs/nested").mkdir()
+        self.write("docs/nested/second.md", '[settings](../source.md#settings)\n')
+        self.run_cli("init", "docs/**/*.md")
+        self.write("docs/source.md", (self.root / "docs/source.md").read_text().replace("## Other", "Defaults changed.\n## Other"))
+        report = self.run_check("--review", expected=2)
+        self.assertEqual(len(report["review"]), 1)
+        self.assertEqual(report["review"][0]["source"], "docs/source.md")
+        self.assertEqual({item["document"] for item in report["review"][0]["locations"]}, {"docs/guide.md", "docs/nested/second.md"})
+
+    def test_preview_exposes_add_change_remove_and_never_writes(self):
+        self.run_cli("init", "docs/guide.md")
+        baseline = self.root / ".tracecite-docs.json"
+        before = baseline.read_bytes()
+        self.write("docs/source.md", (self.root / "docs/source.md").read_text().replace("## Other", "Defaults changed.\n## Other"))
+        guide = (self.root / "docs/guide.md").read_text().splitlines(keepends=True)
+        self.write("docs/guide.md", "".join(guide[1:]) + "[other](source.md#other)\n")
+        report = self.run_check("--preview-baseline", expected=2)
+        preview = report["baseline_preview"]
+        self.assertTrue(preview["can_update"])
+        self.assertEqual((preview["added_count"], preview["changed_count"], preview["removed_count"]), (1, 1, 1))
+        self.assertEqual(preview["scanned_documents"], ["docs/guide.md"])
+        self.assertEqual(baseline.read_bytes(), before)
+        self.assertFalse((self.root / ".tracecite-docs.json.tmp").exists())
+        self.run_check("--snapshot", ".tracecite-docs.json")
+        self.assertEqual(json.loads(baseline.read_text()), preview.get("snapshot"))
+        self.run_check()
+
+    def test_preview_failing_sources_have_no_candidate_and_review_keeps_previous(self):
+        self.run_cli("init", "docs/guide.md")
+        self.write("config.toml", "timeout = 30\n")
+        report = self.run_check("--preview-baseline", expected=2)
+        self.assertFalse(report["baseline_preview"]["can_update"])
+        self.assertIsNone(report["baseline_preview"].get("snapshot"))
+        self.assertEqual(report["baseline_preview"]["changes"], [])
+        item = next(item for group in report["review"] for item in group["locations"] if item["code"] == "DOCUMENT_EXCERPT_MISMATCH")
+        self.assertEqual(item["previous"], "timeout = 20")
+
+    def test_preview_reports_deleted_documents_and_partial_scope_removals(self):
+        self.write("docs/second.md", "[config](../config.toml)\n")
+        self.run_cli("init", "docs/**/*.md")
+        report = self.run_check("docs/guide.md", "--preview-baseline")
+        self.assertEqual(report["baseline_preview"]["removed_count"], 1)
+        self.assertEqual(report["baseline_preview"]["changes"][0]["document"], "docs/second.md")
+        (self.root / "docs/second.md").unlink()
+        report = self.run_check("--preview-baseline")
+        self.assertEqual(report["baseline_preview"]["removed_count"], 1)
+
+    def test_preview_cannot_be_combined_with_writing_commands(self):
+        self.run_cli("init", "docs/guide.md", "--preview-baseline", expected=1, structured=False)
+        self.run_check("docs/guide.md", "--preview-baseline", "--snapshot", "references.json", expected=1, structured=False)
+        self.assertFalse((self.root / "references.json").exists())
+
+    def test_review_and_preview_text_keep_github_line_annotations(self):
+        self.run_cli("init", "docs/guide.md")
+        self.write("config.toml", "timeout = 30\n")
+        result = self.run_check("--review", "--preview-baseline", "--github", expected=2, structured=False)
+        self.assertIn("Review:", result.stdout)
+        self.assertIn("Source: config.toml", result.stdout)
+        self.assertIn("Baseline preview: can_update=false", result.stdout)
+        self.assertIn("::error file=docs/guide.md,line=2", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,7 +2,7 @@ name: TraceCite document maintenance
 description: Check Markdown file references, source-bound snippets, and reference baselines
 inputs:
   path:
-    description: Markdown file or directory relative to the caller repository root
+    description: Markdown file, directory or quoted glob relative to the caller repository root
     required: false
     default: ''
   config:
@@ -20,7 +20,7 @@ inputs:
     description: Optional generated snapshot path relative to the caller repository root
     required: false
   exclude:
-    description: Paths to exclude, one per line, relative to the caller repository root
+    description: Paths or glob patterns to exclude, one per line, relative to the caller repository root
     required: false
   report:
     description: Legacy report input; implies online checking and overrides path

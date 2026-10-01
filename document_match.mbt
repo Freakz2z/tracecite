@@ -64,53 +64,13 @@ pub fn select_document_source(
   let counts : Map[String, Int] = Map([])
   let mut section_start : Int? = None
   let mut section_level = 0
-  let mut active_fence : (Char, Int)? = None
-  let mut in_comment = false
-  for index = 0; index < lines.length(); index = index + 1 {
-    let (visible, next_comment) = if active_fence is None {
-      document_visible_line(lines[index], in_comment)
-    } else {
-      (lines[index], in_comment)
-    }
-    in_comment = next_comment
-    let line = visible.trim()
-    if active_fence is Some((ch, size)) {
-      if document_fence(line) is Some((closing, count, info)) &&
-        closing == ch &&
-        count >= size &&
-        info == "" {
-        active_fence = None
-      }
-      continue
-    }
-    if document_fence(line) is Some((ch, size, _)) {
-      active_fence = Some((ch, size))
-      continue
-    }
-    let chars = line.to_owned().to_array()
-    let mut level = 0
-    while level < chars.length() && chars[level] == '#' {
-      level = level + 1
-    }
-    if level < 1 ||
-      level > 6 ||
-      level >= chars.length() ||
-      (chars[level] != ' ' && chars[level] != '\t') {
-      continue
-    }
+  for heading in document_source_headings(lines) {
+    let index = heading.start
+    let level = heading.level
     if section_start is Some(first) && level <= section_level {
       return { ok: true, text: lines[first:index].join("\n"), code: "", }
     }
-    let mut title_end = chars.length()
-    while title_end > level + 1 && chars[title_end - 1] == '#' {
-      title_end = title_end - 1
-    }
-    if title_end < chars.length() &&
-      chars[title_end - 1] != ' ' &&
-      chars[title_end - 1] != '\t' {
-      title_end = chars.length()
-    }
-    let title = String::from_array(chars[level + 1:title_end]).trim().to_owned()
+    let title = heading.title
     let slug = markdown_heading_slug(title)
     let mut count = counts.get(slug).unwrap_or(0)
     let mut unique = slug
@@ -129,6 +89,241 @@ pub fn select_document_source(
     Some(first) => { ok: true, text: lines[first:].join("\n"), code: "", }
     None => { ok: false, text: "", code: "ANCHOR_NOT_FOUND", }
   }
+}
+
+///|
+priv struct DocumentHeading {
+  start : Int
+  level : Int
+  title : String
+}
+
+///|
+fn document_source_headings(lines : Array[String]) -> Array[DocumentHeading] {
+  let headings : Array[DocumentHeading] = []
+  let paragraph : Array[String] = []
+  let mut paragraph_start = 0
+  let mut fence : (Char, Int)? = None
+  let mut comment = false
+  let mut html_end : String? = None
+  let mut container = false
+  for index = 0; index < lines.length(); index = index + 1 {
+    if html_end is Some(marker) {
+      if marker == "" {
+        let (_, next_comment) = document_visible_line(lines[index], comment)
+        comment = next_comment
+      }
+      if (marker == "" && lines[index].trim() == "") ||
+        (marker != "" && lines[index].to_lower().contains(marker)) {
+        html_end = None
+      }
+      continue
+    }
+    let (visible, next_comment) = if fence is None {
+      document_visible_line(lines[index], comment)
+    } else {
+      (lines[index], comment)
+    }
+    comment = next_comment
+    let line = visible.trim()
+    if fence is Some((ch, size)) {
+      if document_fence(line) is Some((closing, count, info)) &&
+        closing == ch &&
+        count >= size &&
+        info == "" {
+        fence = None
+      }
+      continue
+    }
+    if document_fence(line) is Some((ch, size, _)) {
+      fence = Some((ch, size))
+      paragraph.clear()
+      container = false
+      continue
+    }
+    let chars = visible.to_array()
+    let mut indent = 0
+    while indent < chars.length() && chars[indent] == ' ' {
+      indent = indent + 1
+    }
+    if indent > 3 ||
+      (indent < chars.length() && chars[indent] == '\t') ||
+      line == "" {
+      paragraph.clear()
+      if line == "" {
+        container = false
+      }
+      continue
+    }
+    if document_heading_html_end(line.to_owned(), paragraph.is_empty())
+      is Some(marker) {
+      if marker != "" {
+        comment = false
+      }
+      if marker == "" || !line.to_owned().to_lower().contains(marker) {
+        html_end = Some(marker)
+      }
+      paragraph.clear()
+      continue
+    }
+    let title_chars = line.to_owned().to_array()
+    let mut level = 0
+    while level < title_chars.length() && title_chars[level] == '#' {
+      level = level + 1
+    }
+    if level >= 1 &&
+      level <= 6 &&
+      (
+        level == title_chars.length() ||
+        title_chars[level] == ' ' ||
+        title_chars[level] == '\t'
+      ) {
+      let mut end = title_chars.length()
+      while end > level && title_chars[end - 1] == '#' {
+        end = end - 1
+      }
+      if end < title_chars.length() &&
+        end > level &&
+        title_chars[end - 1] != ' ' &&
+        title_chars[end - 1] != '\t' {
+        end = title_chars.length()
+      }
+      headings.push({
+        start: index,
+        level,
+        title: String::from_array(title_chars[level:end]).trim().to_owned(),
+      })
+      paragraph.clear()
+      container = false
+      continue
+    }
+    let underline = if title_chars.all(ch => ch == '=') {
+      Some(1)
+    } else if title_chars.all(ch => ch == '-') {
+      Some(2)
+    } else {
+      None
+    }
+    if underline is Some(level) && !paragraph.is_empty() && !container {
+      headings.push({
+        start: paragraph_start,
+        level,
+        title: paragraph.join(" "),
+      })
+      paragraph.clear()
+      continue
+    }
+    if document_heading_block_line(line.to_owned()) {
+      paragraph.clear()
+      if !document_heading_thematic_break(line.to_owned()) &&
+        document_definition(line) is None {
+        container = true
+      }
+      continue
+    }
+    if container {
+      continue
+    }
+    if paragraph.is_empty() {
+      paragraph_start = index
+    }
+    paragraph.push(line.to_owned())
+  }
+  headings
+}
+
+///|
+fn document_heading_block_line(line : String) -> Bool {
+  if document_definition(line[:]) is Some(_) ||
+    line.has_prefix(">") ||
+    line == "-" ||
+    line == "*" ||
+    line == "+" ||
+    ["- ", "+ ", "* ", "-\t", "+\t", "*\t"].any(prefix => {
+      line.has_prefix(prefix)
+    }) {
+    return true
+  }
+  let chars = line.to_array()
+  let mut digits = 0
+  while digits < chars.length() && chars[digits] >= '0' && chars[digits] <= '9' {
+    digits = digits + 1
+  }
+  if digits > 0 &&
+    digits <= 9 &&
+    digits + 1 < chars.length() &&
+    (chars[digits] == '.' || chars[digits] == ')') &&
+    (chars[digits + 1] == ' ' || chars[digits + 1] == '\t') {
+    return true
+  }
+  document_heading_thematic_break(line)
+}
+
+///|
+fn document_heading_thematic_break(line : String) -> Bool {
+  let chars = line.to_array()
+  for marker in ['-', '*', '_'] {
+    if chars.filter(ch => ch == marker).length() >= 3 &&
+      chars.all(ch => ch == marker || ch == ' ' || ch == '\t') {
+      return true
+    }
+  }
+  false
+}
+
+///|
+fn document_heading_html_end(line : String, paragraph_empty : Bool) -> String? {
+  let lower = line.to_lower()
+  if !lower.has_prefix("<") {
+    return None
+  }
+  if lower.has_prefix("<?") {
+    return Some("?>")
+  }
+  if lower.has_prefix("<![cdata[") {
+    return Some("]]>")
+  }
+  if lower.has_prefix("<!") {
+    return Some(">")
+  }
+  let tail = lower.strip_prefix("</").unwrap_or(lower[1:]).to_owned().to_array()
+  let mut end = 0
+  while end < tail.length() &&
+        (
+          (tail[end] >= 'a' && tail[end] <= 'z') ||
+          (tail[end] >= '0' && tail[end] <= '9') ||
+          tail[end] == '-'
+        ) {
+    end = end + 1
+  }
+  if end == 0 ||
+    end == tail.length() ||
+    ![' ', '\t', '>', '/'].contains(tail[end]) {
+    return None
+  }
+  let tag = String::from_array(tail[:end])
+  if ["script", "pre", "style", "textarea"].contains(tag) &&
+    !lower.has_prefix("</") {
+    return Some("</" + tag + ">")
+  }
+  if [
+      "address", "article", "aside", "base", "basefont", "blockquote", "body", "caption",
+      "center", "col", "colgroup", "dd", "details", "dialog", "dir", "div", "dl",
+      "dt", "fieldset", "figcaption", "figure", "footer", "form", "frame", "frameset",
+      "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hr", "html", "iframe",
+      "legend", "li", "link", "main", "menu", "menuitem", "nav", "noframes", "ol",
+      "optgroup", "option", "p", "param", "search", "section", "summary", "table",
+      "tbody", "td", "tfoot", "th", "thead", "title", "tr", "track", "ul",
+    ].contains(tag) {
+    return Some("")
+  }
+  if paragraph_empty &&
+    document_html_tags(line[:]).any(tag => {
+      tag.start == 0 && tag.end == line.to_array().length()
+    }) {
+    return Some("")
+  }
+  None
 }
 
 ///|

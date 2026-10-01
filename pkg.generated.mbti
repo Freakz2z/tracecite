@@ -10,13 +10,21 @@ pub fn bounded_document_text(String) -> String
 
 pub fn check_live_source_quotes(String, String, String) -> Array[LiveCitationMatch]
 
+pub fn compare_document_snapshots(DocumentSnapshot, DocumentSnapshot) -> Array[DocumentSnapshotChange]
+
 pub fn compare_jsonl(String, String) -> DriftReport
 
 pub fn document_excerpt_matches(String, String, String) -> Bool
 
+pub fn document_path_has_glob(String) -> Bool
+
+pub fn document_path_pattern_matches(String, String) -> Bool
+
 pub fn document_source_context(String, String, String) -> String
 
 pub fn markdown_heading_slug(String) -> String
+
+pub fn normalize_document_path_pattern(String) -> String?
 
 pub fn normalize_web_text(String) -> String
 
@@ -33,6 +41,8 @@ pub fn quote_appears_in_text(String, String) -> Bool
 pub fn select_document_source(String, String) -> SelectedSource
 
 pub fn source_snapshot_matches(String, String, String) -> Bool
+
+pub fn valid_document_path_pattern(String) -> Bool
 
 pub fn validate_evidence_jsonl(String) -> Report
 
@@ -71,6 +81,12 @@ pub(all) struct Diagnostic {
 } derive(ToJson)
 pub fn Diagnostic::to_json(Self) -> Json
 
+pub(all) struct DocumentCoveragePolicy {
+  max_skipped_web : Int?
+  max_unbound_snippets : Int?
+} derive(ToJson)
+pub fn DocumentCoveragePolicy::to_json(Self) -> Json
+
 pub(all) struct DocumentProjectConfig {
   version : Int
   paths : Array[String]
@@ -78,6 +94,7 @@ pub(all) struct DocumentProjectConfig {
   baseline : String?
   strict : Bool
   online : Bool
+  coverage : DocumentCoveragePolicy
 } derive(ToJson)
 pub fn DocumentProjectConfig::to_json(Self) -> Json
 
@@ -109,6 +126,17 @@ pub(all) struct DocumentSnapshot {
 } derive(ToJson, @json.FromJson)
 pub fn DocumentSnapshot::from_json(Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
 pub fn DocumentSnapshot::to_json(Self) -> Json
+
+pub(all) struct DocumentSnapshotChange {
+  document : String
+  source : String
+  kind : String
+  excerpt : String?
+  change : String
+  previous : String?
+  current : String?
+} derive(ToJson)
+pub fn DocumentSnapshotChange::to_json(Self) -> Json
 
 pub(all) struct DocumentSnapshotEntry {
   document : String

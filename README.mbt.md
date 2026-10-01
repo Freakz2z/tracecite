@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/Freakz2z/tracecite/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Freakz2z/tracecite/ci.yml?branch=main&amp;style=flat-square&amp;label=CI" alt="CI status"></a>
-  <img src="https://img.shields.io/badge/version-0.5.1-317d72?style=flat-square" alt="TraceCite 0.5.1">
+  <img src="https://img.shields.io/badge/version-0.6.0--dev-317d72?style=flat-square" alt="TraceCite 0.6.0 development">
   <img src="https://img.shields.io/badge/built_with-MoonBit-4664b7?style=flat-square" alt="Built with MoonBit">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-586874?style=flat-square" alt="Apache 2.0 license"></a>
 </p>
@@ -23,7 +23,7 @@
   <a href="docs/contract.md">输入约定</a>
 </p>
 
-> **版本说明**：**0.5.1** 保留项目配置、`init` 与 `check`，补齐许可、验收材料与正式发布验证。Mooncakes 安装请指定 `@0.5.1`；GitHub 的旧 `v0.4.0` 不包含这些入口。
+> **版本说明**：当前源码为 **0.6.0 开发版**，新增文件通配符、集中复核、基线预览、Setext 标题与覆盖要求。正式发布版本仍为 **0.5.1**，Mooncakes 安装请指定 `@0.5.1`；下述新增能力需从当前源码构建。
 
 ## 为什么需要 TraceCite
 
@@ -36,11 +36,12 @@ TraceCite 把引用当作文档依赖，直接读取 Markdown 与来源。**本�
 | 检查对象 | 使用方式 | 发现的问题 |
 | --- | --- | --- |
 | 本地文件与目录 | 普通链接、引用式链接、图片或 HTML 链接 | 来源被删除、迁移或超出工作区 |
-| 标题与来源范围 | 标题锚点、`#L10-L20`、`#region:name` | 标题改名、行范围或命名区域失效 |
+| 标题与来源范围 | ATX/Setext 标题锚点、`#L10-L20`、`#region:name` | 标题改名、行范围或命名区域失效 |
 | 源码与配置片段 | 代码围栏添加 `source=路径` | 文档片段与当前来源不一致 |
 | 逐字引文 | 双引号引文配来源链接或显式引用块 | 引文不在当前来源中；网页需 `--online` |
 | 引用快照 | `--snapshot` 保存，`--baseline` 复查 | 来源区域或引用上下文改变，新增引用待复核 |
-| 项目配置 | `init` 建立配置与基线，之后只运行 `check` | 本地与 CI 复用文档范围、排除项与检查规则 |
+| 项目配置 | `init` 建立配置与基线，支持 `docs/**/*.md` | 新文档自动纳入，本地与 CI 复用排除和覆盖要求 |
+| 变化复核 | `--review` / `--preview-baseline` | 按来源汇总影响，预览新增、变化与删除条目 |
 | CI 检查 | GitHub Action 或 `--github` | 以退出码和文件行号提示文档作者 |
 
 ## 快速开始
@@ -74,6 +75,17 @@ moon run cmd/main check --root /path/to/your/repository
 
 需要回访网页来源时，在配置中设置 `online: true`，或临时添加 `--online`。配置字段与覆盖规则见 [维护指南](docs/maintenance.md#项目配置本地与-ci-用同一套规则)。
 
+0.6.0 的通配符与复核流程可按以下命令接入新项目；模式加引号，避免 shell 提前展开：
+
+```sh
+moon run cmd/main init 'docs/**/*.md' --root /path/to/your/repository --exclude 'docs/drafts/**'
+moon run cmd/main check --root /path/to/your/repository --review
+moon run cmd/main check --root /path/to/your/repository --preview-baseline --json
+```
+
+预览不会写文件。`can_update` 表示当前来源核验与覆盖要求是否允许生成候选；来源变化仍返回退出码 2，等待人工复核。
+完整闭环见 [14 步维护复核演示](examples/review/README.md)。
+
 ### 3. 构建独立可执行文件
 
 ```sh
@@ -81,7 +93,7 @@ bash scripts/package.sh
 ./_build/native/release/build/cmd/main/main.exe check
 ```
 
-打包脚本在 `dist/` 生成本机压缩包。**运行独立 native 二进制无需安装 MoonBit、Python 或 Node。** [打包工作流](.github/workflows/binaries.yml)支持手动触发或版本标签触发，构建 Linux/macOS 包。正式独立包与校验文件在 [GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.5.1) 下载；解压后直接运行其中的 `tracecite`。
+打包脚本在 `dist/` 生成本机压缩包。**运行独立 native 二进制无需安装 MoonBit、Python 或 Node。** [打包工作流](.github/workflows/binaries.yml)支持手动触发或版本标签触发，构建 Linux/macOS 包。已发布的 0.5.1 独立包与校验文件在 [GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.5.1) 下载；解压后直接运行其中的 `tracecite`。
 
 包内保留第三方许可与构建清单；联网 HTTPS 检查使用系统 TLS 库和证书。打包与演示脚本使用 Python 3，它仅是开发工具。
 
@@ -171,7 +183,7 @@ Action 安装并编译 MoonBit，在调用方仓库中解析引用，失败时�
 <details>
 <summary><strong>支持范围与校验边界</strong></summary>
 
-- 本地链接检查文件或目录是否存在；片段支持 ATX 标题、行范围与命名区域。Setext 标题、自定义 HTML ID 与站点特有锚点规则暂不解析。
+- 本地链接检查文件或目录是否存在；片段支持 ATX/Setext 标题、行范围与命名区域。自定义 HTML ID 与站点特有锚点规则暂不解析。
 - 行内引文支持中文弯双引号与英文直双引号；多行或来源关联不明确时，使用显式原文、来源块。
 - 未绑定来源的代码块只计入覆盖摘要，不执行；未关联引文或无法解析的来源会提示复核，`--strict` 让这些提示导致失败。
 - 网页引文只确认检查时可提取的原文是否存在，不判断论断的语义真假；动态页面、图片与登录墙可能需要人工复核。来源变化表示需要复核，不表示文档一定错误。
@@ -253,7 +265,7 @@ Python 仅用于开发测试和可选的旧 Agent 适配器。JSONL 校验、`ve
 | [离线维护演示](examples/maintenance/README.md) | 13 步维护闭环、退出码与 JSON 证据 |
 | [成果与验收说明](docs/acceptance.md) | 原申报方向、四项验收依据、固定发布身份与验证方法 |
 | [版本记录](CHANGELOG.md) | 已发布版本与后续仓库改动 |
-| [更新计划](ROADMAP.md) | 0.5.1 发布收口、维护体验、真实项目验证与生态接入 |
+| [更新计划](ROADMAP.md) | 维护复核、真实项目验证与生态接入 |
 | [第三方许可通知](THIRD_PARTY_NOTICES.md) | 依赖、标准库及 native 运行时的许可与来源 |
 | [Mooncakes 模块](https://mooncakes.io/docs/Freakz2z/tracecite) | 平台上的已发布版本 |
 

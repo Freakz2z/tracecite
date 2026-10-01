@@ -7,10 +7,15 @@
     "docs/acceptance.md",
     "CHANGELOG.md",
     "THIRD_PARTY_NOTICES.md",
-    "examples/maintenance/README.md"
+    "examples/maintenance/README.md",
+    "examples/review/README.md"
   ],
   "exclude": [],
   "baseline": ".tracecite-docs.json",
   "strict": true,
-  "online": false
+  "online": false,
+  "coverage": {
+    "max_skipped_web": 31,
+    "max_unbound_snippets": 40
+  }
 }
