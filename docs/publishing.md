@@ -91,6 +91,10 @@ bash scripts/package.sh
 
 维护者完成 Mooncakes 发布与真实消费验证后，将 dist/mooncakes/ 中的 ZIP、摘要、源码身份和发布验证回执上传同一草稿。复核该标签的 CI 与两平台工作流结果后，将草稿公开发布。工作流不会自动替换已存在的 Release 资产。
 
+也可手动运行 [发布源码验证工作流](../.github/workflows/release-source.yml)，指定已有版本标签。
+工作流签出固定标签，核对独立包的来源提交，重新生成源码 ZIP 并与注册表摘要比较；
+三目标 API 和安装后的 CLI 验证通过才附加源码与回执。它不发布 Mooncakes、不替换已有附件，也不自动公开草稿。
+
 正式包名称包含版本，例如 tracecite-0.5.1-linux-x86_64.tar.gz。解压后执行其中的 tracecite，无需 MoonBit、Python 或 Node；联网检查仍使用系统 TLS 库与证书。
 
 独立复查注册表安装：

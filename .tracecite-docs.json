@@ -317,6 +317,12 @@
       "observed": ""
     },
     {
+      "document": "docs/publishing.md",
+      "source": "../.github/workflows/release-source.yml",
+      "kind": "link",
+      "observed": ""
+    },
+    {
       "document": "docs/acceptance.md",
       "source": "contract.md",
       "kind": "link",
