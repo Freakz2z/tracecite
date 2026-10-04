@@ -554,7 +554,7 @@ fn document_visible_line(raw : String, active : Bool) -> (String, Bool) {
 
 ///|
 fn document_definition(line : StringView) -> (String, String)? {
-  if !line.has_prefix("[") {
+  if !line.has_prefix("[") || line.has_prefix("[^") {
     return None
   }
   let (label, tail) = match line[1:].split_once("]:") {

@@ -381,10 +381,7 @@ pub fn markdown_heading_slug(title : String) -> String {
       ch == '-' ||
       ch == '_' {
       output.write_char(ch)
-    } else if ch >= '\u{80}' &&
-      !"。，：；！？、（）【】《》“”‘’".contains(
-        ch.to_string(),
-      ) {
+    } else if ch >= '\u{80}' && !document_unicode_punctuation(ch) {
       output.write_char(ch)
     }
   }

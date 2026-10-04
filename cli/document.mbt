@@ -464,7 +464,7 @@ async fn document_command(
             let resolved = if decoded == "" {
               path
             } else {
-              root_join(document_parent(path), decoded)
+              document_source_path(root, path, decoded)
             }
             let canonical = @fs.realpath(resolved) catch { _ => "" }
             if canonical == "" {
@@ -889,10 +889,14 @@ async fn document_review_groups(
     } else {
       let decoded = decode_document_path(source_path).unwrap_or(source_path)
       let relative = @tracecite.normalize_document_path_pattern(
-        document_parent(item.document) + "/" + decoded,
+        if decoded.has_prefix("/") {
+          decoded[1:].to_owned()
+        } else {
+          document_parent(item.document) + "/" + decoded
+        },
       )
       let canonical = @fs.realpath(
-        root_join(document_parent(root_join(root, item.document)), decoded),
+        document_source_path(root, root_join(root, item.document), decoded),
       ) catch {
         _ => ""
       }
@@ -1181,5 +1185,18 @@ fn github_escape(text : String, property? : Bool = false) -> String {
     text.replace_all(old=",", new="%2C").replace_all(old=":", new="%3A")
   } else {
     text
+  }
+}
+
+///|
+fn document_source_path(
+  root : String,
+  document : String,
+  source : String,
+) -> String {
+  if source.has_prefix("/") {
+    root + source
+  } else {
+    root_join(document_parent(document), source)
   }
 }

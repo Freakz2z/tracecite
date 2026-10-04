@@ -1,8 +1,10 @@
 # 文档引用维护指南
 
-本页描述 0.6.0 的文档维护功能，包括通配符、覆盖要求、Setext 标题和只读复核预览。
+本页描述 0.6.1 的文档维护功能，包括通配符、覆盖要求、Setext 标题和只读复核预览。
 
 `check` 直接读取 Markdown 和来源文件。引用来源相对当前文档的目录解析；`--root` 定义整个工作区的边界，而不是改变每条来源的相对目录。
+
+以 `/` 开头的本地来源相对 `--root` 解析，例如 `/src/file.mbt`；不表示操作系统绝对路径。相对来源继续从当前文档目录解析。两种路径都拒绝实际越界的目录穿越与符号链接。
 
 ## 项目配置：本地与 CI 用同一套规则
 
@@ -35,7 +37,8 @@ moon run cmd/main check --root /path/to/repository
     "examples/maintenance/README.md",
     "examples/review/README.md",
     "docs/field-validation.md",
-    "ROADMAP.md"
+    "ROADMAP.md",
+    "examples/compatibility/README.md"
   ],
   "exclude": [],
   "baseline": ".tracecite-docs.json",
@@ -43,7 +46,7 @@ moon run cmd/main check --root /path/to/repository
   "online": false,
   "coverage": {
     "max_skipped_web": 44,
-    "max_unbound_snippets": 41
+    "max_unbound_snippets": 42
   }
 }
 ```
@@ -148,6 +151,8 @@ ATX 标题支持 `#` 后的空格或制表符，以及可选的结尾 `#`；标�
 
 [defaults]: ../config.toml
 ```
+
+脚注定义 `[^id]: 正文` 不作为链接定义；脚注正文中的普通链接仍会检查。标题移除 Unicode 15.0.0 的 P* 标点，保留 ASCII 连字符与下划线、文字和 emoji；当前小写转换主要处理 ASCII，非 ASCII 大小写及站点特有规则仍需人工确认。
 
 目前不解析自定义 HTML ID 或站点特有锚点规则；这些情况要改用支持的来源范围或人工核查。目录扫描默认跳过 Git、MoonBit 构建目录、依赖目录和 Python 缓存，递归扫描不跟随符号链接；直接指定的文档符号链接会解析到根目录内的真实文件。
 

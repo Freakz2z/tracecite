@@ -48,6 +48,7 @@ jobs:
           sh scripts/smoke.sh
           python3 scripts/test_document_cli.py
           moon run cmd/main check
+          moon run cmd/main check guide.md --root examples/compatibility/project --no-config --strict
           moon run cmd/main check guide.md --root examples/maintenance/project --no-config --strict
           moon run cmd/main verify-notes fixtures/simple-citation.md
           moon run cmd/main check-report examples/report.md

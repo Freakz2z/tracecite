@@ -68,6 +68,10 @@ def verify_package(metadata):
         "scripts/test_native_package.py",
         "scripts/release_guard.py", "scripts/test_release.py", "scripts/prepare_github_release.py",
         "scripts/consumer_tests.mbt.txt",
+        "examples/compatibility/README.md", "examples/compatibility/project/guide.md",
+        "examples/compatibility/project/source.md", "examples/compatibility/project/config.toml",
+        "document_unicode.mbt", "scripts/generate_unicode_punctuation.py", "maintenance_v061_wbtest.mbt", "scripts/field_validation.py",
+        "docs/field-validation.md", "docs/field-validation/0.6.0.json",
         "document_glob.mbt", "document_review.mbt", "scripts/maintenance_review_demo.py",
         "examples/review/README.md", "examples/review/project/docs/guide.md",
         "examples/review/project/docs/drafts/draft.md", "examples/review/project/source.md",
@@ -114,6 +118,8 @@ def verify_package(metadata):
         if version.strip() != "TraceCite " + metadata["version"]:
             raise ValueError("Installed CLI version differs from the module version")
         run(str(installed), "check", cwd=package)
+        run(str(installed), "check", "guide.md", "--root", "examples/compatibility/project",
+            "--no-config", "--strict", "--max-skipped-web", "0", "--max-unbound-snippets", "0", cwd=package)
         run("python3", "scripts/acceptance_demo.py", "--binary", str(installed),
             "--out", str(Path(temporary) / "acceptance"), cwd=package)
         run("python3", "scripts/maintenance_review_demo.py", "--binary", str(installed),
@@ -173,11 +179,13 @@ def verify_registry(metadata, consume=False):
         if version != "TraceCite " + metadata["version"]:
             raise ValueError("Registry-installed CLI version mismatch")
         evidence = REPO / "_build/acceptance" / ("published-" + metadata["version"])
+        run(str(binary), "check", "guide.md", "--root", str(REPO / "examples/compatibility/project"),
+            "--no-config", "--strict", "--max-skipped-web", "0", "--max-unbound-snippets", "0", cwd=REPO)
         demonstrate(evidence / os.path.basename(temporary), binary)
         demonstrate_review(evidence / (os.path.basename(temporary) + "-review"), binary)
     receipt = {"schema": 1, "module": metadata["name"], "version": metadata["version"],
                "registry_sha256": checksum, "targets": ["native", "js", "wasm"],
-               "cli_install": "registry", "maintenance_steps": 13, "review_steps": 14, "passed": True}
+               "cli_install": "registry", "maintenance_steps": 13, "review_steps": 14, "compatibility_example": True, "passed": True}
     archive.with_suffix(".published.json").write_text(json.dumps(receipt, indent=2) + "\n")
     print("Actual registry consumers and installed CLI verified")
 

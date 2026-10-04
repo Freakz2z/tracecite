@@ -44,3 +44,13 @@ test "public snapshot delta preserves previous and current evidence" {
   assert_eq(changes[0].previous, Some("before"))
   assert_eq(changes[0].current, Some("after"))
 }
+
+///|
+test "public compatibility parsing preserves real links without footnote sources" {
+  assert_eq(@tracecite.markdown_heading_slug("Blocking(n) — Backpressure"), "blockingn--backpressure")
+  let parsed = @tracecite.parse_document("[Source](/source.md)[^note]\n[^note]: The explanation contains [config](/config.toml).\n")
+  assert_eq(parsed.references.length(), 2)
+  assert_eq(parsed.references[0].source, "/source.md")
+  assert_eq(parsed.references[1].source, "/config.toml")
+  assert_true(parsed.warnings.is_empty())
+}

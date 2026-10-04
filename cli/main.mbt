@@ -18,7 +18,7 @@ pub async fn run() -> Unit {
     return
   }
   if args[index] == "--version" {
-    @stdio.stdout.write("TraceCite 0.6.0\n")
+    @stdio.stdout.write("TraceCite 0.6.1\n")
     return
   }
   if args[index] == "check" || args[index] == "init" {

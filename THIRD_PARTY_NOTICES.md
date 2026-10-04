@@ -56,3 +56,10 @@ not redistributed in the CLI archive. External audit files are bounded
 attributed quotation samples with source URLs and fixed revisions, described
 in [the audit record](docs/external-audit.md). No external repository or private
 Agent session is bundled wholesale.
+
+## Unicode punctuation properties
+
+The portable Markdown heading parser includes Unicode 15.0.0 General_Category
+P* ranges derived from Python unicodedata. These Unicode data are covered by
+the Unicode License V3, retained in third_party/licenses/Unicode-LICENSE.txt
+and the native archive license inventory. No Python runtime is required.

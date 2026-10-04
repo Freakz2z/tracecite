@@ -47,8 +47,12 @@ def extract_verified(archive, destination):
                 "licenses/libbacktrace-NOTICE.txt", "licenses/mimalloc-LICENSE.txt",
                 "licenses/simdutf-LICENSE-MIT.txt", "licenses/simdutf-LICENSE-APACHE.txt"}
     components = {component["name"] for component in manifest["components"]}
-    if components != {"moonbitlang/async", "bobzhang/html_parser", "JustHTML", "moonbitlang/core",
-                      "moonbit-runtime", "libbacktrace", "mimalloc", "simdutf"}:
+    expected_components = {"moonbitlang/async", "bobzhang/html_parser", "JustHTML", "moonbitlang/core",
+                           "moonbit-runtime", "libbacktrace", "mimalloc", "simdutf"}
+    if tuple(map(int, manifest["version"].split("."))) >= (0, 6, 1):
+        required.add("licenses/Unicode-LICENSE.txt")
+        expected_components.add("Unicode punctuation properties")
+    if components != expected_components:
         raise ValueError("Incomplete native component inventory")
     for component in manifest["components"]:
         if not component["notices"]:
@@ -74,6 +78,11 @@ def verify(archive):
         version = subprocess.check_output([str(binary), "--version"], text=True, env=environment, timeout=30).strip()
         if version != "TraceCite " + manifest["version"]:
             raise ValueError("Native executable version differs from manifest")
+        if tuple(map(int, manifest["version"].split("."))) >= (0, 6, 1):
+            subprocess.run([str(binary), "check", "guide.md", "--root",
+                            str(REPO / "examples/compatibility/project"), "--no-config", "--strict",
+                            "--max-skipped-web", "0", "--max-unbound-snippets", "0"],
+                           check=True, env=environment, timeout=30)
         demonstrate(root / "acceptance", binary)
         demonstrate_review(root / "review", binary)
     print(f"Verified native archive: {archive}")

@@ -67,6 +67,18 @@ class NativePackageTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Missing notice"):
             self.verify()
 
+    def test_unicode_license_cannot_be_removed_from_new_native_packages(self):
+        missing = "licenses/Unicode-LICENSE.txt"
+        (self.bundle / missing).unlink()
+        path = self.bundle / "BUILD-INFO.json"
+        manifest = json.loads(path.read_text())
+        del manifest["files"][missing]
+        manifest["components"] = [component for component in manifest["components"]
+                                  if component["name"] != "Unicode punctuation properties"]
+        path.write_text(json.dumps(manifest))
+        with self.assertRaisesRegex(ValueError, "Incomplete native component inventory"):
+            self.verify()
+
     def test_stale_unrecorded_file_is_rejected(self):
         (self.bundle / "leftover.txt").write_text("old artifact")
         with self.assertRaisesRegex(ValueError, "unrecorded/stale"):

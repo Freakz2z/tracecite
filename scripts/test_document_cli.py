@@ -495,5 +495,54 @@ class DocumentMaintenanceTests(unittest.TestCase):
         self.assertIn("::error file=docs/guide.md,line=2", result.stdout)
 
 
+    def test_root_links_resolve_from_workspace_and_decode_spaces(self):
+        self.write("docs/guide.md", '[config](/config.toml)\n[section](/docs/source.md#settings)\n[file](/space%20file.txt)\n')
+        self.write("space file.txt", "present\n")
+        report = self.run_check("docs/guide.md", "--strict")
+        self.assertEqual(report["checked_count"], 3)
+        self.assertEqual(report["failed_count"], 0)
+
+    def test_root_links_do_not_escape_via_traversal_or_symlinks(self):
+        with tempfile.TemporaryDirectory(prefix="tracecite-outside-") as outside:
+            destination = Path(outside) / "secret.txt"
+            destination.write_text("private", encoding="utf-8")
+            (self.root / "escape").symlink_to(outside, target_is_directory=True)
+            traversal = "/../" + Path(outside).name + "/secret.txt"
+            self.write("docs/guide.md", '[traversal](' + traversal + ')\n[symlink](/escape/secret.txt)\n')
+            report = self.run_check("docs/guide.md", "--strict", expected=2)
+            self.assertEqual([item["code"] for item in report["items"]], ["SOURCE_OUTSIDE_ROOT", "SOURCE_OUTSIDE_ROOT"])
+            self.assertNotIn("private", json.dumps(report))
+
+    def test_root_links_group_with_relative_aliases_and_preview(self):
+        self.write("docs/guide.md", '[config](/config.toml)\n[alias](../config.toml)\n')
+        self.run_cli("init", "docs/guide.md")
+        self.write("config.toml", "timeout = 30\n")
+        # Existence-only links are deliberately not full-file drift monitors.
+        report = self.run_check("--preview-baseline", "--review")
+        self.assertTrue(report["baseline_preview"]["can_update"])
+        self.assertEqual(report["baseline_preview"]["changed_count"], 0)
+        self.write("docs/guide.md", '[section](/docs/source.md#settings)\n[alias](source.md#settings)\n')
+        self.run_check("--snapshot", ".tracecite-docs.json")
+        self.write("docs/source.md", "# Source\n## Settings\nChanged context.\n## Other\n")
+        report = self.run_check("--review", expected=2)
+        self.assertEqual(len(report["review"]), 1)
+        self.assertEqual(report["review"][0]["source"], "docs/source.md")
+        self.assertEqual(len(report["review"][0]["locations"]), 2)
+
+    def test_footnotes_keep_body_dependencies_without_fake_source_paths(self):
+        self.write("docs/guide.md", '[Settings][][^note]\n\n[settings]: source.md#settings\n[^note]: The explanatory body includes [config](/config.toml).\n')
+        report = self.run_check("docs/guide.md", "--strict")
+        self.assertEqual(report["checked_count"], 2)
+        self.assertEqual(report["warning_count"], 0)
+
+    def test_unicode_heading_punctuation_matches_real_anchor_and_detects_bad_link(self):
+        self.write("docs/source.md", "# Blocking(n) — Backpressure\nContext.\n")
+        self.write("docs/guide.md", '[valid](source.md#blockingn--backpressure)\n[invalid](source.md#absent)\n')
+        report = self.run_check("docs/guide.md", "--strict", expected=2)
+        self.assertEqual(report["checked_count"], 2)
+        self.assertEqual(report["failed_count"], 1)
+        self.assertEqual(report["items"][1]["code"], "ANCHOR_NOT_FOUND")
+
+
 if __name__ == "__main__":
     unittest.main()

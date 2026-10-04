@@ -63,6 +63,13 @@
       "origin": "https://raw.githubusercontent.com/simdutf/simdutf/cf8715fad4d55c87aad3006a9a82531f740605b8/LICENSE-APACHE",
       "version": "license snapshot; SDK embedded component version unspecified",
       "sha256": "3d34610fc6b5e1b0bfe4e2f36171c2d62c28ef05cb8d704f5a0073be41a43b3d"
+    },
+    {
+      "component": "Unicode punctuation properties",
+      "file": "licenses/Unicode-LICENSE.txt",
+      "origin": "https://www.unicode.org/license.txt; Unicode 15.0.0 General_Category via Python unicodedata",
+      "version": "15.0.0",
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
     }
   ]
 }
