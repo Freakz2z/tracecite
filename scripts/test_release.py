@@ -107,6 +107,32 @@ class SourceGuardTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "versions differ"):
             release_guard.check_source(self.root)
 
+    def constant_cli(self, value, output=True):
+        source = 'let tracecite_version : String = "' + value + '"\n'
+        if output:
+            source += r'@stdio.stdout.write("TraceCite \{tracecite_version}\n")' + '\n'
+        (self.root / "cli/main.mbt").write_text(source)
+        self.commit()
+        self.git("tag", "-f", "v1.2.3")
+
+    def test_version_constant_and_interpolated_cli_are_supported(self):
+        self.constant_cli("1.2.3")
+        self.assertEqual(release_guard.check_source(self.root)[0], METADATA)
+
+    def test_stale_constant_is_not_hidden_by_a_literal_version_comment(self):
+        self.constant_cli("1.2.4")
+        path = self.root / "cli/main.mbt"
+        path.write_text(path.read_text() + r"// TraceCite 1.2.3\n" + "\n")
+        self.commit()
+        self.git("tag", "-f", "v1.2.3")
+        with self.assertRaisesRegex(ValueError, "versions differ"):
+            release_guard.check_source(self.root)
+
+    def test_unused_version_constant_is_rejected(self):
+        self.constant_cli("1.2.3", output=False)
+        with self.assertRaisesRegex(ValueError, "versions differ"):
+            release_guard.check_source(self.root)
+
 
 class ReleaseAssetTests(unittest.TestCase):
     def setUp(self):

@@ -31,7 +31,12 @@ def check_source(root=REPO, expected_revision=None):
     if tagged != revision:
         raise ValueError("Release tag does not point to the checked source")
     cli = (root / "cli/main.mbt").read_text()
-    if f'TraceCite {metadata["version"]}\\n' not in cli:
+    if "tracecite_version" in cli:
+        versions = re.findall(r'^\s*let\s+tracecite_version\s*:\s*String\s*=\s*"([^"\n]+)"\s*$', cli, re.MULTILINE)
+        matching = versions == [metadata["version"]] and r"TraceCite \{tracecite_version}\n" in cli
+    else:
+        matching = f'TraceCite {metadata["version"]}\\n' in cli
+    if not matching:
         raise ValueError("CLI and module versions differ")
     return metadata, revision
 
