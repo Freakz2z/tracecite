@@ -1,6 +1,6 @@
 # 文档引用维护指南
 
-本页描述 0.6.1 的文档维护功能，包括通配符、覆盖要求、Setext 标题和只读复核预览。
+本页描述 0.7.0 的文档维护功能，包括通配符、覆盖要求、Setext 标题和只读复核预览。
 
 `check` 直接读取 Markdown 和来源文件。引用来源相对当前文档的目录解析；`--root` 定义整个工作区的边界，而不是改变每条来源的相对目录。
 
@@ -38,7 +38,9 @@ moon run cmd/main check --root /path/to/repository
     "examples/review/README.md",
     "docs/field-validation.md",
     "ROADMAP.md",
-    "examples/compatibility/README.md"
+    "examples/compatibility/README.md",
+    "docs/json-report.md",
+    "examples/library/README.md"
   ],
   "exclude": [],
   "baseline": ".tracecite-docs.json",
@@ -46,7 +48,7 @@ moon run cmd/main check --root /path/to/repository
   "online": false,
   "coverage": {
     "max_skipped_web": 49,
-    "max_unbound_snippets": 42
+    "max_unbound_snippets": 46
   }
 }
 ```
@@ -246,3 +248,6 @@ moon run cmd/main check docs --root /path/to/repository --github --strict
 本地检查只读取仓库内的文件；不需要 Agent、模型 API、Python、Node、数据库或后台服务。源码方式需要 MoonBit，独立 native 二进制无需 MoonBit 运行时安装。
 
 网页回源复用原有 HTTP/HTML 实现，访问限制见 [HTTP 回源行为](contract.md#http-回源行为)。JSONL 与原来的 Agent 校验入口保留兼容，见 [原有输入约定](contract.md)；它们是可选接入方式。
+
+0.7.0 的 check/init --json 报告增加 schema_version、tool_version 与逐项 category，原有字段保留。
+完整字段、退出码及未知值处理见 [JSON 接入契约](json-report.md)；复用配置的 CI 模板见 [库与 CI 样例](../examples/library/README.md)。

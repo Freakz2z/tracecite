@@ -544,5 +544,45 @@ class DocumentMaintenanceTests(unittest.TestCase):
         self.assertEqual(report["items"][1]["code"], "ANCHOR_NOT_FOUND")
 
 
+    def test_json_contract_version_and_categories_match_the_cli(self):
+        report = self.run_check("docs/guide.md", "--strict")
+        self.assertEqual(report["schema_version"], 1)
+        version = subprocess.check_output(["moon", "run", "cmd/main", "--version"], cwd=REPO, text=True).strip()
+        self.assertEqual("TraceCite " + report["tool_version"], version)
+        self.assertTrue(all(item["category"] == "verified" for item in report["items"]))
+        self.assertNotIn("baseline_preview", report)
+        self.assertNotIn("previous", report["items"][0])
+
+    def test_json_categories_separate_unavailable_content_change_and_review(self):
+        self.write("docs/guide.md", '[missing](missing.txt)\n```toml source=../config.toml\ntimeout = 30\n```\n"unassociated quotation"\n')
+        report = self.run_check("docs/guide.md", "--strict", expected=2)
+        categories = {item["code"]: item["category"] for item in report["items"]}
+        self.assertEqual(categories["SOURCE_NOT_FOUND"], "source_unavailable")
+        self.assertEqual(categories["DOCUMENT_EXCERPT_MISMATCH"], "content_mismatch")
+        self.assertEqual(categories["UNASSOCIATED_QUOTE"], "needs_review")
+
+    def test_online_blocked_source_has_access_diagnostic_and_no_baseline_candidate(self):
+        self.write("docs/guide.md", '[private](http://127.0.0.1/source)\n')
+        report = self.run_check("docs/guide.md", "--online", "--strict", "--preview-baseline", expected=2)
+        item = report["items"][0]
+        self.assertEqual(item["category"], "source_unavailable")
+        self.assertEqual(item["code"], "INVALID_OR_BLOCKED_URL")
+        self.assertIn("public-source policy", item["message"])
+        self.assertFalse(report["baseline_preview"]["can_update"])
+        self.assertNotIn("snapshot", report["baseline_preview"])
+
+    def test_json_coverage_and_grouped_drift_keep_distinct_categories(self):
+        self.run_cli("init", "docs/guide.md")
+        self.write("config.toml", 'timeout = 20\nname = "changed"\n')
+        # The bound excerpt stays valid; selected snippet context has no drift.
+        self.write("docs/source.md", "# Source\n## Settings\nThe timeout is twenty seconds.\nNew context.\n## Other\n")
+        report = self.run_check("--review", expected=2)
+        self.assertEqual(report["review"][0]["locations"][0]["category"], "source_changed")
+        self.write("docs/guide.md", '[web](https://example.org)\n')
+        report = self.run_check("docs/guide.md", "--max-skipped-web", "0", expected=2)
+        self.assertEqual(report["items"][0]["category"], "not_checked")
+        self.assertEqual(report["items"][1]["category"], "coverage")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,4 +1,7 @@
 ///|
+let tracecite_version : String = "0.7.0"
+
+///|
 /// Exit codes: 0 for a valid trace, 1 for usage or I/O failure, 2 for a trace
 /// with structural diagnostics.
 #cfg(target="native")
@@ -18,7 +21,7 @@ pub async fn run() -> Unit {
     return
   }
   if args[index] == "--version" {
-    @stdio.stdout.write("TraceCite 0.6.1\n")
+    @stdio.stdout.write("TraceCite \{tracecite_version}\n")
     return
   }
   if args[index] == "check" || args[index] == "init" {

@@ -4,11 +4,11 @@
 
 ## 在 MoonBit 项目中使用
 
-当前正式版本为 0.6.1。维护者发布后续版本前必须完成以下验证，并保留固定提交与消费回执。
+本指南以 0.7.0 为例；发布前必须完成以下验证，并保留固定提交与消费回执。
 在消费项目安装正式版本：
 
 ```sh
-moon add Freakz2z/tracecite@0.6.1
+moon add Freakz2z/tracecite@0.7.0
 ```
 
 在 `moon.pkg` 中导入根包：
@@ -33,7 +33,7 @@ assert_true(project.config.unwrap().strict)
 需要命令行时可直接安装 native 包，生成的命令名为 `tracecite`：
 
 ```sh
-moon install Freakz2z/tracecite/cmd/tracecite@0.6.1
+moon install Freakz2z/tracecite/cmd/tracecite@0.7.0
 tracecite init docs README.md
 tracecite check
 ```
@@ -62,13 +62,13 @@ bash scripts/release.sh
 确认 [moon.mod](../moon.mod) 中的模块名称、版本和许可证，在拥有 `Freakz2z` 发布权限的环境登录，完成测试并提交、推送源码，确认该提交 CI 通过后，创建与模块版本对应的标签，再运行：
 
 ```sh
-git tag v0.6.1
-git push origin v0.6.1
+git tag v0.7.0
+git push origin v0.7.0
 moon login
 bash scripts/release.sh --publish
 ```
 
-`--publish` 先要求工作区干净、CLI 与模块版本一致、版本标签指向当前 HEAD，并查询注册表。只有明确的 404 才视为新版本；已有版本、权限错误、服务异常或未知响应均停止。随后完成同一套验证，在上传前再次核对源码提交和版本，再调用官方 `moon publish`；成功后核对注册表摘要、从真实注册表安装库和 CLI，验证 native/JS/Wasm API 及 13 步和 14 步维护流程。也可以运行 `moon view Freakz2z/tracecite@0.6.1` 核对已发布版本。不要在仓库中保存凭证。
+`--publish` 先要求工作区干净、CLI 与模块版本一致、版本标签指向当前 HEAD，并查询注册表。只有明确的 404 才视为新版本；已有版本、权限错误、服务异常或未知响应均停止。随后完成同一套验证，在上传前再次核对源码提交和版本，再调用官方 `moon publish`；成功后核对注册表摘要、从真实注册表安装库和 CLI，验证 native/JS/Wasm API 及 13 步和 14 步维护流程。也可以运行 `moon view Freakz2z/tracecite@0.7.0` 核对已发布版本。不要在仓库中保存凭证。
 
 发布准备不使用 `moon publish --dry-run`；只构建源码包时使用 `moon package`。发布新版本应先修改模块版本，更新相关文档，复核引用后刷新基线，并提交源码。
 
@@ -98,7 +98,7 @@ bash scripts/package.sh
 
 不同环境重新打包的 ZIP 元数据可能不同；补传时应使用注册表中的原始 ZIP，不能仅凭同一源码提交认定文件摘要一致。
 
-正式包名称包含版本，例如 tracecite-0.6.1-linux-x86_64.tar.gz。解压后执行其中的 tracecite，无需 MoonBit、Python 或 Node；联网检查仍使用系统 TLS 库与证书。
+正式包名称包含版本，例如 tracecite-0.7.0-linux-x86_64.tar.gz。解压后执行其中的 tracecite，无需 MoonBit、Python 或 Node；联网检查仍使用系统 TLS 库与证书。
 
 独立复查注册表安装：
 
@@ -107,3 +107,6 @@ python3 scripts/verify_release_package.py --consume-registry
 ```
 
 复查需要本地 dist/mooncakes/ 中已验证的对应源码 ZIP，以核对注册表摘要。维护流程证据保存在 _build/acceptance/published-版本/，成功回执写入 ZIP 同目录的 .published.json 文件。
+
+独立库样例见 [新项目接入](../examples/library/README.md)。发布验证从源码解包及真实注册表消费项目运行该样例，
+分别验证 native、JS、Wasm 输出一致；新项目 init/check 与共享配置 Action 检查脚本的八步接入流程也会复现。

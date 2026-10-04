@@ -129,6 +129,16 @@ tracecite-acceptance-evidence。测试异常时已有报告也保留。案例中
 [最小样例](../examples/compatibility/README.md) 一条命令可运行；
 [真实案例复查](field-validation.md) 保留修复前后结果，未检查内容继续明确计数。
 
+## 0.7.0 生态接入开发验证
+
+独立 MoonBit 消费项目在 native、JS、Wasm 分别构建、运行并通过 1 项样例测试；输出一致。
+核心回归 native 96 项、JS/Wasm 各 81 项、CLI 59 项，JSON 消费契约边界 5 项。
+公开 MoonBit API 与配置结构未变化；CLI 文档报告新增版本及分类，兼容性说明见 [JSON 契约](json-report.md)。
+[库与 CI 接入样例](../examples/library/README.md) 提供可运行项目、最小工作流及八步受控新项目演示。
+Action 的检查脚本在本地验证两次，本仓库 CI 同时运行完整 composite Action；这不表示外部仓库采用。
+网页错误保留诊断代码并解释回源失败，不将网络或内容类型问题推定为引文错误。
+开发验证与正式注册表消费分开记录，发布结果以固定标签与交付回执为准。
+
 ## 发布身份与复核方式
 
 ### 0.6.1

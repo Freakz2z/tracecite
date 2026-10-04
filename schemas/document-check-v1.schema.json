@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TraceCite document check report v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "tool_version",
+    "document_count",
+    "checked_count",
+    "failed_count",
+    "warning_count",
+    "skipped_count",
+    "unbound_snippets",
+    "online",
+    "items",
+    "review"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "tool_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "document_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "checked_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "failed_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "warning_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "skipped_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "unbound_snippets": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "online": {
+      "type": "boolean"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/item"
+      }
+    },
+    "review": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "source",
+          "locations"
+        ],
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "locations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/item"
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "baseline_preview": {
+      "$ref": "#/$defs/preview"
+    }
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "required": [
+        "document",
+        "line",
+        "source",
+        "kind",
+        "status",
+        "code",
+        "message",
+        "category"
+      ],
+      "properties": {
+        "document": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "expected": {
+          "type": "string"
+        },
+        "actual": {
+          "type": "string"
+        },
+        "previous": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "snapshot_entry": {
+      "type": "object",
+      "required": [
+        "document",
+        "source",
+        "kind",
+        "observed"
+      ],
+      "properties": {
+        "document": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "observed": {
+          "type": "string"
+        },
+        "excerpt": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "snapshot_change": {
+      "type": "object",
+      "required": [
+        "document",
+        "source",
+        "kind",
+        "change"
+      ],
+      "properties": {
+        "document": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "change": {
+          "type": "string"
+        },
+        "excerpt": {
+          "type": "string"
+        },
+        "previous": {
+          "type": "string"
+        },
+        "current": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "snapshot": {
+      "type": "object",
+      "required": [
+        "version",
+        "entries"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/snapshot_entry"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "preview": {
+      "type": "object",
+      "required": [
+        "can_update",
+        "added_count",
+        "changed_count",
+        "removed_count",
+        "changes",
+        "scanned_documents"
+      ],
+      "properties": {
+        "can_update": {
+          "type": "boolean"
+        },
+        "added_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "changed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "removed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/snapshot_change"
+          }
+        },
+        "scanned_documents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "snapshot": {
+          "$ref": "#/$defs/snapshot"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

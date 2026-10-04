@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "tool_version": "0.7.0",
+  "document_count": 1,
+  "checked_count": 3,
+  "failed_count": 0,
+  "warning_count": 0,
+  "skipped_count": 0,
+  "unbound_snippets": 0,
+  "online": false,
+  "items": [
+    {
+      "document": "guide.md",
+      "line": 3,
+      "source": "/source.md#blockingn--backpressure",
+      "kind": "link",
+      "status": "ok",
+      "code": "",
+      "message": "reference matches its current source",
+      "category": "verified"
+    },
+    {
+      "document": "guide.md",
+      "line": 5,
+      "source": "/config.toml",
+      "kind": "snippet",
+      "status": "ok",
+      "code": "",
+      "message": "reference matches its current source",
+      "category": "verified",
+      "expected": "timeout = 20"
+    },
+    {
+      "document": "guide.md",
+      "line": 9,
+      "source": "/config.toml",
+      "kind": "link",
+      "status": "ok",
+      "code": "",
+      "message": "reference matches its current source",
+      "category": "verified"
+    }
+  ],
+  "review": []
+}

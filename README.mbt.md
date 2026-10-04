@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/Freakz2z/tracecite/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Freakz2z/tracecite/ci.yml?branch=main&amp;style=flat-square&amp;label=CI" alt="CI status"></a>
-  <img src="https://img.shields.io/badge/version-0.6.1-317d72?style=flat-square" alt="TraceCite 0.6.1">
+  <img src="https://img.shields.io/badge/version-0.7.0-317d72?style=flat-square" alt="TraceCite 0.7.0">
   <img src="https://img.shields.io/badge/built_with-MoonBit-4664b7?style=flat-square" alt="Built with MoonBit">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-586874?style=flat-square" alt="Apache 2.0 license"></a>
 </p>
@@ -23,7 +23,7 @@
   <a href="docs/contract.md">输入约定</a>
 </p>
 
-> **0.6.1 已发布**：修复真实项目中的标点标题锚点、脚注识别和仓库根路径链接，保留来源复核与工作区边界保护。
+> **0.7.0**：独立 MoonBit 库样例、共享配置 CI 模板、带版本的 JSON 诊断和网页失败说明，方便新项目接入。
 
 ## 为什么需要 TraceCite
 
@@ -93,7 +93,7 @@ bash scripts/package.sh
 ./_build/native/release/build/cmd/main/main.exe check
 ```
 
-打包脚本在 `dist/` 生成本机压缩包。**运行独立 native 二进制无需安装 MoonBit、Python 或 Node。** [打包工作流](.github/workflows/binaries.yml)支持手动触发或版本标签触发，构建 Linux/macOS 包。0.6.1 独立包与校验文件在 [GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.6.1) 下载；解压后直接运行其中的 `tracecite`。
+打包脚本在 `dist/` 生成本机压缩包。**运行独立 native 二进制无需安装 MoonBit、Python 或 Node。** [打包工作流](.github/workflows/binaries.yml)支持手动触发或版本标签触发，构建 Linux/macOS 包。0.7.0 独立包与校验文件在 [GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.7.0) 下载；解压后直接运行其中的 `tracecite`。
 
 包内保留第三方许可与构建清单；联网 HTTPS 检查使用系统 TLS 库和证书。打包与演示脚本使用 Python 3，它仅是开发工具。
 
@@ -207,10 +207,10 @@ Action 安装并编译 MoonBit，在调用方仓库中解析引用，失败时�
 核心库可在 MoonBit 项目中导入，支持 native、JS、Wasm；CLI 另提供独立 native 包。消费项目可执行：
 
 ```sh
-moon add Freakz2z/tracecite@0.6.1
+moon add Freakz2z/tracecite@0.7.0
 ```
 
-需要命令行时可安装 `moon install Freakz2z/tracecite/cmd/tracecite@0.6.1`，以后直接运行 `tracecite init` 和 `tracecite check`。
+需要命令行时可安装 `moon install Freakz2z/tracecite/cmd/tracecite@0.7.0`，以后直接运行 `tracecite init` 和 `tracecite check`。
 
 维护者使用 `bash scripts/release.sh` 生成并验证源码包，包含解包后的文档检查和三个目标的消费项目测试。准备完成且登录有发布权限的 Mooncakes 账户后，使用 `bash scripts/release.sh --publish` 上传并确认版本。具体步骤见 [发布与接入指南](docs/publishing.md)。
 
@@ -276,3 +276,5 @@ Python 仅用于开发测试和可选的旧 Agent 适配器。JSONL 校验、`ve
 真实仓库适配结果见 [首轮验证](docs/field-validation.md)，后续修复范围见 [Roadmap](ROADMAP.md)。
 
 兼容性功能可运行 [最小样例](examples/compatibility/README.md)。
+
+新项目接入见 [库与 CI 样例](examples/library/README.md)，机器消费见 [JSON 契约](docs/json-report.md)。

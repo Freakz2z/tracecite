@@ -54,6 +54,12 @@ def verify_consumer(root, metadata, package=None):
 def verify_package(metadata):
     archive = REPO / "_build/publish" / (metadata["name"].replace("/", "-") + "-" + metadata["version"] + ".zip")
     required = (
+        "cli/document_diagnostics.mbt", "cli/document_diagnostics_wbtest.mbt",
+        "schemas/document-check-v1.schema.json", "docs/json-report.md",
+        "templates/document-check.yml", "examples/integration/read_report.py", "examples/integration/report.json",
+        "examples/library/README.md", "examples/library/project/moon.mod", "examples/library/project/moon.pkg",
+        "examples/library/project/main.mbt", "examples/library/project/main_wbtest.mbt",
+        "scripts/verify_library_example.py", "scripts/onboarding_demo.py", "scripts/test_report_contract.py",
         "moon.mod", "moon.pkg", "LICENSE", "README.mbt.md", "README.md",
         "pkg.generated.mbti", "project.mbt", "document.mbt", "document_match.mbt",
         "cmd/main/main.mbt", "cmd/main/moon.pkg", "cmd/tracecite/main.mbt", "cmd/tracecite/moon.pkg",
@@ -125,6 +131,10 @@ def verify_package(metadata):
         run("python3", "scripts/maintenance_review_demo.py", "--binary", str(installed),
             "--out", str(Path(temporary) / "review"), cwd=package)
 
+        from verify_library_example import verify_example
+        verify_example(Path(temporary), metadata, package=package)
+        run("python3", "scripts/onboarding_demo.py", "--binary", str(installed),
+            "--out", str(Path(temporary) / "onboarding"), cwd=package)
         verify_consumer(Path(temporary), metadata, package=package)
 
     destination = REPO / "dist/mooncakes" / archive.name
@@ -170,6 +180,8 @@ def verify_registry(metadata, consume=False):
     with tempfile.TemporaryDirectory(prefix="tracecite-registry-") as temporary:
         root = Path(temporary)
         # No moon.work and no local package override: consume the actual registry.
+        from verify_library_example import verify_example
+        library_results = verify_example(root, metadata)
         consumer = verify_consumer(root, metadata)
         binaries = root / "bin"
         run("moon", "install", metadata["name"] + "/cmd/tracecite@" + metadata["version"],
@@ -183,9 +195,12 @@ def verify_registry(metadata, consume=False):
             "--no-config", "--strict", "--max-skipped-web", "0", "--max-unbound-snippets", "0", cwd=REPO)
         demonstrate(evidence / os.path.basename(temporary), binary)
         demonstrate_review(evidence / (os.path.basename(temporary) + "-review"), binary)
+        from onboarding_demo import demonstrate_onboarding
+        onboarding = demonstrate_onboarding(evidence / (os.path.basename(temporary) + "-onboarding"), binary)
     receipt = {"schema": 1, "module": metadata["name"], "version": metadata["version"],
                "registry_sha256": checksum, "targets": ["native", "js", "wasm"],
-               "cli_install": "registry", "maintenance_steps": 13, "review_steps": 14, "compatibility_example": True, "passed": True}
+               "cli_install": "registry", "maintenance_steps": 13, "review_steps": 14, "compatibility_example": True, "library_example_targets": ["native", "js", "wasm"], "library_example_results": library_results,
+               "onboarding_steps": len(onboarding["steps"]), "action_config_checked": onboarding["action_checked"], "passed": True}
     archive.with_suffix(".published.json").write_text(json.dumps(receipt, indent=2) + "\n")
     print("Actual registry consumers and installed CLI verified")
 

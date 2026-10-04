@@ -85,6 +85,9 @@ def verify(archive):
                            check=True, env=environment, timeout=30)
         demonstrate(root / "acceptance", binary)
         demonstrate_review(root / "review", binary)
+        if tuple(map(int, manifest["version"].split("."))) >= (0, 7, 0):
+            from onboarding_demo import demonstrate_onboarding
+            demonstrate_onboarding(root / "onboarding", binary, include_action=False)
     print(f"Verified native archive: {archive}")
 
 

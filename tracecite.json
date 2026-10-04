@@ -11,7 +11,9 @@
     "examples/review/README.md",
     "docs/field-validation.md",
     "ROADMAP.md",
-    "examples/compatibility/README.md"
+    "examples/compatibility/README.md",
+    "docs/json-report.md",
+    "examples/library/README.md"
   ],
   "exclude": [],
   "baseline": ".tracecite-docs.json",
@@ -19,6 +21,6 @@
   "online": false,
   "coverage": {
     "max_skipped_web": 49,
-    "max_unbound_snippets": 42
+    "max_unbound_snippets": 46
   }
 }

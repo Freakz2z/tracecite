@@ -252,7 +252,7 @@ async fn fetch_public_text_inner(
     }
     let headers : @http.Headers = Map([])
     headers["Accept"] = "text/html,application/xhtml+xml,text/plain,application/json;q=0.8,*/*;q=0.1"
-    headers["User-Agent"] = "TraceCite/0.5 (document maintenance)"
+    headers["User-Agent"] = "TraceCite/\{tracecite_version} (document maintenance)"
     let proxy : @http.Client? = match remote_proxy(current, get_env) {
       None => None
       Some(raw) => {

@@ -7,6 +7,7 @@ priv struct DocumentCheckItem {
   status : String
   code : String
   message : String
+  category : String
   expected : String?
   actual : String?
   previous : String?
@@ -14,6 +15,8 @@ priv struct DocumentCheckItem {
 
 ///|
 priv struct DocumentCheckReport {
+  schema_version : Int
+  tool_version : String
   document_count : Int
   checked_count : Int
   failed_count : Int
@@ -509,7 +512,13 @@ async fn document_command(
             reference.source,
             "unavailable",
             result.error_code.unwrap_or("SOURCE_UNAVAILABLE"),
-            "source cannot be independently read",
+            if remote {
+              remote_failure_message(
+                result.error_code.unwrap_or("SOURCE_UNAVAILABLE"),
+              )
+            } else {
+              "source cannot be independently read"
+            },
           ),
         )
         continue
@@ -562,6 +571,7 @@ async fn document_command(
           source: reference.source,
           kind: reference.kind,
           status: "mismatch",
+          category: "content_mismatch",
           code: "DOCUMENT_EXCERPT_MISMATCH",
           message: "document excerpt was not found in the selected source; review the candidate excerpt",
           expected,
@@ -621,6 +631,7 @@ async fn document_command(
         status,
         code,
         message,
+        category: document_diagnostic_category(status, code),
         expected,
         actual: if status == "changed" {
           Some(@tracecite.bounded_document_text(observed))
@@ -716,6 +727,8 @@ async fn document_command(
     .length()
   let warning_count = items.filter(item => item.status == "warning").length()
   let report = DocumentCheckReport::{
+    schema_version: 1,
+    tool_version: tracecite_version,
     document_count: paths.length(),
     checked_count,
     failed_count,
@@ -1064,6 +1077,7 @@ fn document_problem(
     line,
     source,
     kind: "diagnostic",
+    category: document_diagnostic_category(status, code),
     status,
     code,
     message,

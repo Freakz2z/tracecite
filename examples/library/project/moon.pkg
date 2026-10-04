@@ -1,0 +1,6 @@
+import {
+  "Freakz2z/tracecite",
+  "moonbitlang/core/json",
+}
+
+pkgtype(kind: "executable")

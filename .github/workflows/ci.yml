@@ -47,6 +47,7 @@ jobs:
           moon test --target wasm --deny-warn
           sh scripts/smoke.sh
           python3 scripts/test_document_cli.py
+          python3 scripts/test_report_contract.py
           moon run cmd/main check
           moon run cmd/main check guide.md --root examples/compatibility/project --no-config --strict
           moon run cmd/main check guide.md --root examples/maintenance/project --no-config --strict
@@ -61,6 +62,8 @@ jobs:
           python3 scripts/maintenance_review_demo.py --out _build/acceptance/review-ci
           python3 scripts/test_native_package.py
           python3 scripts/test_release.py
+      - name: Exercise shared-config onboarding
+        run: python3 scripts/onboarding_demo.py --out _build/acceptance/onboarding-ci
       - uses: actions/upload-artifact@v6
         if: always()
         with:
@@ -68,6 +71,7 @@ jobs:
           path: |
             _build/acceptance/ci/
             _build/acceptance/review-ci/
+            _build/acceptance/onboarding-ci/
           if-no-files-found: error
       - name: Exercise public report action
         uses: ./
