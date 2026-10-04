@@ -3,7 +3,7 @@
 project 是一个独立 MoonBit 模块，通过 Mooncakes 导入 Freakz2z/tracecite@0.7.0。
 CLI 与 HTTP 模块不在导入范围，样例可编译到 native、JS、Wasm。
 
-在正式版本发布后，从本仓库根目录执行：
+0.7.0 已正式发布，从本仓库根目录执行：
 
 ```sh
 cd examples/library/project

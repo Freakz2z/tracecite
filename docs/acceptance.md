@@ -5,8 +5,8 @@
 
 ## 九项验收清单
 
-本节逐项对应组委会提供的验收指南。当前交付依据 0.6.1 固定源码提交
-`3aeda81a77bbd9509971edbcaf4c8f942ea63b17` 及该标签的 CI、打包与实际注册表消费验证。
+本节逐项对应组委会提供的验收指南。当前交付依据 0.7.0 固定源码提交
+`62b103d80fcfda1101eb190272154d5684122d60` 及该标签的 CI、打包与实际注册表消费验证。
 验收记录在发布后补入 main，不修改已发布包与版本标签。
 
 | 序号 | 验收要求 | 交付与复核方式 |
@@ -17,8 +17,8 @@
 | 4 | README 包含目标、安装、用法、示例并可复现 | README.mbt.md 为主说明，README.md 指向它；包含源码启动、Mooncakes 库/CLI 安装、独立包、配置、Action、边界和维护演示。 |
 | 5 | CI 覆盖检查、构建、测试 | .github/workflows/ci.yml 执行最低版本检查、moon check、三目标构建和测试、CLI/适配器/打包测试、实例运行及源码 ZIP 消费验证。 |
 | 6 | 至少一个可运行示例 | examples/maintenance/project 提供离线最小项目，下面的一条命令可直接检查；acceptance_demo.py 提供 13 步维护闭环。 |
-| 7 | 测试覆盖核心路径 | native 94 项、JS/Wasm 各 81 项；CLI 集成 55 项、适配器 6 项、许可打包 8 项、发布保护 12 项。正常路径与失败保护对应关系见下表。 |
-| 8 | 发布到 mooncakes.io | 已发布 Freakz2z/tracecite@0.6.1；库和 cmd/tracecite 均通过实际注册表安装验证。发布提交、源码摘要与安装命令见后文和发布指南。 |
+| 7 | 测试覆盖核心路径 | native 96 项、JS/Wasm 各 81 项；CLI 集成 59 项、JSON 契约 5 项、适配器 6 项、许可打包 8 项、发布保护 15 项。正常路径与失败保护对应关系见下表。 |
+| 8 | 发布到 mooncakes.io | 已发布 Freakz2z/tracecite@0.7.0；库和 cmd/tracecite 均通过实际注册表安装验证。发布提交、源码摘要与安装命令见后文和发布指南。 |
 | 9 | OSI 开源许可证与上游合规 | 项目采用 Apache-2.0；moon.mod 元数据一致。THIRD_PARTY_NOTICES.md 和 third_party/ 保留依赖、移植来源与 SDK 许可；native 包完整附带 LICENSE/NOTICE 和构建清单，缺项会停止。 |
 
 此前验收材料提交 `4c459edcfc0dd66ee80f59e0936048e9fae0c0d4` 的 [常规 CI](https://github.com/Freakz2z/tracecite/actions/runs/36699193496)
@@ -129,7 +129,7 @@ tracecite-acceptance-evidence。测试异常时已有报告也保留。案例中
 [最小样例](../examples/compatibility/README.md) 一条命令可运行；
 [真实案例复查](field-validation.md) 保留修复前后结果，未检查内容继续明确计数。
 
-## 0.7.0 生态接入开发验证
+## 0.7.0 生态接入验证
 
 独立 MoonBit 消费项目在 native、JS、Wasm 分别构建、运行并通过 1 项样例测试；输出一致。
 核心回归 native 96 项、JS/Wasm 各 81 项、CLI 59 项，JSON 消费契约边界 5 项。
@@ -137,9 +137,22 @@ tracecite-acceptance-evidence。测试异常时已有报告也保留。案例中
 [库与 CI 接入样例](../examples/library/README.md) 提供可运行项目、最小工作流及八步受控新项目演示。
 Action 的检查脚本在本地验证两次，本仓库 CI 同时运行完整 composite Action；这不表示外部仓库采用。
 网页错误保留诊断代码并解释回源失败，不将网络或内容类型问题推定为引文错误。
-开发验证与正式注册表消费分开记录，发布结果以固定标签与交付回执为准。
+开发验证与正式注册表消费分别执行，发布结果见固定标签与交付回执。
 
 ## 发布身份与复核方式
+
+### 0.7.0
+
+已发布 Freakz2z/tracecite@0.7.0，[GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.7.0) 提供九项资产。
+固定提交为 `62b103d80fcfda1101eb190272154d5684122d60`，源码 ZIP SHA-256 为
+`8bdc5026bad57fa367f9ef4aff5b830002ff200382738e1d2f05919165d14172`。
+[标签 CI](https://github.com/Freakz2z/tracecite/actions/runs/37195970553)、
+[Linux/macOS 打包](https://github.com/Freakz2z/tracecite/actions/runs/37195970571)、
+[原始 ZIP 与注册表消费](https://github.com/Freakz2z/tracecite/actions/runs/37196223403) 全部通过。
+独立库样例在真实注册表消费时三个目标各 1 项测试通过，运行输出相同；公开 API 消费各 5 项通过。
+实际安装的 CLI 运行 13 步、14 步维护及八步接入流程，下载的 Linux 包额外运行六步纯 CLI 接入通过。
+成功、失败及基线预览报告已用 JSON Schema 2020-12 验证；该外部验证库仅用于开发复核，不是 CLI 运行依赖。
+完整身份、摘要和三个目标的样例输出见 [0.7.0 交付记录](releases/0.7.0.json)。
 
 ### 0.6.1
 

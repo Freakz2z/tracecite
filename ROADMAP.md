@@ -7,7 +7,7 @@
 
 ## 当前基础
 
-0.6.1 已发布到 Mooncakes 和 GitHub，继承 0.5.0 的项目配置、init/check、GitHub Action 和 portable 核心库。
+0.7.0 已发布到 Mooncakes 和 GitHub，继承 0.5.0 的项目配置、init/check、GitHub Action 和 portable 核心库。
 验收说明、第三方许可及 13 步和 14 步离线维护演示已纳入正式源码包；实际注册表安装与两平台独立包均已验证。
 已发布内容与后续改动见 [版本记录](CHANGELOG.md)，交付证据见 [验收说明](docs/acceptance.md)。
 
@@ -70,7 +70,7 @@
 0.6.1 发布与消费验证见 [交付记录](docs/releases/0.6.1.json)及 [GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.6.1)。
 兼容性最小样例和两个固定仓库的修复前后结果均已复现；待复核与未检查项继续保留。
 
-## 0.7.0：完善生态接入（开发完成，待正式发布）
+## 0.7.0：完善生态接入（已完成）
 
 让新的 MoonBit 项目更容易使用核心库、CLI 或 Action。
 
@@ -82,8 +82,8 @@
 
 **完成标准**：新项目可按文档完成接入，核心库的 native、JS、Wasm 三个编译目标保持验证通过。
 
-开发验证见 [独立库及 CI 接入](examples/library/README.md)、[JSON 契约](docs/json-report.md)。
-源码消费、三目标样例和本地新项目接入已通过；正式注册表验证在发布流程中完成，不作为外部采用数据。
+发布成果见 [0.7.0 交付记录](docs/releases/0.7.0.json)、[独立库及 CI 接入](examples/library/README.md)、[JSON 契约](docs/json-report.md)。
+实际注册表库样例、三目标消费与八步新项目接入已通过；本仓库 CI 验证完整 Action，八步演示验证检查脚本共用配置，不作为外部采用数据。
 
 ## 0.7.x：接入反馈与诊断补齐
 
@@ -97,5 +97,5 @@
 优先保持现有公开 API、命令和项目配置的兼容性；发生兼容性变化时，在版本记录中明确说明。
 第三方组件继续保留各自许可和来源，具体要求见 [第三方通知](THIRD_PARTY_NOTICES.md)。
 
-0.6.1 已正式交付；下一步推进 0.7.0 的库接入样例、CI 模板和 JSON 诊断契约，同时继续收集自然来源变化与实际维护反馈。
+0.7.0 已正式交付；下一步围绕真实接入反馈、诊断边界和自然发生的来源变化推进 0.7.x。
 项目安装与当前用法见 [README](README.mbt.md)。
