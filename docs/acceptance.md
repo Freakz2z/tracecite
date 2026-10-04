@@ -1,12 +1,12 @@
 # TraceCite 成果与验收说明
 
-整理日期：2026-10-01（北京时间）。本说明依据 Git 历史中的申报稿技术目标重建成果对照，
+整理日期：2026-10-04（北京时间）。本说明依据 Git 历史中的申报稿技术目标重建成果对照，
 正式提交的申报书仍以申报人保存的版本为准。它提供可检查的证据，不代替组委会的最终验收判断。
 
 ## 九项验收清单
 
-本节逐项对应组委会提供的验收指南。当前交付依据 0.5.1 固定源码提交
-`d4090a5ffa8fb1fdf01fe48a6b27801f72753683` 及该标签的 CI、打包与实际注册表消费验证。
+本节逐项对应组委会提供的验收指南。当前交付依据 0.6.0 固定源码提交
+`cf041cfd057f791190dfff2c177c4383633f5bd3` 及该标签的 CI、打包与实际注册表消费验证。
 验收记录在发布后补入 main，不修改已发布包与版本标签。
 
 | 序号 | 验收要求 | 交付与复核方式 |
@@ -17,8 +17,8 @@
 | 4 | README 包含目标、安装、用法、示例并可复现 | README.mbt.md 为主说明，README.md 指向它；包含源码启动、Mooncakes 库/CLI 安装、独立包、配置、Action、边界和维护演示。 |
 | 5 | CI 覆盖检查、构建、测试 | .github/workflows/ci.yml 执行最低版本检查、moon check、三目标构建和测试、CLI/适配器/打包测试、实例运行及源码 ZIP 消费验证。 |
 | 6 | 至少一个可运行示例 | examples/maintenance/project 提供离线最小项目，下面的一条命令可直接检查；acceptance_demo.py 提供 13 步维护闭环。 |
-| 7 | 测试覆盖核心路径 | native 79 项、JS/Wasm 各 66 项；CLI 集成 34 项、适配器 6 项、许可打包 7 项、发布保护 12 项。正常路径与失败保护对应关系见下表。 |
-| 8 | 发布到 mooncakes.io | 已发布 Freakz2z/tracecite@0.5.1；库和 cmd/tracecite 均通过实际注册表安装验证。发布提交、源码摘要与安装命令见后文和发布指南。 |
+| 7 | 测试覆盖核心路径 | native 89 项、JS/Wasm 各 76 项；CLI 集成 50 项、适配器 6 项、许可打包 7 项、发布保护 12 项。正常路径与失败保护对应关系见下表。 |
+| 8 | 发布到 mooncakes.io | 已发布 Freakz2z/tracecite@0.6.0；库和 cmd/tracecite 均通过实际注册表安装验证。发布提交、源码摘要与安装命令见后文和发布指南。 |
 | 9 | OSI 开源许可证与上游合规 | 项目采用 Apache-2.0；moon.mod 元数据一致。THIRD_PARTY_NOTICES.md 和 third_party/ 保留依赖、移植来源与 SDK 许可；native 包完整附带 LICENSE/NOTICE 和构建清单，缺项会停止。 |
 
 此前验收材料提交 `4c459edcfc0dd66ee80f59e0936048e9fae0c0d4` 的 [常规 CI](https://github.com/Freakz2z/tracecite/actions/runs/36699193496)
@@ -104,15 +104,15 @@ CLI 集成 **34** 项、适配器 **6** 项。数字对应固定提交，后续�
 tracecite-acceptance-evidence。测试异常时已有报告也保留。案例中的接受来源变化步骤是
 显式模拟人工复核，产品不会自动替维护者接受变化。
 
-## 0.6.0 开发验证
+## 0.6.0 功能与开发验证
 
-当前源码模块与 CLI 为 0.6.0；正式 Mooncakes 和 GitHub Release 仍为下文的 0.5.1。
+0.6.0 已正式发布；开发阶段证据与正式交付记录分别保存。
 新能力包括通配符自动发现、覆盖数量要求、Setext 标题、来源影响集中复核和只读基线预览。
 原来的项目配置、Action 入口和快照更新方式继续兼容。
 
 新增 [14 步离线复核演示](../examples/review/README.md)验证新增文档、来源变化、多文档影响归并、
 覆盖超限阻止候选/写入、修复绑定、删除文档与最终恢复。它保留逐步 JSON 报告，不替代真实项目采用数据。
-开发测试为 native 89 项、JS/Wasm 各 76 项、CLI 集成 50 项；
+正式发布回归测试为 native 89 项、JS/Wasm 各 76 项、CLI 集成 50 项；
 便携 API 消费样例扩展为每目标 4 项，发布与独立包检查同时跑原 13 步和新 14 步演示。
 相应源码见 maintenance_v060_wbtest.mbt、scripts/test_document_cli.py 和 scripts/maintenance_review_demo.py；
 已推送的实现提交为 `d5baa31f16811953f4bc9cf9376575d6baa51b34`；
@@ -122,6 +122,21 @@ tracecite-acceptance-evidence。测试异常时已有报告也保留。案例中
 不将候选包或本地消费推定为 0.6.0 注册表正式发布。
 
 ## 发布身份与复核方式
+
+### 0.6.0
+
+已发布 Freakz2z/tracecite@0.6.0，[GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.6.0) 提供九项资产。
+固定提交为 `cf041cfd057f791190dfff2c177c4383633f5bd3`，源码 ZIP SHA-256 为
+`64835fb0565b0d17d4db7f2f2dd6541841a24e357cc9f33fcc366f3d3d438d53`。
+[标签 CI](https://github.com/Freakz2z/tracecite/actions/runs/37185522286)、
+[Linux/macOS 打包](https://github.com/Freakz2z/tracecite/actions/runs/37185522287)、
+[原始注册表 ZIP 与实际消费验证](https://github.com/Freakz2z/tracecite/actions/runs/37185636878) 全部通过。
+真实注册表消费为 native/JS/Wasm 各 4 项 API 测试；安装 CLI 后原 13 步和新增 14 步维护演示全部通过。
+下载的 Linux Release 包再次运行两套演示通过，源码资产摘要与注册表一致。
+完整机器可读证据见 [0.6.0 交付记录](releases/0.6.0.json)。
+
+新增 [真实仓库首轮验证](field-validation.md) 检查 async 与 moon 的固定提交，记录真实断链与工具兼容性问题，
+不将本地评估表述为上游采用或长期收益。
 
 ### 0.5.1
 

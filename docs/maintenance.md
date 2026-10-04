@@ -33,15 +33,17 @@ moon run cmd/main check --root /path/to/repository
     "CHANGELOG.md",
     "THIRD_PARTY_NOTICES.md",
     "examples/maintenance/README.md",
-    "examples/review/README.md"
+    "examples/review/README.md",
+    "docs/field-validation.md",
+    "ROADMAP.md"
   ],
   "exclude": [],
   "baseline": ".tracecite-docs.json",
   "strict": true,
   "online": false,
   "coverage": {
-    "max_skipped_web": 33,
-    "max_unbound_snippets": 40
+    "max_skipped_web": 44,
+    "max_unbound_snippets": 41
   }
 }
 ```
