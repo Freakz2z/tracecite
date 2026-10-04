@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "checked_at": "2026-10-04T09:51:37.991577+00:00",
+  "checked_at": "2026-10-04T09:58:09.847542+00:00",
   "tool": "TraceCite 0.6.1",
   "scope": "offline fixed-commit upstream evaluation; not adoption or temporal drift evidence",
   "cases": [
@@ -83,5 +83,8 @@
       },
       "local_diagnostics": []
     }
-  ]
+  ],
+  "release_revision": "3aeda81a77bbd9509971edbcaf4c8f942ea63b17",
+  "binary_archive": "tracecite-0.6.1-linux-x86_64.tar.gz",
+  "binary_archive_sha256": "d92ee704219d0c1b596c626cbb8253cca43a94d1c81139c091ec63c766b69af9"
 }

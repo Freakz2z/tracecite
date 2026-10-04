@@ -5,8 +5,8 @@
 
 ## 九项验收清单
 
-本节逐项对应组委会提供的验收指南。当前交付依据 0.6.0 固定源码提交
-`cf041cfd057f791190dfff2c177c4383633f5bd3` 及该标签的 CI、打包与实际注册表消费验证。
+本节逐项对应组委会提供的验收指南。当前交付依据 0.6.1 固定源码提交
+`3aeda81a77bbd9509971edbcaf4c8f942ea63b17` 及该标签的 CI、打包与实际注册表消费验证。
 验收记录在发布后补入 main，不修改已发布包与版本标签。
 
 | 序号 | 验收要求 | 交付与复核方式 |
@@ -17,8 +17,8 @@
 | 4 | README 包含目标、安装、用法、示例并可复现 | README.mbt.md 为主说明，README.md 指向它；包含源码启动、Mooncakes 库/CLI 安装、独立包、配置、Action、边界和维护演示。 |
 | 5 | CI 覆盖检查、构建、测试 | .github/workflows/ci.yml 执行最低版本检查、moon check、三目标构建和测试、CLI/适配器/打包测试、实例运行及源码 ZIP 消费验证。 |
 | 6 | 至少一个可运行示例 | examples/maintenance/project 提供离线最小项目，下面的一条命令可直接检查；acceptance_demo.py 提供 13 步维护闭环。 |
-| 7 | 测试覆盖核心路径 | native 89 项、JS/Wasm 各 76 项；CLI 集成 50 项、适配器 6 项、许可打包 7 项、发布保护 12 项。正常路径与失败保护对应关系见下表。 |
-| 8 | 发布到 mooncakes.io | 已发布 Freakz2z/tracecite@0.6.0；库和 cmd/tracecite 均通过实际注册表安装验证。发布提交、源码摘要与安装命令见后文和发布指南。 |
+| 7 | 测试覆盖核心路径 | native 94 项、JS/Wasm 各 81 项；CLI 集成 55 项、适配器 6 项、许可打包 8 项、发布保护 12 项。正常路径与失败保护对应关系见下表。 |
+| 8 | 发布到 mooncakes.io | 已发布 Freakz2z/tracecite@0.6.1；库和 cmd/tracecite 均通过实际注册表安装验证。发布提交、源码摘要与安装命令见后文和发布指南。 |
 | 9 | OSI 开源许可证与上游合规 | 项目采用 Apache-2.0；moon.mod 元数据一致。THIRD_PARTY_NOTICES.md 和 third_party/ 保留依赖、移植来源与 SDK 许可；native 包完整附带 LICENSE/NOTICE 和构建清单，缺项会停止。 |
 
 此前验收材料提交 `4c459edcfc0dd66ee80f59e0936048e9fae0c0d4` 的 [常规 CI](https://github.com/Freakz2z/tracecite/actions/runs/36699193496)
@@ -124,12 +124,24 @@ tracecite-acceptance-evidence。测试异常时已有报告也保留。案例中
 ## 0.6.1 兼容性修复验证
 
 版本针对真实仓库验证暴露的标点锚点、脚注识别和仓库根路径问题，公开 MoonBit 接口未变化。
-开发回归为 native 94 项、JS/Wasm 各 81 项、CLI 55 项、许可打包 8 项；
+正式发布回归为 native 94 项、JS/Wasm 各 81 项、CLI 55 项、许可打包 8 项；
 实际注册表消费样例扩展为每目标 5 项。源码解包和独立包验证新增兼容性样例。
 [最小样例](../examples/compatibility/README.md) 一条命令可运行；
 [真实案例复查](field-validation.md) 保留修复前后结果，未检查内容继续明确计数。
 
 ## 发布身份与复核方式
+
+### 0.6.1
+
+已发布 Freakz2z/tracecite@0.6.1，[GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.6.1) 提供九项资产。
+固定提交为 `3aeda81a77bbd9509971edbcaf4c8f942ea63b17`，源码 ZIP SHA-256 为
+`e8b40fdd66dadf9baea8565ba6d9e3d0d9cefe1eb9f5046ad6560b4ad5cfada0`。
+[标签 CI](https://github.com/Freakz2z/tracecite/actions/runs/37193635311)、
+[Linux/macOS 打包](https://github.com/Freakz2z/tracecite/actions/runs/37193635306)、
+[原始源码 ZIP 与注册表消费验证](https://github.com/Freakz2z/tracecite/actions/runs/37193770901) 全部通过。
+真实注册表消费为三个目标各 5 项 API 测试；安装 CLI 后兼容性样例、13 步和 14 步维护流程均通过。
+下载的 Linux 包复现两个固定真实案例，来源诊断与源码 CLI 一致；8 项许可打包测试包含 Unicode 许可缺失保护。
+完整身份、摘要与回执见 [0.6.1 交付记录](releases/0.6.1.json)。
 
 ### 0.6.0
 
