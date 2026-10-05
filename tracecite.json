@@ -13,7 +13,8 @@
     "ROADMAP.md",
     "examples/compatibility/README.md",
     "docs/json-report.md",
-    "examples/library/README.md"
+    "examples/library/README.md",
+    "examples/anchors/README.md"
   ],
   "exclude": [],
   "baseline": ".tracecite-docs.json",
@@ -21,6 +22,6 @@
   "online": false,
   "coverage": {
     "max_skipped_web": 53,
-    "max_unbound_snippets": 46
+    "max_unbound_snippets": 48
   }
 }

@@ -54,3 +54,18 @@ test "public compatibility parsing preserves real links without footnote sources
   assert_eq(parsed.references[1].source, "/config.toml")
   assert_true(parsed.warnings.is_empty())
 }
+
+///|
+test "public Unicode anchors preserve duplicate numbering and section evidence" {
+  assert_eq(@tracecite.markdown_heading_slug("État CAFÉ"), "état-café")
+  assert_eq(@tracecite.markdown_heading_slug("ΟΣ"), "ος")
+  assert_eq(@tracecite.markdown_heading_slug("ΟΣΑ"), "οσα")
+  assert_eq(@tracecite.markdown_heading_slug("İSTANBUL"), "i\u{307}stanbul")
+  assert_eq(@tracecite.markdown_heading_slug("𐐀𐐁"), "𐐨𐐩")
+  let source = "ÉTAT\n===\nFirst.\n\n# état\nSecond.\n# NEXT\nOther.\n"
+  let selected = @tracecite.select_document_source(source, "état-1")
+  assert_true(selected.ok)
+  assert_eq(selected.text, "# état\nSecond.")
+  assert_true(@tracecite.document_excerpt_matches(selected.text, "Second.", "quote"))
+  assert_false(@tracecite.select_document_source(source, "état-2").ok)
+}

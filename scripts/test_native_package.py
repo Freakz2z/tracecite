@@ -84,6 +84,15 @@ class NativePackageTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "unrecorded/stale"):
             self.verify()
 
+    def test_unicode_case_component_must_be_recorded_even_when_its_license_exists(self):
+        path = self.bundle / "BUILD-INFO.json"
+        manifest = json.loads(path.read_text())
+        manifest["components"] = [component for component in manifest["components"]
+                                  if component["name"] != "Unicode case properties"]
+        path.write_text(json.dumps(manifest))
+        with self.assertRaisesRegex(ValueError, "Incomplete native component inventory"):
+            self.verify()
+
     def test_altered_license_digest_is_rejected(self):
         (self.bundle / "licenses/mimalloc-LICENSE.txt").write_text("changed")
         with self.assertRaisesRegex(ValueError, "digest mismatch"):

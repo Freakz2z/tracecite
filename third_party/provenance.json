@@ -70,6 +70,16 @@
       "origin": "https://www.unicode.org/license.txt; Unicode 15.0.0 General_Category via Python unicodedata",
       "version": "15.0.0",
       "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+    },
+    {
+      "component": "Unicode case properties",
+      "file": "licenses/Unicode-LICENSE.txt",
+      "origin": "Unicode 15.0.0 default lowercase via Python unicodedata; Cased/Case_Ignorable extracted verbatim from https://www.unicode.org/Public/15.0.0/ucd/DerivedCoreProperties.txt",
+      "version": "15.0.0",
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96",
+      "data_file": "unicode/DerivedCoreProperties-case-15.0.0.txt",
+      "data_sha256": "95b12ed9ca51c02a8bd89d521d30e0f64f4185e31907d6b031441e83a10193ed",
+      "original_data_sha256": "d367290bc0867e6b484c68370530bdd1a08b6b32404601b8c7accaf83e05628d"
     }
   ]
 }

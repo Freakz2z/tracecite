@@ -371,7 +371,7 @@ pub fn markdown_heading_slug(title : String) -> String {
       output.write_char(chars[index])
     }
   }
-  let rendered = output.to_string().to_lower()
+  let rendered = document_unicode_lowercase(output.to_string())
   output.reset()
   for ch in rendered.iter() {
     if ch == ' ' || ch == '\t' {

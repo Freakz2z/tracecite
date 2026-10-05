@@ -1,6 +1,6 @@
 # 文档检查 JSON 接入契约
 
-适用 TraceCite 0.7.0 的 check/init --json；其他 trace、verify-*、compare 命令使用各自格式。
+适用 TraceCite 0.7.0 及后续版本的 check/init --json；其他 trace、verify-*、compare 命令使用各自格式。
 机器格式见 [JSON Schema](../schemas/document-check-v1.schema.json)，真实输出样例见 [report.json](../examples/integration/report.json)。
 
 ```sh
@@ -72,7 +72,7 @@ HTTP_REQUEST_FAILED 表示尚未收到可用响应，可能涉及 DNS、TLS、�
 python3 examples/integration/read_report.py examples/integration/report.json
 ```
 
-它拒绝未知契约版本，未知状态或分类会出现在 unknown_items_need_review；这是展示用读取器，不是完整 JSON Schema 校验器，
+它拒绝非对象报告和未知契约版本；未知状态、分类或错误类型的条目会出现在 unknown_items_need_review，避免消费脚本直接崩溃。这是展示用读取器，不是完整 JSON Schema 校验器，
 也不替代原命令退出码。完整结构校验可使用支持 JSON Schema 2020-12 的验证库。
 [读取器源码](../examples/integration/read_report.py)和 [契约边界测试](../scripts/test_report_contract.py)可供接入方参考。
 

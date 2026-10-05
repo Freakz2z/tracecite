@@ -38,6 +38,19 @@ class ReportContractTests(unittest.TestCase):
             with self.subTest(count=count), self.assertRaises(ValueError):
                 reader.summarize({**self.report, "failed_count": count})
 
+    def test_non_object_reports_have_a_clear_validation_error(self):
+        for value in (None, [], "text", 0, True):
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, "JSON object"):
+                reader.summarize(value)
+
+    def test_malformed_items_stay_visible_without_crashing_the_reader(self):
+        malformed = [None, [], "text", {"category": "verified", "status": []},
+                     {"category": "verified", "status": {}}, {"category": [], "status": "ok"}]
+        self.report["items"].extend(malformed)
+        summary = reader.summarize(self.report)
+        self.assertEqual(summary["unknown_items_need_review"], len(malformed))
+        self.assertEqual(summary["categories"], {"verified": 3})
+
 
 if __name__ == "__main__":
     unittest.main()

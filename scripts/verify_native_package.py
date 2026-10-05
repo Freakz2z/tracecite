@@ -52,6 +52,8 @@ def extract_verified(archive, destination):
     if tuple(map(int, manifest["version"].split("."))) >= (0, 6, 1):
         required.add("licenses/Unicode-LICENSE.txt")
         expected_components.add("Unicode punctuation properties")
+    if tuple(map(int, manifest["version"].split("."))) >= (0, 7, 1):
+        expected_components.add("Unicode case properties")
     if components != expected_components:
         raise ValueError("Incomplete native component inventory")
     for component in manifest["components"]:
@@ -83,6 +85,9 @@ def verify(archive):
                             str(REPO / "examples/compatibility/project"), "--no-config", "--strict",
                             "--max-skipped-web", "0", "--max-unbound-snippets", "0"],
                            check=True, env=environment, timeout=30)
+        if tuple(map(int, manifest["version"].split("."))) >= (0, 7, 1):
+            from verify_anchor_example import verify_anchors
+            verify_anchors(binary, environment)
         demonstrate(root / "acceptance", binary)
         demonstrate_review(root / "review", binary)
         if tuple(map(int, manifest["version"].split("."))) >= (0, 7, 0):

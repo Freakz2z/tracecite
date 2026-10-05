@@ -47,6 +47,8 @@ def collect(destination):
 
     add("Unicode punctuation properties", "15.0.0",
         [(REPO / "third_party/licenses/Unicode-LICENSE.txt", "Unicode-LICENSE.txt")])
+    add("Unicode case properties", "15.0.0",
+        [(REPO / "third_party/licenses/Unicode-LICENSE.txt", "Unicode-LICENSE.txt")])
 
     for name, prefix in (("moonbitlang/async", "async"), ("bobzhang/html_parser", "html-parser")):
         dependency = REPO / ".mooncakes" / name

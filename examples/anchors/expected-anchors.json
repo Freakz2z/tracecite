@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "scope": "Authored heading cases independently evaluated with github-slugger; not GitHub website rendering or external adoption",
+  "reference": {
+    "package": "github-slugger",
+    "version": "2.0.0",
+    "archive_url": "https://registry.npmjs.org/github-slugger/-/github-slugger-2.0.0.tgz",
+    "sha256": "ddde66e96b7d722ff2c3d478e7595aeccae7e75dde798d405510d862f1367d0f",
+    "node": "v24.19.0"
+  },
+  "cases": [
+    {
+      "title": "État CAFÉ",
+      "anchor": "état-café"
+    },
+    {
+      "title": "ÜBER Straße",
+      "anchor": "über-straße"
+    },
+    {
+      "title": "ΟΣ",
+      "anchor": "ος"
+    },
+    {
+      "title": "ΟΣΑ",
+      "anchor": "οσα"
+    },
+    {
+      "title": "ΟΣ́",
+      "anchor": "ος́"
+    },
+    {
+      "title": "AΣʼ",
+      "anchor": "aςʼ"
+    },
+    {
+      "title": "İSTANBUL",
+      "anchor": "i̇stanbul"
+    },
+    {
+      "title": "ПРИВЕТ",
+      "anchor": "привет"
+    },
+    {
+      "title": "𐐀𐐁",
+      "anchor": "𐐨𐐩"
+    },
+    {
+      "title": "ÉTAT CAFÉ",
+      "anchor": "état-café-1"
+    },
+    {
+      "title": "état-café-1",
+      "anchor": "état-café-1-1"
+    },
+    {
+      "title": "État Café",
+      "anchor": "état-café-2"
+    }
+  ]
+}

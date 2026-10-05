@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "scope": "controlled authored heading compatibility comparison; not external adoption or natural source drift",
+  "baseline": {
+    "version": "0.7.0",
+    "asset_url": "https://github.com/Freakz2z/tracecite/releases/download/v0.7.0/tracecite-0.7.0-linux-x86_64.tar.gz",
+    "sha256": "14c6d33e92631031bd730a37865e0524cd5ea2140ed47fe07506e685759eb465",
+    "checked": 12,
+    "failed": 11,
+    "exit": 2
+  },
+  "candidate": {
+    "version": "0.7.1",
+    "checked": 12,
+    "failed": 0,
+    "exit": 0
+  },
+  "input_sha256": {
+    "project/guide.md": "fb3bf079c0e4b516c72ee5cd01cf8182af7b336a6b549dd191f043fdad714587",
+    "project/source.md": "1dc88eb3a324fab23826c000fb8197bf8434da051f8a11241bf2685b5098298d",
+    "expected-anchors.json": "630e726242eaed1d5cdde946ff9f47f43b70e90b3c5f54fbb17ae1cab04fcd78"
+  }
+}

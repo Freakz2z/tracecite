@@ -40,7 +40,8 @@ moon run cmd/main check --root /path/to/repository
     "ROADMAP.md",
     "examples/compatibility/README.md",
     "docs/json-report.md",
-    "examples/library/README.md"
+    "examples/library/README.md",
+    "examples/anchors/README.md"
   ],
   "exclude": [],
   "baseline": ".tracecite-docs.json",
@@ -48,7 +49,7 @@ moon run cmd/main check --root /path/to/repository
   "online": false,
   "coverage": {
     "max_skipped_web": 53,
-    "max_unbound_snippets": 46
+    "max_unbound_snippets": 48
   }
 }
 ```
@@ -154,7 +155,9 @@ ATX 标题支持 `#` 后的空格或制表符，以及可选的结尾 `#`；标�
 [defaults]: ../config.toml
 ```
 
-脚注定义 `[^id]: 正文` 不作为链接定义；脚注正文中的普通链接仍会检查。标题移除 Unicode 15.0.0 的 P* 标点，保留 ASCII 连字符与下划线、文字和 emoji；当前小写转换主要处理 ASCII，非 ASCII 大小写及站点特有规则仍需人工确认。
+脚注定义 `[^id]: 正文` 不作为链接定义；脚注正文中的普通链接仍会检查。标题按 Unicode 15.0.0 的默认规则转换为小写，再移除 P* 标点；保留 ASCII 连字符与下划线、文字和 emoji。支持带重音的拉丁字母、希腊语、西里尔字母及补充平面字母；Sigma 根据上下文生成 σ 或词尾 ς，İ 展开为 i 加组合点。转换不按特定语言环境处理，不做 Unicode 规范化或重音折叠；链接应使用实际生成的锚点，仍区分大小写。
+
+可直接运行的 [12 条多语言标题链接样例](../examples/anchors/README.md)包含重复标题和 Setext。Unicode 15.0.0 之后新增的大小写映射、完整 Markdown 行内排版对上下文的影响和站点特有规则仍需人工确认。
 
 目前不解析自定义 HTML ID 或站点特有锚点规则；这些情况要改用支持的来源范围或人工核查。目录扫描默认跳过 Git、MoonBit 构建目录、依赖目录和 Python 缓存，递归扫描不跟随符号链接；直接指定的文档符号链接会解析到根目录内的真实文件。
 

@@ -9,6 +9,8 @@ CATEGORIES = {"verified", "source_unavailable", "content_mismatch", "source_chan
 
 
 def summarize(report):
+    if not isinstance(report, dict):
+        raise ValueError("Report must be a JSON object")
     if type(report.get("schema_version")) is not int or report["schema_version"] != 1:
         raise ValueError("Unsupported report schema; legacy unversioned reports require a separate reader")
     for field in ("failed_count", "warning_count", "skipped_count", "unbound_snippets"):
@@ -20,8 +22,9 @@ def summarize(report):
     unknown = 0
     for item in report["items"]:
         category = item.get("category") if isinstance(item, dict) else None
+        status = item.get("status") if isinstance(item, dict) else None
         if (not isinstance(category, str) or category not in CATEGORIES
-                or item.get("status") not in STATUSES):
+                or not isinstance(status, str) or status not in STATUSES):
             unknown += 1
         else:
             categories[category] = categories.get(category, 0) + 1

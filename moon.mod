@@ -11,7 +11,7 @@
 
 name = "Freakz2z/tracecite"
 
-version = "0.7.0"
+version = "0.7.1"
 
 readme = "README.mbt.md"
 

@@ -53,6 +53,43 @@ class DocumentMaintenanceTests(unittest.TestCase):
         self.assertEqual(result.returncode, expected, result.stdout + result.stderr)
         return result
 
+    def test_non_ascii_anchor_sample_passes_strict_check_but_missing_anchor_still_fails(self):
+        sample = REPO / "examples/anchors/project"
+        for path in sample.iterdir():
+            self.write("docs/" + path.name, path.read_text())
+        report = self.run_check("docs/guide.md", "--no-config", "--strict")
+        self.assertEqual(report["checked_count"], 12)
+        self.assertEqual(report["failed_count"], 0)
+        self.assertEqual(report["warning_count"], 0)
+        self.write("docs/broken.md", "[Missing](source.md#état-inexistant)\n")
+        report = self.run_check("docs/guide.md", "docs/broken.md", "--no-config", "--strict", expected=2)
+        self.assertEqual(report["failed_count"], 1)
+        self.assertEqual(next(item["code"] for item in report["items"] if item["status"] != "ok"), "ANCHOR_NOT_FOUND")
+
+    def test_unicode_fragments_decode_percent_encoding_without_accent_normalization(self):
+        self.write("docs/source.md", "## ÉTAT\nComposed.\n## E\u0301TAT\nDecomposed.\n")
+        self.write("docs/guide.md", "[Composed](source.md#%C3%A9tat)\n[Decomposed](source.md#e%CC%81tat)\n")
+        report = self.run_check("docs/guide.md", "--no-config", "--strict")
+        self.assertEqual(report["checked_count"], 2)
+        self.write("docs/guide.md", "[Wrong case](source.md#ÉTAT)\n[Missing accent](source.md#etat)\n")
+        report = self.run_check("docs/guide.md", "--no-config", "--strict", expected=2)
+        self.assertEqual(report["failed_count"], 2)
+
+    def test_unicode_quote_selection_records_source_drift_without_accepting_mismatch(self):
+        self.write("docs/source.md", "## ÉTAT\nStable text.\n## NEXT\nOutside selection.\n")
+        self.write("docs/guide.md", '"Stable text." ([source](source.md#état))\n')
+        self.run_cli("init", "docs/guide.md")
+        before = (self.root / ".tracecite-docs.json").read_bytes()
+        self.write("docs/source.md", "## ÉTAT\nStable text.\nNew detail.\n## NEXT\nOutside selection.\n")
+        report = self.run_check("--preview-baseline", expected=2)
+        self.assertTrue(report["baseline_preview"]["can_update"])
+        self.assertTrue(any(item["status"] == "changed" and "New detail." in item["actual"] for item in report["items"]))
+        self.assertEqual((self.root / ".tracecite-docs.json").read_bytes(), before)
+        self.write("docs/source.md", "## ÉTAT\nChanged text.\n## NEXT\nOutside selection.\n")
+        report = self.run_check("--snapshot", ".tracecite-docs.json", expected=2)
+        self.assertTrue(any(item["status"] == "mismatch" for item in report["items"]))
+        self.assertEqual((self.root / ".tracecite-docs.json").read_bytes(), before)
+
     def test_init_then_same_local_and_ci_check_detects_and_accepts_source_change(self):
         self.run_cli("init", "docs/guide.md")
         config = json.loads((self.root / "tracecite.json").read_text())
