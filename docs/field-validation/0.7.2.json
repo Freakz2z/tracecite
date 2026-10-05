@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "checked_at": "2026-10-05T07:29:58.754105+00:00",
+  "tool": "TraceCite 0.7.2",
+  "scope": "offline fixed-commit upstream evaluation; not adoption or temporal drift evidence",
+  "cases": [
+    {
+      "name": "async",
+      "repository": "https://github.com/moonbitlang/async.git",
+      "revision": "00aa493c5a674988dc0f4dc3f9bf0a0e654427ac",
+      "paths": [
+        "README.md",
+        "src/**/*.md",
+        "examples/**/*.md"
+      ],
+      "config": {
+        "version": 1,
+        "paths": [
+          "README.md",
+          "src/**/*.md",
+          "examples/**/*.md"
+        ],
+        "exclude": [],
+        "strict": true,
+        "online": false
+      },
+      "exit": 2,
+      "statistics": {
+        "document_count": 14,
+        "checked_count": 65,
+        "failed_count": 2,
+        "warning_count": 14,
+        "skipped_count": 1,
+        "unbound_snippets": 103
+      },
+      "local_diagnostics": [
+        {
+          "document": "src/fs/README.mbt.md",
+          "line": 11,
+          "source": "#file-seeking",
+          "kind": "diagnostic",
+          "status": "mismatch",
+          "code": "ANCHOR_NOT_FOUND",
+          "message": "referenced section or line range no longer exists",
+          "category": "content_mismatch"
+        },
+        {
+          "document": "src/io/README.mbt.md",
+          "line": 15,
+          "source": "#working-with-task-groups-and-pipes",
+          "kind": "diagnostic",
+          "status": "mismatch",
+          "code": "ANCHOR_NOT_FOUND",
+          "message": "referenced section or line range no longer exists",
+          "category": "content_mismatch"
+        }
+      ]
+    },
+    {
+      "name": "moon",
+      "repository": "https://github.com/moonbitlang/moon.git",
+      "revision": "0a3f0d43b228a5338417d8a569d3cdaa833e467d",
+      "paths": [
+        "README.md",
+        "docs/**/*.md"
+      ],
+      "config": {
+        "version": 1,
+        "paths": [
+          "README.md",
+          "docs/**/*.md"
+        ],
+        "exclude": [],
+        "strict": true,
+        "online": false
+      },
+      "exit": 2,
+      "statistics": {
+        "document_count": 51,
+        "checked_count": 221,
+        "failed_count": 0,
+        "warning_count": 52,
+        "skipped_count": 63,
+        "unbound_snippets": 82
+      },
+      "local_diagnostics": []
+    }
+  ]
+}

@@ -20,10 +20,11 @@
   <a href="docs/maintenance.md">维护指南</a> ·
   <a href="#github-action">GitHub Action</a> ·
   <a href="docs/publishing.md">Mooncakes 接入</a> ·
-  <a href="docs/contract.md">输入约定</a>
+  <a href="docs/contract.md">输入约定</a> ·
+  <a href="docs/acceptance.md">验收与交付证据</a>
 </p>
 
-> **0.7.2**：修复重复定义掩盖断链、Unicode 引用标签和链接地址边界，提供[正反回归样例](examples/link-parsing/README.md)。本地与 CI 共用项目配置，来源变化仍需复核。
+> **0.7.2 已发布**：修复重复定义掩盖断链、Unicode 引用标签和链接地址边界，提供[正反回归样例](examples/link-parsing/README.md)。本地与 CI 共用项目配置，来源变化仍需复核。
 
 同时保留[多语言标题的 12 条链接样例](examples/anchors/README.md)，确认有效链接通过，真实断链仍失败。
 
