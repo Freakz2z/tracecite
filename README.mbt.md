@@ -23,7 +23,7 @@
   <a href="docs/contract.md">输入约定</a>
 </p>
 
-> **0.7.1**：修复多语言标题锚点的误报，并提供可直接运行的 [12 条链接样例](examples/anchors/README.md)。本地与 CI 继续共用项目配置，来源变化仍需复核。
+> **0.7.1 已发布**：修复多语言标题锚点的误报，并提供可直接运行的 [12 条链接样例](examples/anchors/README.md)。本地与 CI 继续共用项目配置，来源变化仍需复核。
 
 ## 为什么需要 TraceCite
 

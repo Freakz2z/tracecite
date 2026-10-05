@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "module": "Freakz2z/tracecite",
+  "version": "0.7.1",
+  "tag": "v0.7.1",
+  "revision": "65a47a8c4cfdb1d78c07b4e1712794281a5a8c25",
+  "modified_checkout": false,
+  "release_url": "https://github.com/Freakz2z/tracecite/releases/tag/v0.7.1",
+  "release_published_at": "2026-10-05T04:26:18Z",
+  "mooncakes_url": "https://mooncakes.io/docs/Freakz2z/tracecite",
+  "source": {
+    "schema": 1,
+    "module": "Freakz2z/tracecite",
+    "version": "0.7.1",
+    "revision": "65a47a8c4cfdb1d78c07b4e1712794281a5a8c25",
+    "modified_checkout": false,
+    "archive": "Freakz2z-tracecite-0.7.1.zip",
+    "sha256": "7c84abe14126a8b8ec59d2ba66d54bc75d8e772603788f2810cd3fec631c726f"
+  },
+  "registry_consumption": {
+    "schema": 1,
+    "module": "Freakz2z/tracecite",
+    "version": "0.7.1",
+    "registry_sha256": "7c84abe14126a8b8ec59d2ba66d54bc75d8e772603788f2810cd3fec631c726f",
+    "targets": [
+      "native",
+      "js",
+      "wasm"
+    ],
+    "cli_install": "registry",
+    "maintenance_steps": 13,
+    "review_steps": 14,
+    "compatibility_example": true,
+    "library_example_targets": [
+      "native",
+      "js",
+      "wasm"
+    ],
+    "library_example_results": {
+      "native": {
+        "references": 1,
+        "before_matches": true,
+        "after_matches": false,
+        "changes": [
+          {
+            "document": "guide.md",
+            "source": "config.toml",
+            "kind": "snippet",
+            "excerpt": "timeout = 20",
+            "change": "changed",
+            "previous": "timeout = 20",
+            "current": "timeout = 30"
+          }
+        ]
+      },
+      "js": {
+        "references": 1,
+        "before_matches": true,
+        "after_matches": false,
+        "changes": [
+          {
+            "document": "guide.md",
+            "source": "config.toml",
+            "kind": "snippet",
+            "excerpt": "timeout = 20",
+            "change": "changed",
+            "previous": "timeout = 20",
+            "current": "timeout = 30"
+          }
+        ]
+      },
+      "wasm": {
+        "references": 1,
+        "before_matches": true,
+        "after_matches": false,
+        "changes": [
+          {
+            "document": "guide.md",
+            "source": "config.toml",
+            "kind": "snippet",
+            "excerpt": "timeout = 20",
+            "change": "changed",
+            "previous": "timeout = 20",
+            "current": "timeout = 30"
+          }
+        ]
+      }
+    },
+    "onboarding_steps": 8,
+    "action_config_checked": true,
+    "unicode_anchor_example": {
+      "tool_version": "0.7.1",
+      "references": 12,
+      "failed": 0,
+      "warnings": 0,
+      "skipped_web": 0,
+      "unbound_snippets": 0
+    },
+    "passed": true
+  },
+  "native_assets": [
+    {
+      "file": "tracecite-0.7.1-darwin-arm64.tar.gz",
+      "sha256": "009c1d42dbb44d0c67e12a981e2323a6ed7abadc1e6565fd3b413fb004f411af",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "moonc": "v0.10.14+7d59c7ec9 (2026-09-18)",
+      "moon": "moon 0.1.20260920 (914d7da 2026-09-20)\n\nFeature flags enabled: rr_moon_mod,rr_moon_pkg"
+    },
+    {
+      "file": "tracecite-0.7.1-linux-x86_64.tar.gz",
+      "sha256": "9c66695c94af66b1fca573dcd8ef0f5e650f3372e81aa9d953f74fba146c85c1",
+      "platform": "linux",
+      "architecture": "x86_64",
+      "moonc": "v0.10.14+7d59c7ec9 (2026-09-18)",
+      "moon": "moon 0.1.20260920 (914d7da 2026-09-20)\n\nFeature flags enabled: rr_moon_mod,rr_moon_pkg"
+    }
+  ],
+  "ci": {
+    "tag_checks": "https://github.com/Freakz2z/tracecite/actions/runs/37262876665",
+    "native_packages": "https://github.com/Freakz2z/tracecite/actions/runs/37262876826",
+    "source_attachment": "https://github.com/Freakz2z/tracecite/actions/runs/37263121185"
+  },
+  "validation": {
+    "native_tests": 103,
+    "js_tests": 88,
+    "wasm_tests": 88,
+    "cli_integration_tests": 62,
+    "json_contract_tests": 7,
+    "adapter_tests": 6,
+    "native_license_tests": 9,
+    "release_guard_tests": 15,
+    "registry_api_tests_per_target": 6,
+    "library_example_tests_per_target": 1,
+    "library_example_outputs_match": true,
+    "source_and_registry_onboarding_steps": 8,
+    "downloaded_linux_cli_onboarding_steps": 6,
+    "downloaded_linux_maintenance_steps": 13,
+    "downloaded_linux_review_steps": 14,
+    "unicode_anchor_references": 12,
+    "unicode_anchor_failures": 0,
+    "controlled_0_7_0_anchor_failures": 11,
+    "fixed_upstream_cases_rechecked": 2,
+    "release_assets": 9
+  }
+}

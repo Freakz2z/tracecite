@@ -1,12 +1,12 @@
 # TraceCite 成果与验收说明
 
-整理日期：2026-10-04（北京时间）。本说明依据 Git 历史中的申报稿技术目标重建成果对照，
+整理日期：2026-10-05（北京时间）。本说明依据 Git 历史中的申报稿技术目标重建成果对照，
 正式提交的申报书仍以申报人保存的版本为准。它提供可检查的证据，不代替组委会的最终验收判断。
 
 ## 九项验收清单
 
-本节逐项对应组委会提供的验收指南。当前交付依据 0.7.0 固定源码提交
-`62b103d80fcfda1101eb190272154d5684122d60` 及该标签的 CI、打包与实际注册表消费验证。
+本节逐项对应组委会提供的验收指南。当前交付依据 0.7.1 固定源码提交
+`65a47a8c4cfdb1d78c07b4e1712794281a5a8c25` 及该标签的 CI、打包与实际注册表消费验证。
 验收记录在发布后补入 main，不修改已发布包与版本标签。
 
 | 序号 | 验收要求 | 交付与复核方式 |
@@ -17,8 +17,8 @@
 | 4 | README 包含目标、安装、用法、示例并可复现 | README.mbt.md 为主说明，README.md 指向它；包含源码启动、Mooncakes 库/CLI 安装、独立包、配置、Action、边界和维护演示。 |
 | 5 | CI 覆盖检查、构建、测试 | .github/workflows/ci.yml 执行最低版本检查、moon check、三目标构建和测试、CLI/适配器/打包测试、实例运行及源码 ZIP 消费验证。 |
 | 6 | 至少一个可运行示例 | examples/maintenance/project 提供离线最小项目，下面的一条命令可直接检查；acceptance_demo.py 提供 13 步维护闭环。 |
-| 7 | 测试覆盖核心路径 | native 96 项、JS/Wasm 各 81 项；CLI 集成 59 项、JSON 契约 5 项、适配器 6 项、许可打包 8 项、发布保护 15 项。正常路径与失败保护对应关系见下表。 |
-| 8 | 发布到 mooncakes.io | 已发布 Freakz2z/tracecite@0.7.0；库和 cmd/tracecite 均通过实际注册表安装验证。发布提交、源码摘要与安装命令见后文和发布指南。 |
+| 7 | 测试覆盖核心路径 | native 103 项、JS/Wasm 各 88 项；CLI 集成 62 项、JSON 契约 7 项、适配器 6 项、许可打包 9 项、发布保护 15 项。正常路径与失败保护对应关系见下表。 |
+| 8 | 发布到 mooncakes.io | 已发布 Freakz2z/tracecite@0.7.1；库和 cmd/tracecite 均通过实际注册表安装验证。发布提交、源码摘要与安装命令见后文和发布指南。 |
 | 9 | OSI 开源许可证与上游合规 | 项目采用 Apache-2.0；moon.mod 元数据一致。THIRD_PARTY_NOTICES.md 和 third_party/ 保留依赖、移植来源与 SDK 许可；native 包完整附带 LICENSE/NOTICE 和构建清单，缺项会停止。 |
 
 此前验收材料提交 `4c459edcfc0dd66ee80f59e0936048e9fae0c0d4` 的 [常规 CI](https://github.com/Freakz2z/tracecite/actions/runs/36699193496)
@@ -139,7 +139,25 @@ Action 的检查脚本在本地验证两次，本仓库 CI 同时运行完整 co
 网页错误保留诊断代码并解释回源失败，不将网络或内容类型问题推定为引文错误。
 开发验证与正式注册表消费分别执行，发布结果见固定标签与交付回执。
 
+## 0.7.1 多语言文档兼容性验证
+
+默认小写转换修复多语言标题锚点，覆盖 Sigma 上下文、İ 展开、组合字符与补充平面字母。
+核心回归 native 103 项、JS/Wasm 各 88 项，CLI 62 项；公开 API 没有结构变化。
+[12 条链接样例](../examples/anchors/README.md)由固定参考实现独立核对，正式 0.7.0 Linux 包有 11 条失败，0.7.1 注册表 CLI 与独立包全部通过。重复编号、具体选中正文、真实缺失锚点和来源变化均有正反回归。
+两个固定真实仓库仍保留 async 的两条真实断链及未检查、待复核项；该受控样例不代表外部采用。
+
 ## 发布身份与复核方式
+
+### 0.7.1
+
+已发布 Freakz2z/tracecite@0.7.1，[GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.7.1) 提供九项资产。
+固定提交为 `65a47a8c4cfdb1d78c07b4e1712794281a5a8c25`，源码 ZIP SHA-256 为
+`7c84abe14126a8b8ec59d2ba66d54bc75d8e772603788f2810cd3fec631c726f`。
+[标签 CI](https://github.com/Freakz2z/tracecite/actions/runs/37262876665)、
+[Linux/macOS 打包](https://github.com/Freakz2z/tracecite/actions/runs/37262876826)、
+[原始 ZIP 与注册表消费](https://github.com/Freakz2z/tracecite/actions/runs/37263121185) 全部通过。
+真实注册表消费为三个目标各 6 项公共 API 测试、独立库样例、12 条多语言锚点与 13 步、14 步、八步维护接入。下载的 Linux 包也在不含 MoonBit 的 PATH 下通过维护与六步纯 CLI 接入。
+完整身份、摘要与实际锚点结果见 [0.7.1 交付记录](releases/0.7.1.json)。
 
 ### 0.7.0
 

@@ -48,7 +48,7 @@ moon run cmd/main check --root /path/to/repository
   "strict": true,
   "online": false,
   "coverage": {
-    "max_skipped_web": 53,
+    "max_skipped_web": 58,
     "max_unbound_snippets": 48
   }
 }
