@@ -7,4 +7,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: Freakz2z/tracecite@v0.7.1
+      - uses: Freakz2z/tracecite@v0.7.2

@@ -62,7 +62,7 @@ CLI 从样例根目录读取真实来源，不需要模型或网页服务。CI �
 | 来源追溯与结构化事件关联 | validate_jsonl / validate_evidence_jsonl，调用与来源关联诊断 | [证据校验实现](../validate.mbt)、[JSONL 测试](../tracecite_wbtest.mbt) |
 | 两次运行间发现来源增删与变化 | compare_jsonl / compare；稳定 URI 对比 | [变化比较实现](../compare.mbt)、[两次实际 Codex 运行](live-validation.md) |
 | Agent 接入示例 | 可选 Codex CLI 事件适配器，脱敏事件与轨迹夹具 | [适配器](../adapters/codex_cli.py)、[适配器测试](../adapters/test_codex_cli.py) |
-| 可交付的 MoonBit 工具与开源包 | portable 核心库、native CLI、Mooncakes 0.5.1、GitHub Action | [公开 API](../pkg.generated.mbti)、[发布与消费验证](publishing.md)、[CI](../.github/workflows/ci.yml) |
+| 可交付的 MoonBit 工具与开源包 | portable 核心库、native CLI、Mooncakes 包、GitHub Action | [公开 API](../pkg.generated.mbti)、[发布与消费验证](publishing.md)、[CI](../.github/workflows/ci.yml) |
 | 降低团队重复核验的门槛 | init / check；一份配置供本地和 CI 使用，定位文档行与变化上下文 | [维护指南](maintenance.md)、[CLI 集成测试](../scripts/test_document_cli.py)、[维护闭环演示](../examples/maintenance/README.md) |
 
 ## 可复现验收
@@ -145,6 +145,13 @@ Action 的检查脚本在本地验证两次，本仓库 CI 同时运行完整 co
 核心回归 native 103 项、JS/Wasm 各 88 项，CLI 62 项；公开 API 没有结构变化。
 [12 条链接样例](../examples/anchors/README.md)由固定参考实现独立核对，正式 0.7.0 Linux 包有 11 条失败，0.7.1 注册表 CLI 与独立包全部通过。重复编号、具体选中正文、真实缺失锚点和来源变化均有正反回归。
 两个固定真实仓库仍保留 async 的两条真实断链及未检查、待复核项；该受控样例不代表外部采用。
+
+## 0.7.2 引用解析交付验证
+
+三目标核心测试为 native 112 项、JS/Wasm 各 97 项，CLI 集成 66 项；公开 API 与报告结构保持不变。
+[正反样例](../examples/link-parsing/README.md)要求 12 条有效引用全部通过，重复定义的第一条来源缺失时退出 2 并报告 SOURCE_NOT_FOUND。
+源码 ZIP 解包安装、真实注册表安装和独立包使用同一个验证入口，核对实际来源、引用类型、覆盖统计和退出码；不会只验证命令是否启动。
+正式发布身份与消费结果在发布后补入下节，历史记录保持不变。
 
 ## 发布身份与复核方式
 

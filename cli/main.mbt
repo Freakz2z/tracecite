@@ -1,5 +1,5 @@
 ///|
-let tracecite_version : String = "0.7.1"
+let tracecite_version : String = "0.7.2"
 
 ///|
 /// Exit codes: 0 for a valid trace, 1 for usage or I/O failure, 2 for a trace

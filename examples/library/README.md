@@ -1,9 +1,9 @@
 # MoonBit 库接入样例
 
-project 是一个独立 MoonBit 模块，通过 Mooncakes 导入 Freakz2z/tracecite@0.7.1。
+project 是一个独立 MoonBit 模块，通过 Mooncakes 导入 Freakz2z/tracecite@0.7.2。
 CLI 与 HTTP 模块不在导入范围，样例可编译到 native、JS、Wasm。
 
-0.7.1 已正式发布，从本仓库根目录执行：
+使用 0.7.2，从本仓库根目录执行：
 
 ```sh
 cd examples/library/project
@@ -29,7 +29,7 @@ previous 为 timeout = 20，current 为 timeout = 30。这说明来源变化后�
 在待维护项目根目录安装 CLI 并创建共享配置：
 
 ```sh
-moon install Freakz2z/tracecite/cmd/tracecite@0.7.1
+moon install Freakz2z/tracecite/cmd/tracecite@0.7.2
 tracecite init 'docs/**/*.md' --max-skipped-web 0 --max-unbound-snippets 0
 tracecite check
 ```
@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: Freakz2z/tracecite@v0.7.1
+      - uses: Freakz2z/tracecite@v0.7.2
 ```
 
 Action 不需要重复填写 paths、strict、online 或 baseline，它会读取同一份项目配置。

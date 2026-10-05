@@ -78,7 +78,7 @@ def verify_package(metadata):
         "examples/compatibility/project/source.md", "examples/compatibility/project/config.toml",
         "document_unicode.mbt", "scripts/generate_unicode_punctuation.py", "maintenance_v061_wbtest.mbt", "scripts/field_validation.py",
         "document_case.mbt", "maintenance_v071_wbtest.mbt", "scripts/generate_unicode_case.py", "scripts/verify_anchor_example.py",
-        "document_casefold.mbt", "maintenance_v072_wbtest.mbt", "scripts/generate_unicode_casefold.py",
+        "document_casefold.mbt", "maintenance_v072_wbtest.mbt", "scripts/generate_unicode_casefold.py", "scripts/verify_link_example.py",
         "third_party/unicode/DerivedCoreProperties-case-15.0.0.txt",
         "examples/anchors/README.md", "examples/anchors/expected-anchors.json", "examples/anchors/comparison.json",
         "examples/anchors/project/guide.md", "examples/anchors/project/source.md",
@@ -137,8 +137,7 @@ def verify_package(metadata):
         run(str(installed), "check", "guide.md", "--root", "examples/compatibility/project",
             "--no-config", "--strict", "--max-skipped-web", "0", "--max-unbound-snippets", "0", cwd=package)
         run("python3", "scripts/verify_anchor_example.py", str(installed), cwd=package)
-        run(str(installed), "check", "guide.md", "--root", "examples/link-parsing/project",
-            "--no-config", "--strict", "--max-skipped-web", "0", "--max-unbound-snippets", "0", cwd=package)
+        run("python3", "scripts/verify_link_example.py", str(installed), cwd=package)
         run("python3", "scripts/acceptance_demo.py", "--binary", str(installed),
             "--out", str(Path(temporary) / "acceptance"), cwd=package)
         run("python3", "scripts/maintenance_review_demo.py", "--binary", str(installed),
@@ -208,6 +207,8 @@ def verify_registry(metadata, consume=False):
             "--no-config", "--strict", "--max-skipped-web", "0", "--max-unbound-snippets", "0", cwd=REPO)
         from verify_anchor_example import verify_anchors
         unicode_anchors = verify_anchors(binary)
+        from verify_link_example import verify_links
+        link_parsing = verify_links(binary)
         demonstrate(evidence / os.path.basename(temporary), binary)
         demonstrate_review(evidence / (os.path.basename(temporary) + "-review"), binary)
         from onboarding_demo import demonstrate_onboarding
@@ -216,7 +217,7 @@ def verify_registry(metadata, consume=False):
                "registry_sha256": checksum, "targets": ["native", "js", "wasm"],
                "cli_install": "registry", "maintenance_steps": 13, "review_steps": 14, "compatibility_example": True, "library_example_targets": ["native", "js", "wasm"], "library_example_results": library_results,
                "onboarding_steps": len(onboarding["steps"]), "action_config_checked": onboarding["action_checked"],
-               "unicode_anchor_example": unicode_anchors, "passed": True}
+               "unicode_anchor_example": unicode_anchors, "link_parsing_examples": link_parsing, "passed": True}
     archive.with_suffix(".published.json").write_text(json.dumps(receipt, indent=2) + "\n")
     print("Actual registry consumers and installed CLI verified")
 
