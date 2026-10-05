@@ -61,7 +61,9 @@ pub fn parse_document(input : String) -> DocumentReferences {
       continue
     }
     if document_definition(line) is Some((id, source)) {
-      definitions.set(id, source)
+      if definitions.get(id) is None {
+        definitions.set(id, source)
+      }
     }
   }
   let mut unbound_snippets = 0
@@ -408,7 +410,7 @@ fn document_links(
         })
       }
     }
-    let label = normalize_web_text(label_text).to_lower()
+    let label = document_reference_label(label_text)
     if close + 1 < chars.length() && chars[close + 1] == '[' {
       let mut end = close + 2
       while end < chars.length() && chars[end] != ']' {
@@ -419,7 +421,7 @@ fn document_links(
         continue
       }
       let id = String::from_array(chars[close + 2:end])
-      let id = if id == "" { label } else { normalize_web_text(id).to_lower() }
+      let id = if id == "" { label } else { document_reference_label(id) }
       links.push({
         start,
         end: end + 1,
@@ -437,34 +439,11 @@ fn document_links(
       index = index + 1
       continue
     }
-    let mut end = close + 2
-    let mut depth = 1
-    while end < chars.length() && depth > 0 {
-      if !document_is_escaped(chars, end) {
-        if chars[end] == '(' {
-          depth = depth + 1
-        }
-        if chars[end] == ')' {
-          depth = depth - 1
-        }
-      }
-      if depth > 0 {
-        end = end + 1
-      }
-    }
-    if depth != 0 {
+    let parsed = document_link_destination(chars, close + 2)
+    guard parsed is Some((destination, end)) else {
       links.push({ start, end: chars.length(), source: "", })
       index = chars.length()
       continue
-    }
-    let raw = String::from_array(chars[close + 2:end]).trim()
-    let destination = if raw.has_prefix("<") {
-      match raw[1:].split_once(">") {
-        Some((value, _)) => value.to_owned()
-        None => raw.to_owned()
-      }
-    } else {
-      raw.split(" ").next().unwrap_or("").to_owned()
     }
     links.push({ start, end: end + 1, source: destination, })
     index = end + 1
@@ -557,23 +536,187 @@ fn document_definition(line : StringView) -> (String, String)? {
   if !line.has_prefix("[") || line.has_prefix("[^") {
     return None
   }
-  let (label, tail) = match line[1:].split_once("]:") {
-    Some(parts) => parts
-    None => return None
-  }
-  let tail = tail.trim()
-  let source = if tail.has_prefix("<") {
-    match tail[1:].split_once(">") {
-      Some((value, _)) => value.to_owned()
-      None => return None
+  let chars = line.to_owned().to_array()
+  let mut end = 1
+  while end < chars.length() {
+    if !document_is_escaped(chars, end) {
+      if chars[end] == '[' {
+        return None
+      }
+      if chars[end] == ']' {
+        break
+      }
     }
-  } else {
-    tail.split(" ").next().unwrap_or("").to_owned()
+    end = end + 1
   }
-  if source == "" {
+  if end + 1 >= chars.length() || chars[end + 1] != ':' {
     return None
   }
-  Some((normalize_web_text(label.to_owned()).to_lower(), source))
+  let label = document_reference_label(String::from_array(chars[1:end]))
+  let tail = String::from_array(chars[end + 2:])
+  let wrapped = ("(" + tail + ")").to_array()
+  guard document_link_destination(wrapped, 1) is Some((source, last)) else {
+    return None
+  }
+  if label == "" || source == "" || last != wrapped.length() - 1 {
+    None
+  } else {
+    Some((label, source))
+  }
+}
+
+///|
+fn document_link_space(ch : Char) -> Bool {
+  ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n'
+}
+
+///|
+// Reference identifiers collapse Markdown whitespace, but preserve spaces
+// before punctuation and nonbreaking spaces. Web-text normalization is not a
+// valid identifier normalization: A . and A. identify different definitions.
+fn document_reference_label(label : String) -> String {
+  let output = StringBuilder()
+  let mut has_text = false
+  let mut pending_space = false
+  for ch in label.iter() {
+    if document_link_space(ch) {
+      pending_space = has_text
+    } else {
+      if pending_space {
+        output.write_char(' ')
+      }
+      output.write_char(ch)
+      pending_space = false
+      has_text = true
+    }
+  }
+  document_unicode_casefold(output.to_string())
+}
+
+///|
+fn document_escapable_punctuation(ch : Char) -> Bool {
+  (ch >= '!' && ch <= '/') ||
+  (ch >= ':' && ch <= '@') ||
+  (ch >= '[' && ch <= '`') ||
+  (ch >= '{' && ch <= '~')
+}
+
+///|
+fn document_unescape_destination(value : String) -> String {
+  let chars = value.to_array()
+  let output = StringBuilder()
+  let mut index = 0
+  while index < chars.length() {
+    if chars[index] == '\\' && index + 1 < chars.length() {
+      let next = chars[index + 1]
+      if document_escapable_punctuation(next) {
+        index = index + 1
+      }
+    }
+    output.write_char(chars[index])
+    index = index + 1
+  }
+  output.to_string()
+}
+
+///|
+// Parse the destination separately from its optional title. Parentheses in a
+// quoted title or an angle-bracket destination do not balance the outer link.
+fn document_link_destination(
+  chars : Array[Char],
+  start : Int,
+) -> (String, Int)? {
+  let mut index = start
+  while index < chars.length() && document_link_space(chars[index]) {
+    index = index + 1
+  }
+  let angle = index < chars.length() && chars[index] == '<'
+  if angle {
+    index = index + 1
+  }
+  let first = index
+  let mut depth = 0
+  while index < chars.length() {
+    let ch = chars[index]
+    if ch == '\\' &&
+      index + 1 < chars.length() &&
+      document_escapable_punctuation(chars[index + 1]) {
+      index = index + 2
+      continue
+    }
+    if angle {
+      if ch == '>' {
+        break
+      }
+      if ch == '<' || ch == '\n' || ch == '\r' {
+        return None
+      }
+    } else if document_link_space(ch) {
+      if depth != 0 {
+        return None
+      }
+      break
+    } else if ch == '(' {
+      depth = depth + 1
+    } else if ch == ')' {
+      if depth == 0 {
+        break
+      }
+      depth = depth - 1
+    }
+    index = index + 1
+  }
+  if index >= chars.length() {
+    return None
+  }
+  let destination = document_unescape_destination(
+    String::from_array(chars[first:index]),
+  )
+  if angle {
+    index = index + 1
+  }
+  let before_space = index
+  while index < chars.length() && document_link_space(chars[index]) {
+    index = index + 1
+  }
+  if index < chars.length() && chars[index] == ')' {
+    return Some((destination, index))
+  }
+  if index == before_space ||
+    index >= chars.length() ||
+    !['\'', '"', '('].contains(chars[index]) {
+    return None
+  }
+  let opener = chars[index]
+  let closer = if opener == '(' { ')' } else { opener }
+  index = index + 1
+  while index < chars.length() {
+    if chars[index] == '\\' &&
+      index + 1 < chars.length() &&
+      document_escapable_punctuation(chars[index + 1]) {
+      index = index + 2
+      continue
+    }
+    if chars[index] == closer {
+      break
+    }
+    if opener == '(' && chars[index] == '(' {
+      return None
+    }
+    index = index + 1
+  }
+  if index >= chars.length() {
+    return None
+  }
+  index = index + 1
+  while index < chars.length() && document_link_space(chars[index]) {
+    index = index + 1
+  }
+  if index < chars.length() && chars[index] == ')' {
+    Some((destination, index))
+  } else {
+    None
+  }
 }
 
 ///|

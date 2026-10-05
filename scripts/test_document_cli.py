@@ -66,6 +66,55 @@ class DocumentMaintenanceTests(unittest.TestCase):
         self.assertEqual(report["failed_count"], 1)
         self.assertEqual(next(item["code"] for item in report["items"] if item["status"] != "ok"), "ANCHOR_NOT_FOUND")
 
+    def test_duplicate_reference_definitions_cannot_hide_a_broken_first_destination(self):
+        self.write("docs/guide.md", "[Link][id]\n[id]: missing.md\n[ID]: source.md\n")
+        report = self.run_check("docs/guide.md", "--no-config", "--strict", expected=2)
+        self.assertEqual(report["failed_count"], 1)
+        self.assertEqual(report["items"][0]["source"], "missing.md")
+        self.assertEqual(report["items"][0]["code"], "SOURCE_NOT_FOUND")
+        self.run_cli("init", "docs/guide.md", expected=2)
+        self.assertFalse((self.root / ".tracecite-docs.json").exists())
+        self.assertFalse((self.root / "tracecite.json").exists())
+        self.write("docs/guide.md", "[Link][id]\n[id]: source.md\n[ID]: missing.md\n")
+        self.run_check("docs/guide.md", "--no-config", "--strict")
+
+    def test_distinct_reference_labels_and_unicode_case_fold_check_the_actual_targets(self):
+        self.write("docs/guide.md", "[One][A .]\n[Two][A.]\n[Three][STRASSE]\n[Four][Σ]\n[A .]: source.md\n[A.]: missing.md\n[Straße]: source.md\n[ς]: source.md\n")
+        report = self.run_check("docs/guide.md", "--no-config", "--strict", expected=2)
+        self.assertEqual(report["checked_count"], 4)
+        self.assertEqual(report["failed_count"], 1)
+        self.assertEqual(report["warning_count"], 0)
+        self.assertEqual(report["items"][1]["source"], "missing.md")
+
+    def test_titles_angle_destinations_and_escapes_preserve_file_and_root_checks(self):
+        self.write("docs/guide(v2.md", "Content.\n")
+        self.write("docs/guide(v2).md", "Content.\n")
+        self.write("docs/guide.md", '[One](source.md "(")\n[Two](source.md\t"Title )")\n[Three](<guide(v2.md>)\n[Four](guide\\(v2\\).md)\n')
+        report = self.run_check("docs/guide.md", "--no-config", "--strict")
+        self.assertEqual(report["checked_count"], 4)
+        with tempfile.TemporaryDirectory(prefix="tracecite-escaped-source-") as outside:
+            private = Path(outside) / "private(v2).md"
+            private.write_text("Outside content.\n")
+            relative = os.path.relpath(private, self.root / "docs")
+            escaped = relative.replace("(", "\\(").replace(")", "\\)")
+            self.write("docs/guide.md", "[Outside](" + escaped + ")\n")
+            report = self.run_check("docs/guide.md", "--no-config", "--strict", expected=2)
+            self.assertEqual(report["failed_count"], 1)
+            self.assertEqual(report["items"][0]["code"], "SOURCE_OUTSIDE_ROOT")
+
+    def test_link_parsing_example_verifies_quotes_snippets_and_keeps_negative_control(self):
+        sample = REPO / "examples/link-parsing/project"
+        for path in sample.iterdir():
+            self.write("docs/" + path.name, path.read_text())
+        report = self.run_check("docs/guide.md", "--no-config", "--strict",
+                                "--max-skipped-web", "0", "--max-unbound-snippets", "0")
+        self.assertEqual(report["checked_count"], 12)
+        self.assertEqual(report["warning_count"], 0)
+        self.assertEqual({item["kind"] for item in report["items"]}, {"link", "quote", "snippet"})
+        report = self.run_check("docs/broken-first.md", "--no-config", "--strict", expected=2)
+        self.assertEqual(report["failed_count"], 1)
+        self.assertEqual(report["items"][0]["source"], "missing.md")
+
     def test_unicode_fragments_decode_percent_encoding_without_accent_normalization(self):
         self.write("docs/source.md", "## ÉTAT\nComposed.\n## E\u0301TAT\nDecomposed.\n")
         self.write("docs/guide.md", "[Composed](source.md#%C3%A9tat)\n[Decomposed](source.md#e%CC%81tat)\n")

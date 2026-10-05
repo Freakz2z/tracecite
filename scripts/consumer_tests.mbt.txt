@@ -69,3 +69,13 @@ test "public Unicode anchors preserve duplicate numbering and section evidence" 
   assert_true(@tracecite.document_excerpt_matches(selected.text, "Second.", "quote"))
   assert_false(@tracecite.select_document_source(source, "état-2").ok)
 }
+
+///|
+test "public reference parsing preserves the first target and Unicode label identity" {
+  let parsed = @tracecite.parse_document("[First][id]\n[id]: missing.md\n[ID]: valid.md\n[Unicode][STRASSE]\n[Straße]: valid.md\n[Title](valid.md \"(\")\n")
+  assert_eq(parsed.references.length(), 3)
+  assert_eq(parsed.references[0].source, "missing.md")
+  assert_eq(parsed.references[1].source, "valid.md")
+  assert_eq(parsed.references[2].source, "valid.md")
+  assert_true(parsed.warnings.is_empty())
+}

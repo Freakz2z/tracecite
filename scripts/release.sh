@@ -23,6 +23,7 @@ if [[ $mode != --package-only ]]; then
   python3 scripts/test_report_contract.py
   python3 scripts/generate_unicode_punctuation.py --check
   python3 scripts/generate_unicode_case.py --check
+  python3 scripts/generate_unicode_casefold.py --check
   python3 scripts/test_native_package.py
   python3 scripts/test_release.py
   python3 -m unittest discover -s adapters -p 'test_*.py'

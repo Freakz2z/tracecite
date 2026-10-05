@@ -41,7 +41,8 @@ moon run cmd/main check --root /path/to/repository
     "examples/compatibility/README.md",
     "docs/json-report.md",
     "examples/library/README.md",
-    "examples/anchors/README.md"
+    "examples/anchors/README.md",
+    "examples/link-parsing/README.md"
   ],
   "exclude": [],
   "baseline": ".tracecite-docs.json",
@@ -49,7 +50,7 @@ moon run cmd/main check --root /path/to/repository
   "online": false,
   "coverage": {
     "max_skipped_web": 58,
-    "max_unbound_snippets": 48
+    "max_unbound_snippets": 50
   }
 }
 ```
@@ -138,6 +139,10 @@ timeout = 20
 ## 链接与标题
 
 行内链接、引用式链接与图片链接都会提取本地目标；同一行 HTML 标签的 `href`、`src` 属性也会提取，例如 README 的 SVG 图片。展示属性中的引号和 Markdown 示例不当作引文或链接。文件和目录可以被检查；Markdown 标题支持 ATX 和 Setext 标题，自动生成小写锚点，重复标题依次加 `-1`、`-2`，并避开已有锚点。支持空格路径的百分号编码，以及 `<含空格的路径>` 写法。
+
+开发源码中的引用式链接采用第一条有效定义；后续同名定义不能覆盖它。标签使用 Unicode 15.0.0 默认大小写折叠并压缩 Markdown 空白，保留标点前的空格，不进行重音规范化；STRASSE 可匹配 Straße，而 A . 与 A. 不同。
+
+链接标题与地址分开解析，标题中的括号不影响目的地；支持制表符分隔标题、角括号地址以及地址中的 ASCII 标点转义。非法标题或定义不会被标为已验证。上述修复目前尚未进入 0.7.1 发布包，正反命令见[解析回归样例](../examples/link-parsing/README.md)。
 
 Setext 标题使用紧随段落的 `===` 或 `---` 下划线，可包含多行标题；软换行按空格参与锚点生成，与 ATX 共用重复锚点规则。代码围栏、缩进代码、注释、HTML 块和列表标记不生成 Setext 锚点。选中的区域包含标题及下划线，到下一个同级或更高层级标题前结束。
 

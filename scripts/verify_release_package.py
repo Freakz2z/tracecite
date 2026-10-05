@@ -78,10 +78,16 @@ def verify_package(metadata):
         "examples/compatibility/project/source.md", "examples/compatibility/project/config.toml",
         "document_unicode.mbt", "scripts/generate_unicode_punctuation.py", "maintenance_v061_wbtest.mbt", "scripts/field_validation.py",
         "document_case.mbt", "maintenance_v071_wbtest.mbt", "scripts/generate_unicode_case.py", "scripts/verify_anchor_example.py",
+        "document_casefold.mbt", "maintenance_v072_wbtest.mbt", "scripts/generate_unicode_casefold.py",
         "third_party/unicode/DerivedCoreProperties-case-15.0.0.txt",
         "examples/anchors/README.md", "examples/anchors/expected-anchors.json", "examples/anchors/comparison.json",
         "examples/anchors/project/guide.md", "examples/anchors/project/source.md",
         "docs/field-validation.md", "docs/field-validation/0.6.0.json",
+        "docs/field-validation/warning-review.json",
+        "examples/link-parsing/README.md", "examples/link-parsing/project/guide.md",
+        "examples/link-parsing/project/broken-first.md", "examples/link-parsing/project/valid.md",
+        "examples/link-parsing/project/other.md", "examples/link-parsing/project/guide(v2.md",
+        "examples/link-parsing/project/guide(v2).md",
         "document_glob.mbt", "document_review.mbt", "scripts/maintenance_review_demo.py",
         "examples/review/README.md", "examples/review/project/docs/guide.md",
         "examples/review/project/docs/drafts/draft.md", "examples/review/project/source.md",
@@ -131,6 +137,8 @@ def verify_package(metadata):
         run(str(installed), "check", "guide.md", "--root", "examples/compatibility/project",
             "--no-config", "--strict", "--max-skipped-web", "0", "--max-unbound-snippets", "0", cwd=package)
         run("python3", "scripts/verify_anchor_example.py", str(installed), cwd=package)
+        run(str(installed), "check", "guide.md", "--root", "examples/link-parsing/project",
+            "--no-config", "--strict", "--max-skipped-web", "0", "--max-unbound-snippets", "0", cwd=package)
         run("python3", "scripts/acceptance_demo.py", "--binary", str(installed),
             "--out", str(Path(temporary) / "acceptance"), cwd=package)
         run("python3", "scripts/maintenance_review_demo.py", "--binary", str(installed),

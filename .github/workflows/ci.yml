@@ -50,8 +50,10 @@ jobs:
           python3 scripts/test_report_contract.py
           python3 scripts/generate_unicode_punctuation.py --check
           python3 scripts/generate_unicode_case.py --check
+          python3 scripts/generate_unicode_casefold.py --check
           moon run cmd/main check
           moon run cmd/main check guide.md --root examples/anchors/project --no-config --strict
+          moon run cmd/main check guide.md --root examples/link-parsing/project --no-config --strict
           moon run cmd/main check guide.md --root examples/compatibility/project --no-config --strict
           moon run cmd/main check guide.md --root examples/maintenance/project --no-config --strict
           moon run cmd/main verify-notes fixtures/simple-citation.md

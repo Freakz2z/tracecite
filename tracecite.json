@@ -14,7 +14,8 @@
     "examples/compatibility/README.md",
     "docs/json-report.md",
     "examples/library/README.md",
-    "examples/anchors/README.md"
+    "examples/anchors/README.md",
+    "examples/link-parsing/README.md"
   ],
   "exclude": [],
   "baseline": ".tracecite-docs.json",
@@ -22,6 +23,6 @@
   "online": false,
   "coverage": {
     "max_skipped_web": 58,
-    "max_unbound_snippets": 48
+    "max_unbound_snippets": 50
   }
 }

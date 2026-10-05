@@ -60,7 +60,9 @@ Agent session is bundled wholesale.
 ## Unicode punctuation and case properties
 
 The portable Markdown heading parser includes Unicode 15.0.0 General_Category
-P* ranges and default lowercase mappings derived from Python unicodedata.
+P* ranges, default lowercase mappings and default case folding derived from
+Python's Unicode 15.0.0 database. scripts/generate_unicode_casefold.py reproduces
+the case folding for reference identifiers; it does not change heading casing.
 Cased and Case_Ignorable records for Final_Sigma are retained verbatim from
 the Unicode 15.0.0 DerivedCoreProperties.txt in third_party/unicode/;
 the original and extracted data digests are recorded in the provenance file.
