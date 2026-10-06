@@ -84,6 +84,7 @@ pub fn Diagnostic::to_json(Self) -> Json
 pub(all) struct DocumentCoveragePolicy {
   max_skipped_web : Int?
   max_unbound_snippets : Int?
+  max_skipped_quotes : Int?
 } derive(ToJson)
 pub fn DocumentCoveragePolicy::to_json(Self) -> Json
 
@@ -94,6 +95,7 @@ pub(all) struct DocumentProjectConfig {
   baseline : String?
   strict : Bool
   online : Bool
+  unassociated_quotes : String
   coverage : DocumentCoveragePolicy
 } derive(ToJson)
 pub fn DocumentProjectConfig::to_json(Self) -> Json

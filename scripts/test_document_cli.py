@@ -53,6 +53,92 @@ class DocumentMaintenanceTests(unittest.TestCase):
         self.assertEqual(result.returncode, expected, result.stdout + result.stderr)
         return result
 
+    def test_quote_skip_is_explicit_counted_and_independent_of_web_coverage(self):
+        self.write("docs/guide.md", 'The "fast" and "safe" modes.\n[Local](source.md)\n[Web](https://example.org/)\n')
+        self.config()
+        default = self.run_check(expected=2)
+        self.assertEqual((default["warning_count"], default["skipped_quotes"]), (2, 0))
+        self.assertEqual(default["unassociated_quotes"], "review")
+        self.config(unassociated_quotes="skip", coverage={"max_skipped_quotes": 2, "max_skipped_web": 1})
+        report = self.run_check()
+        self.assertEqual((report["checked_count"], report["warning_count"], report["skipped_quotes"], report["skipped_count"]), (1, 0, 2, 1))
+        skipped = [item for item in report["items"] if item["code"] == "UNASSOCIATED_QUOTE_SKIPPED"]
+        self.assertEqual([(item["document"], item["line"], item["status"], item["category"]) for item in skipped],
+                         [("docs/guide.md", 1, "skipped", "not_checked")] * 2)
+        self.run_check("--unassociated-quotes", "review", expected=2)
+        web = self.run_check("--max-skipped-web", "0", expected=2)
+        problem = next(item for item in web["items"] if item["code"] == "SKIPPED_WEB_LIMIT_EXCEEDED")
+        self.assertEqual(problem["line"], 3)
+        text = self.run_check(structured=False).stdout
+        self.assertIn("2 unassociated quotations skipped", text)
+        self.assertIn("docs/guide.md:1 [UNASSOCIATED_QUOTE_SKIPPED]", text)
+
+    def test_quote_budget_blocks_preview_and_snapshot_even_without_strict(self):
+        self.write("docs/guide.md", 'The "fast" mode.\n[Local](source.md)\n')
+        self.config(unassociated_quotes="skip", strict=False, coverage={"max_skipped_quotes": 0})
+        report = self.run_check("--preview-baseline", "--no-strict", expected=2)
+        self.assertFalse(report["baseline_preview"]["can_update"])
+        self.assertIsNone(report["baseline_preview"].get("snapshot"))
+        self.assertEqual(report["review"][0]["source"], "coverage")
+        self.assertTrue(any(item["code"] == "SKIPPED_QUOTE_LIMIT_EXCEEDED" and item["category"] == "coverage" for item in report["items"]))
+        self.write("existing.json", "keep existing baseline")
+        self.run_check("--snapshot", "existing.json", expected=2)
+        self.assertEqual((self.root / "existing.json").read_text(), "keep existing baseline")
+        self.run_check("--max-skipped-quotes", "1")
+        self.run_action(expected=2)
+
+    def test_quote_policy_init_persists_and_action_obeys_config(self):
+        self.write("docs/guide.md", 'The "fast" mode.\n[Local](source.md#settings)\n')
+        self.run_cli("init", "docs/guide.md", "--unassociated-quotes", "skip", "--max-skipped-quotes", "0", expected=2)
+        self.assertFalse((self.root / "tracecite.json").exists())
+        self.assertFalse((self.root / ".tracecite-docs.json").exists())
+        self.run_cli("init", "docs/guide.md", "--unassociated-quotes", "skip", "--max-skipped-quotes", "1")
+        config = json.loads((self.root / "tracecite.json").read_text())
+        self.assertEqual(config["unassociated_quotes"], "skip")
+        self.assertEqual(config["coverage"]["max_skipped_quotes"], 1)
+        self.run_check()
+        self.run_action()
+        self.write("docs/source.md", "# Source\n## Settings\nChanged source.\n")
+        changed = self.run_check(expected=2)
+        self.assertTrue(any(item["code"] == "REFERENCED_SOURCE_CHANGED" for item in changed["items"]))
+        self.run_action(expected=2)
+
+    def test_quote_skip_does_not_suppress_real_citations_or_malformed_sources(self):
+        cases = [
+            ('"Forged claim." ([source](source.md))\n', "DOCUMENT_EXCERPT_MISMATCH"),
+            ('> Quote: "Forged claim."\n> Source: [source](source.md)\n', "DOCUMENT_EXCERPT_MISMATCH"),
+            ('> Quote: "Missing source."\n[Local](source.md)\n', "MISSING_REPORT_SOURCE"),
+            ('The "unfinished expression.\n[Local](source.md)\n', "UNCLOSED_QUOTE"),
+            ('"Claim." ([source][missing])\n[Local](source.md)\n', "UNRESOLVED_REFERENCE_LINK"),
+            ('The "term".\n[Missing](missing.md)\n', "SOURCE_NOT_FOUND"),
+            ('The "term".\n[Outside](../../)\n', "SOURCE_OUTSIDE_ROOT"),
+        ]
+        for content, code in cases:
+            with self.subTest(code=code):
+                self.write("docs/guide.md", content)
+                report = self.run_check("docs/guide.md", "--no-config", "--strict", "--unassociated-quotes", "skip", expected=2)
+                self.assertIn(code, [item["code"] for item in report["items"]])
+                self.run_check("docs/guide.md", "--no-config", "--no-strict", "--unassociated-quotes", "skip", "--snapshot", "rejected.json", expected=2)
+                self.assertFalse((self.root / "rejected.json").exists())
+
+    def test_only_skipped_quotes_cannot_create_an_empty_verified_baseline(self):
+        self.write("docs/guide.md", 'The "fast" mode.\n')
+        report = self.run_cli("init", "docs/guide.md", "--unassociated-quotes", "skip", expected=2)
+        self.assertEqual((report["checked_count"], report["skipped_quotes"]), (0, 1))
+        self.assertFalse((self.root / ".tracecite-docs.json").exists())
+        self.assertFalse((self.root / "tracecite.json").exists())
+
+    def test_invalid_quote_settings_are_configuration_or_argument_errors(self):
+        for value in (None, True, 0, [], "ignore", "SKIP"):
+            self.config(unassociated_quotes=value)
+            self.run_check(expected=1, structured=False)
+        for value in (-1, True, 0.5, "0", 2147483648):
+            self.config(coverage={"max_skipped_quotes": value})
+            self.run_check(expected=1, structured=False)
+        for arguments in (("--unassociated-quotes", "ignore"), ("--unassociated-quotes",),
+                          ("--max-skipped-quotes", "-1"), ("--max-skipped-quotes", "2147483648")):
+            self.run_check("--no-config", *arguments, expected=1, structured=False)
+
     def test_non_ascii_anchor_sample_passes_strict_check_but_missing_anchor_still_fails(self):
         sample = REPO / "examples/anchors/project"
         for path in sample.iterdir():

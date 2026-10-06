@@ -16,6 +16,9 @@ def summarize(report):
     for field in ("failed_count", "warning_count", "skipped_count", "unbound_snippets"):
         if type(report.get(field)) is not int or report[field] < 0:
             raise ValueError("Invalid report count: " + field)
+    skipped_quotes = report.get("skipped_quotes", 0)
+    if type(skipped_quotes) is not int or skipped_quotes < 0:
+        raise ValueError("Invalid report count: skipped_quotes")
     if not isinstance(report.get("items"), list):
         raise ValueError("Report items must be an array")
     categories = {}
@@ -29,7 +32,7 @@ def summarize(report):
         else:
             categories[category] = categories.get(category, 0) + 1
     return {"failed": report["failed_count"], "needs_review": report["warning_count"],
-            "skipped_web": report["skipped_count"], "unbound_snippets": report["unbound_snippets"],
+            "skipped_web": report["skipped_count"], "skipped_quotes": skipped_quotes, "unbound_snippets": report["unbound_snippets"],
             "unknown_items_need_review": unknown, "categories": categories}
 
 

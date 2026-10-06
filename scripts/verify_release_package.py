@@ -84,6 +84,10 @@ def verify_package(metadata):
         "examples/anchors/project/guide.md", "examples/anchors/project/source.md",
         "docs/field-validation.md", "docs/field-validation/0.6.0.json",
         "docs/field-validation/warning-review.json",
+        "maintenance_v080_wbtest.mbt", "scripts/verify_quote_policy_example.py",
+        "scripts/quote_policy_field_validation.py", "docs/field-validation/0.8.0-development.json",
+        "examples/quote-policy/README.md", "examples/quote-policy/project/tracecite.json",
+        "examples/quote-policy/project/guide.md", "examples/quote-policy/project/source.md",
         "examples/link-parsing/README.md", "examples/link-parsing/project/guide.md",
         "examples/link-parsing/project/broken-first.md", "examples/link-parsing/project/valid.md",
         "examples/link-parsing/project/other.md", "examples/link-parsing/project/guide(v2.md",
@@ -138,6 +142,7 @@ def verify_package(metadata):
             "--no-config", "--strict", "--max-skipped-web", "0", "--max-unbound-snippets", "0", cwd=package)
         run("python3", "scripts/verify_anchor_example.py", str(installed), cwd=package)
         run("python3", "scripts/verify_link_example.py", str(installed), cwd=package)
+        run("python3", "scripts/verify_quote_policy_example.py", str(installed), cwd=package)
         run("python3", "scripts/acceptance_demo.py", "--binary", str(installed),
             "--out", str(Path(temporary) / "acceptance"), cwd=package)
         run("python3", "scripts/maintenance_review_demo.py", "--binary", str(installed),
@@ -209,6 +214,8 @@ def verify_registry(metadata, consume=False):
         unicode_anchors = verify_anchors(binary)
         from verify_link_example import verify_links
         link_parsing = verify_links(binary)
+        from verify_quote_policy_example import verify_quote_policy
+        quote_policy = verify_quote_policy(binary)
         demonstrate(evidence / os.path.basename(temporary), binary)
         demonstrate_review(evidence / (os.path.basename(temporary) + "-review"), binary)
         from onboarding_demo import demonstrate_onboarding
@@ -217,7 +224,7 @@ def verify_registry(metadata, consume=False):
                "registry_sha256": checksum, "targets": ["native", "js", "wasm"],
                "cli_install": "registry", "maintenance_steps": 13, "review_steps": 14, "compatibility_example": True, "library_example_targets": ["native", "js", "wasm"], "library_example_results": library_results,
                "onboarding_steps": len(onboarding["steps"]), "action_config_checked": onboarding["action_checked"],
-               "unicode_anchor_example": unicode_anchors, "link_parsing_examples": link_parsing, "passed": True}
+               "unicode_anchor_example": unicode_anchors, "link_parsing_examples": link_parsing, "quote_policy_example": quote_policy, "passed": True}
     archive.with_suffix(".published.json").write_text(json.dumps(receipt, indent=2) + "\n")
     print("Actual registry consumers and installed CLI verified")
 

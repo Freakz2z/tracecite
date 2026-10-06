@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "checked_at": "2026-10-06T04:46:18.419034+00:00",
+  "tool": "TraceCite 0.8.0",
+  "scope": "development policy comparison on fixed commits; skipped quotations remain unverified; not author intent or adoption evidence",
+  "cases": [
+    {
+      "name": "async",
+      "repository": "https://github.com/moonbitlang/async.git",
+      "revision": "00aa493c5a674988dc0f4dc3f9bf0a0e654427ac",
+      "config": {
+        "version": 1,
+        "paths": [
+          "README.md",
+          "src/**/*.md",
+          "examples/**/*.md"
+        ],
+        "exclude": [],
+        "strict": true,
+        "online": false
+      },
+      "skip_policy": "skip",
+      "max_skipped_quotes": 10,
+      "review_exit": 2,
+      "skip_exit": 2,
+      "review_statistics": {
+        "document_count": 14,
+        "checked_count": 65,
+        "failed_count": 2,
+        "warning_count": 14,
+        "skipped_count": 1,
+        "unbound_snippets": 103
+      },
+      "skip_statistics": {
+        "document_count": 14,
+        "checked_count": 65,
+        "failed_count": 2,
+        "warning_count": 4,
+        "skipped_count": 1,
+        "unbound_snippets": 103,
+        "skipped_quotes": 10
+      },
+      "other_items_unchanged": true,
+      "retained_warning_codes": {
+        "UNCLOSED_QUOTE": 4
+      }
+    },
+    {
+      "name": "moon",
+      "repository": "https://github.com/moonbitlang/moon.git",
+      "revision": "0a3f0d43b228a5338417d8a569d3cdaa833e467d",
+      "config": {
+        "version": 1,
+        "paths": [
+          "README.md",
+          "docs/**/*.md"
+        ],
+        "exclude": [],
+        "strict": true,
+        "online": false
+      },
+      "skip_policy": "skip",
+      "max_skipped_quotes": 40,
+      "review_exit": 2,
+      "skip_exit": 2,
+      "review_statistics": {
+        "document_count": 51,
+        "checked_count": 221,
+        "failed_count": 0,
+        "warning_count": 52,
+        "skipped_count": 63,
+        "unbound_snippets": 82
+      },
+      "skip_statistics": {
+        "document_count": 51,
+        "checked_count": 221,
+        "failed_count": 0,
+        "warning_count": 12,
+        "skipped_count": 63,
+        "unbound_snippets": 82,
+        "skipped_quotes": 40
+      },
+      "other_items_unchanged": true,
+      "retained_warning_codes": {
+        "UNCLOSED_QUOTE": 4,
+        "UNSUPPORTED_SOURCE_SCHEME": 8
+      }
+    }
+  ]
+}

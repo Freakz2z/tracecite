@@ -23,6 +23,8 @@ priv struct DocumentCheckReport {
   warning_count : Int
   skipped_count : Int
   unbound_snippets : Int
+  skipped_quotes : Int
+  unassociated_quotes : String
   online : Bool
   items : Array[DocumentCheckItem]
   review : Array[DocumentReviewGroup]
@@ -59,6 +61,7 @@ async fn document_command(
   let mut baseline_path : String? = None
   let mut online_arg : Bool? = None
   let mut strict_arg : Bool? = None
+  let mut quote_policy_arg : String? = None
   let mut config_arg = "tracecite.json"
   let mut config_explicit = false
   let mut use_config = true
@@ -68,6 +71,7 @@ async fn document_command(
   let mut preview_baseline = false
   let mut max_skipped_web : Int? = None
   let mut max_unbound_snippets : Int? = None
+  let mut max_skipped_quotes : Int? = None
   let mut index = start
   while index < args.length() {
     let option = args[index]
@@ -77,7 +81,9 @@ async fn document_command(
       option == "--config" ||
       option == "--exclude" ||
       option == "--max-skipped-web" ||
-      option == "--max-unbound-snippets" {
+      option == "--max-unbound-snippets" ||
+      option == "--max-skipped-quotes" ||
+      option == "--unassociated-quotes" {
       if index + 1 >= args.length() || args[index + 1].has_prefix("--") {
         @stdio.stderr.write("Missing value for \{option}\n")
         return 1
@@ -91,7 +97,18 @@ async fn document_command(
           config_arg = value
           config_explicit = true
         }
-        "--max-skipped-web" | "--max-unbound-snippets" => {
+        "--unassociated-quotes" => {
+          if value != "review" && value != "skip" {
+            @stdio.stderr.write(
+              "Expected review or skip for --unassociated-quotes\n",
+            )
+            return 1
+          }
+          quote_policy_arg = Some(value)
+        }
+        "--max-skipped-web"
+        | "--max-unbound-snippets"
+        | "--max-skipped-quotes" => {
           let limit = @string.parse_int(value) catch { _ => -1 }
           if limit < 0 {
             @stdio.stderr.write(
@@ -101,8 +118,10 @@ async fn document_command(
           }
           if option == "--max-skipped-web" {
             max_skipped_web = Some(limit)
-          } else {
+          } else if option == "--max-unbound-snippets" {
             max_unbound_snippets = Some(limit)
+          } else {
+            max_skipped_quotes = Some(limit)
           }
         }
         _ =>
@@ -127,7 +146,7 @@ async fn document_command(
       "--help" => {
         let command = if initialize { "init" } else { "check" }
         @stdio.stdout.write(
-          "Usage: tracecite \{command} [file.md|directory ...] [--root directory]\n       [--config file.json | --no-config] [--online | --offline]\n       [--strict | --no-strict] [--json | --github] [--exclude path]\n       [--snapshot file.json] [--baseline file.json]\n       [--review] [--preview-baseline]\n       [--max-skipped-web N] [--max-unbound-snippets N]\n\ncheck reads tracecite.json from the root when present. Explicit arguments override it.\ninit checks sources and creates a configuration plus baseline without replacing existing files.\n--snapshot ignores a configured baseline unless --baseline is also explicitly supplied.\n--preview-baseline is read-only and cannot be combined with init or --snapshot.\n--review groups problems by source; coverage limits apply even with --no-strict.\n",
+          "Usage: tracecite \{command} [file.md|directory ...] [--root directory]\n       [--config file.json | --no-config] [--online | --offline]\n       [--strict | --no-strict] [--json | --github] [--exclude path]\n       [--snapshot file.json] [--baseline file.json]\n       [--review] [--preview-baseline]\n       [--max-skipped-web N] [--max-unbound-snippets N]\n       [--unassociated-quotes review|skip] [--max-skipped-quotes N]\n\ncheck reads tracecite.json from the root when present. Explicit arguments override it.\ninit checks sources and creates a configuration plus baseline without replacing existing files.\n--snapshot ignores a configured baseline unless --baseline is also explicitly supplied.\n--preview-baseline is read-only and cannot be combined with init or --snapshot.\n--review groups problems by source; coverage limits apply even with --no-strict.\n",
         )
         return 0
       }
@@ -229,9 +248,16 @@ async fn document_command(
   let strict = strict_arg.unwrap_or(
     project.map(config => config.strict).unwrap_or(initialize),
   )
+  let unassociated_quotes = quote_policy_arg.unwrap_or(
+    project.map(config => config.unassociated_quotes).unwrap_or("review"),
+  )
   let configured_coverage = project
     .map(config => config.coverage)
-    .unwrap_or({ max_skipped_web: None, max_unbound_snippets: None, })
+    .unwrap_or({
+      max_skipped_web: None,
+      max_unbound_snippets: None,
+      max_skipped_quotes: None,
+    })
   let coverage : @tracecite.DocumentCoveragePolicy = {
     max_skipped_web: if max_skipped_web is Some(_) {
       max_skipped_web
@@ -242,6 +268,11 @@ async fn document_command(
       max_unbound_snippets
     } else {
       configured_coverage.max_unbound_snippets
+    },
+    max_skipped_quotes: if max_skipped_quotes is Some(_) {
+      max_skipped_quotes
+    } else {
+      configured_coverage.max_skipped_quotes
     },
   }
   for exclude in excludes {
@@ -394,6 +425,20 @@ async fn document_command(
       )
     }
     for diagnostic in parsed.warnings {
+      if unassociated_quotes == "skip" &&
+        diagnostic.code == "UNASSOCIATED_QUOTE" {
+        items.push(
+          document_problem(
+            document,
+            diagnostic.line,
+            "",
+            "skipped",
+            "UNASSOCIATED_QUOTE_SKIPPED",
+            "complete quotation has no associated source; not checked under the explicit skip policy",
+          ),
+        )
+        continue
+      }
       items.push(
         document_problem(
           document,
@@ -646,11 +691,16 @@ async fn document_command(
       })
     }
   }
-  let skipped_count = items.filter(item => item.status == "skipped").length()
+  let skipped_count = items
+    .filter(item => item.code == "WEB_SOURCE_SKIPPED")
+    .length()
+  let skipped_quotes = items
+    .filter(item => item.code == "UNASSOCIATED_QUOTE_SKIPPED")
+    .length()
   if coverage.max_skipped_web is Some(limit) && skipped_count > limit {
     let first = items
       .iter()
-      .find_first(item => item.status == "skipped")
+      .find_first(item => item.code == "WEB_SOURCE_SKIPPED")
       .unwrap()
     items.push(
       document_problem(
@@ -672,6 +722,22 @@ async fn document_command(
         "error",
         "UNBOUND_SNIPPET_LIMIT_EXCEEDED",
         "\{unbound_snippets} code blocks without source=; configured maximum is \{limit}",
+      ),
+    )
+  }
+  if coverage.max_skipped_quotes is Some(limit) && skipped_quotes > limit {
+    let first = items
+      .iter()
+      .find_first(item => item.code == "UNASSOCIATED_QUOTE_SKIPPED")
+      .unwrap()
+    items.push(
+      document_problem(
+        first.document,
+        first.line,
+        "coverage",
+        "error",
+        "SKIPPED_QUOTE_LIMIT_EXCEEDED",
+        "\{skipped_quotes} unassociated quotations skipped; configured maximum is \{limit}",
       ),
     )
   }
@@ -735,6 +801,8 @@ async fn document_command(
     warning_count,
     skipped_count,
     unbound_snippets,
+    skipped_quotes,
+    unassociated_quotes,
     online,
     items,
     review,
@@ -795,6 +863,7 @@ async fn document_command(
         baseline: Some(path),
         strict,
         online,
+        unassociated_quotes,
         coverage,
       }
       let content = @json.to_json(config).stringify(indent=2) + "\n"
@@ -893,7 +962,8 @@ async fn document_review_groups(
     }
     let (source_path, _) = split_document_source(item.source)
     let source = if item.code == "SKIPPED_WEB_LIMIT_EXCEEDED" ||
-      item.code == "UNBOUND_SNIPPET_LIMIT_EXCEEDED" {
+      item.code == "UNBOUND_SNIPPET_LIMIT_EXCEEDED" ||
+      item.code == "SKIPPED_QUOTE_LIMIT_EXCEEDED" {
       "coverage"
     } else if source_path == "" {
       item.document
@@ -1110,6 +1180,9 @@ async fn render_document_report(
   @stdio.stdout.write(
     "Coverage: \{report.skipped_count} web references skipped; \{report.unbound_snippets} code blocks without source= (not checked)\n",
   )
+  @stdio.stdout.write(
+    "Quote policy: \{report.unassociated_quotes}; \{report.skipped_quotes} unassociated quotations skipped (not checked)\n",
+  )
   if review_output {
     @stdio.stdout.write("Review: \{report.review.length()} source groups\n")
     for group in report.review {
@@ -1155,6 +1228,11 @@ async fn render_document_report(
     }
   }
   for item in report.items {
+    if item.code == "UNASSOCIATED_QUOTE_SKIPPED" {
+      @stdio.stdout.write(
+        "  \{item.document}:\{item.line} [\{item.code}] \{item.message}\n",
+      )
+    }
     if item.status == "skipped" || item.status == "ok" {
       continue
     }

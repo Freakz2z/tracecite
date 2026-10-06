@@ -27,10 +27,12 @@ tracecite check --json > report.json
 | --- | --- |
 | schema_version / tool_version | 报告契约版本及工具版本 |
 | document_count | 扫描的 Markdown 文档数量 |
-| checked_count | 尝试独立检查的引用数量，包括失败；不含跳过网页和解析警告 |
+| checked_count | 尝试独立检查的引用数量，包括失败；不含跳过网页、跳过引号和解析警告 |
 | failed_count | error、unavailable、mismatch、changed 项数量 |
 | warning_count | warning 项数量；严格模式下这些项也使检查失败 |
-| skipped_count | 离线模式未回源的网页引用数量 |
+| skipped_count | 离线模式未回源的网页引用数量，不含跳过引号 |
+| skipped_quotes | 0.8.0 开发版新增：显式跳过的无来源完整引号数量；旧报告缺省视为 0 |
+| unassociated_quotes | 0.8.0 开发版新增：本次生效的 review 或 skip 策略；旧报告为 review |
 | unbound_snippets | 没有 source= 的代码块数量，不计为已检查 |
 | online | 本次是否启用网页回源 |
 | items | 完整逐项结果，包含成功、失败、警告和跳过项 |
@@ -39,6 +41,7 @@ tracecite check --json > report.json
 
 一条引用可对应失败或待复核诊断，覆盖超限还会增加合成诊断，不能假设 items 长度等于 checked_count。
 不同检查范围也会改变数量；计数不是总体准确率或采用收益。
+0.8.0 新增字段仍使用 schema_version=1；原有 skipped_count 语义保持网页计数。UNASSOCIATED_QUOTE_SKIPPED 为 skipped/not_checked，SKIPPED_QUOTE_LIMIT_EXCEEDED 为 error/coverage。预算超限会阻止基线写入，即使关闭严格模式。
 
 ## 条目字段与分类
 
@@ -53,7 +56,7 @@ expected、actual、previous 是可选的有界展示文本，不代替完整来
 | content_mismatch | 来源已读取，但引文、片段或选择的标题/范围不匹配 |
 | source_changed | 当前引用仍匹配，但来源上下文与旧基线不同，需要维护者复核 |
 | needs_review | 新引用、未关联来源、未支持引用方式等需要人工复核 |
-| not_checked | 未检查的网页引用，不能视为匹配 |
+| not_checked | 未检查的网页引用或显式跳过的引号，不能视为匹配 |
 | coverage | 未检查数量超过项目预算 |
 | invalid_document | 文档不可读或结构解析失败 |
 

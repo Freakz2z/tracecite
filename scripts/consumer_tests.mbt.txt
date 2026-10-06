@@ -79,3 +79,12 @@ test "public reference parsing preserves the first target and Unicode label iden
   assert_eq(parsed.references[2].source, "valid.md")
   assert_true(parsed.warnings.is_empty())
 }
+
+///|
+test "explicit quote policy and coverage budget round trip through public configuration" {
+  let config = @tracecite.parse_document_project_config("{\"version\":1,\"unassociated_quotes\":\"skip\",\"coverage\":{\"max_skipped_quotes\":2}}").config.unwrap()
+  let restored = @tracecite.parse_document_project_config(@json.to_json(config).stringify()).config.unwrap()
+  assert_eq(restored.unassociated_quotes, "skip")
+  assert_eq(restored.coverage.max_skipped_quotes, Some(2))
+  assert_true(@tracecite.parse_document("A \"term\".").warnings.length() == 1)
+}

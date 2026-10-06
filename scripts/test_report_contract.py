@@ -20,6 +20,15 @@ class ReportContractTests(unittest.TestCase):
         self.assertEqual(summary["categories"], {"verified": 3})
         self.assertEqual(summary["failed"], 0)
 
+    def test_quote_counts_extend_v1_without_changing_old_web_counts(self):
+        self.assertEqual(reader.summarize(self.report)["skipped_quotes"], 0)
+        self.report.update(skipped_quotes=2, skipped_count=1, unassociated_quotes="skip")
+        summary = reader.summarize(self.report)
+        self.assertEqual((summary["skipped_quotes"], summary["skipped_web"]), (2, 1))
+        for value in (True, -1, "2", None):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                reader.summarize({**self.report, "skipped_quotes": value})
+
     def test_unknown_categories_remain_visible_for_review(self):
         self.report["items"].append({"category": "future_category"})
         self.assertEqual(reader.summarize(self.report)["unknown_items_need_review"], 1)

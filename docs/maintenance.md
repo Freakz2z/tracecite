@@ -42,7 +42,8 @@ moon run cmd/main check --root /path/to/repository
     "docs/json-report.md",
     "examples/library/README.md",
     "examples/anchors/README.md",
-    "examples/link-parsing/README.md"
+    "examples/link-parsing/README.md",
+    "examples/quote-policy/README.md"
   ],
   "exclude": [],
   "baseline": ".tracecite-docs.json",
@@ -50,7 +51,7 @@ moon run cmd/main check --root /path/to/repository
   "online": false,
   "coverage": {
     "max_skipped_web": 63,
-    "max_unbound_snippets": 50
+    "max_unbound_snippets": 55
   }
 }
 ```
@@ -185,6 +186,42 @@ ATX 标题支持 `#` 后的空格或制表符，以及可选的结尾 `#`；标�
 ```
 
 网页检查需要 `--online`。这会独立访问来源，验证可见文本中的引文；普通网页链接只检查可访问性，不检查它支持了什么主张，也不验证网页 URL 的标题锚点。引文忽略排版空白和引号字形差异；明确的省略号允许有序的较长原文片段。
+
+## 无来源引号策略（0.8 开发版）
+
+以下选项位于 main 的 0.8.0 开发源码，尚未发布到 Mooncakes；正式 0.7.2 和旧 Action 标签不支持这些配置字段。
+默认 unassociated_quotes 为 review，保留无来源引号的人工复核。作者确认项目中的这些完整引号可不作引文检查后，可显式选择 skip，并设置未检查预算：
+
+```json
+{
+  "version": 1,
+  "paths": ["docs/**/*.md"],
+  "strict": true,
+  "unassociated_quotes": "skip",
+  "coverage": {"max_skipped_quotes": 2}
+}
+```
+
+本地与 Action 均读取同一配置。CLI 参数优先于配置，init 会持久化所选策略和预算：
+
+```sh
+moon run cmd/main init docs --root /path/to/project --unassociated-quotes skip --max-skipped-quotes 2
+moon run cmd/main check --root /path/to/project
+moon run cmd/main check --root /path/to/project --unassociated-quotes review
+```
+
+只有 UNASSOCIATED_QUOTE 对应的完整引号会被转为 UNASSOCIATED_QUOTE_SKIPPED。普通输出与 JSON 保留文档行；JSON 条目为 skipped/not_checked，并单独统计 skipped_quotes。
+它们不增加 checked_count，也不计入专用于网页的 skipped_count。工具没有判断这些文字是否确实属于术语；skip 是项目作者对检查范围的明确决定。
+未闭合引号、无效来源链接、显式 Quote/Source 块、有来源的逐字引文、代码片段、断链和越界检查都继续执行。
+
+max_skipped_quotes 缺省或 null 表示不限数量，推荐显式设置预算，防止后来新增的无来源引号未被注意。超过预算时报告 SKIPPED_QUOTE_LIMIT_EXCEEDED；即使 --no-strict 也失败，不能生成候选或写入基线。
+只有跳过项而没有任何可独立核验的引用时也失败；跳过项不进入引用快照，因此基线比较不会追踪它们的文本变化。
+计数按解析器识别出的完整引号片段计算；同一行两个片段计为两项，不代表自然语言中的两条论断。跨行引文需改用支持的显式引文格式。
+[八步正反样例](../examples/quote-policy/README.md)验证默认复核、显式跳过、覆盖超限、init 持久化及来源变化。
+
+MoonBit 迁移：0.8.0 为公开 DocumentProjectConfig 增加 unassociated_quotes 字符串字段，为 DocumentCoveragePolicy 增加 max_skipped_quotes 可选整数。
+通过 parse_document_project_config 读取旧配置无需修改；直接构造上述结构时补入 unassociated_quotes 为 review、max_skipped_quotes 为 None 即可保持原行为。
+parse_document 仍返回全部解析警告，配置策略由 CLI 应用；库调用方不会因为读取 skip 配置而自动失去原始诊断。旧版本会拒绝新字段，降级前应删除它们并复核恢复后的检查范围。
 
 ## 快照与复核
 

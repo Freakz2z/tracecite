@@ -57,6 +57,18 @@
     },
     {
       "document": "README.mbt.md",
+      "source": "examples/quote-policy/README.md",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "README.mbt.md",
+      "source": "ROADMAP.md",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "README.mbt.md",
       "source": "examples/anchors/README.md",
       "kind": "link",
       "observed": ""
@@ -65,7 +77,7 @@
       "document": "README.mbt.md",
       "source": "docs/maintenance.md#项目配置本地与-ci-用同一套规则",
       "kind": "link",
-      "observed": "## 项目配置：本地与 CI 用同一套规则\n\n首次接入时，选择要长期维护的文档范围：\n\n```sh\nmoon run cmd/main init docs README.md --root /path/to/repository\n```\n\n检查通过后，`init` 生成 `tracecite.json` 和 `.tracecite-docs.json`。已有同名配置或基线时会停止；来源不匹配、没有可检查引用或存在待复核项时不会创建配置和基线。新项目默认严格、离线检查。\n\n将这两个文件提交到项目。之后，本地和 CI 都使用：\n\n```sh\nmoon run cmd/main check --root /path/to/repository\n```\n\n独立 CLI 对应 `tracecite check`；从项目根目录运行时可省略 `--root`。本仓库的规则见 [tracecite.json](../tracecite.json)：\n\n```json source=../tracecite.json\n{\n  \"version\": 1,\n  \"paths\": [\n    \"README.mbt.md\",\n    \"docs/maintenance.md\",\n    \"docs/publishing.md\",\n    \"docs/acceptance.md\",\n    \"CHANGELOG.md\",\n    \"THIRD_PARTY_NOTICES.md\",\n    \"examples/maintenance/README.md\",\n    \"examples/review/README.md\",\n    \"docs/field-validation.md\",\n    \"ROADMAP.md\",\n    \"examples/compatibility/README.md\",\n    \"docs/json-report.md\",\n    \"examples/library/README.md\",\n    \"examples/anchors/README.md\",\n    \"examples/link-parsing/README.md\"\n  ],\n  \"exclude\": [],\n  \"baseline\": \".tracecite-docs.json\",\n  \"strict\": true,\n  \"online\": false,\n  \"coverage\": {\n    \"max_skipped_web\": 63,\n    \"max_unbound_snippets\": 50\n  }\n}\n```\n\n| 字段 | 省略时的值 | 含义 |\n| --- | --- | --- |\n| `version` | 必填 | 当前为 `1`，未知版本和字段会报错 |\n| `paths` | `[\".\"]` | 文件、目录或通配符的数组，不能为空 |\n| `exclude` | `[]` | 排除文件、目录或通配符；字面目录包含其子路径 |\n| `baseline` | 无 | 可选的 `.json` 基线路径；`null` 表示不比较基线 |\n| `strict` | `true` | 待复核项导致失败 |\n| `online` | `false` | 是否访问网页来源 |\n| `coverage` | 不设置上限 | `max_skipped_web` / `max_unbound_snippets` 指定允许的跳过数量 |\n\n配置里的路径相对 `--root`，不相对配置文件所在目录；只接受根目录内的相对路径。即使 Action 的进程在工具目录运行，也读取调用方仓库的配置。配置文件上限为 64 KiB。\n\n参数覆盖规则：指定文件或目录时替换配置中的 `paths`；`--exclude` 追加排除项；`--baseline` 覆盖基线；`--online` / `--offline`、`--strict` / `--no-strict` 覆盖对应开关。`--max-skipped-web` / `--max-unbound-snippets` 覆盖对应数量上限。输出格式由 `--json` 或 `--github` 控制；`--review` 增加按来源汇总，`--preview-baseline` 增加只读候选与变化清单。\n\n`--config rules/project.json` 选择其他配置，明确指定的文件不存在时会报错；`init --config rules/project.json --snapshot rules/baseline.json` 可定制首次创建位置，父目录需已存在。`--no-config` 跳过自动加载，也保留旧版未配置的 CLI 默认值：离线、非严格、扫描当前根目录。\n\nGitHub Action 不填写输入时复用调用方配置；没有配置时保留严格、离线检查的原有默认行为。`report:` 兼容入口跳过项目配置。\n"
+      "observed": "## 项目配置：本地与 CI 用同一套规则\n\n首次接入时，选择要长期维护的文档范围：\n\n```sh\nmoon run cmd/main init docs README.md --root /path/to/repository\n```\n\n检查通过后，`init` 生成 `tracecite.json` 和 `.tracecite-docs.json`。已有同名配置或基线时会停止；来源不匹配、没有可检查引用或存在待复核项时不会创建配置和基线。新项目默认严格、离线检查。\n\n将这两个文件提交到项目。之后，本地和 CI 都使用：\n\n```sh\nmoon run cmd/main check --root /path/to/repository\n```\n\n独立 CLI 对应 `tracecite check`；从项目根目录运行时可省略 `--root`。本仓库的规则见 [tracecite.json](../tracecite.json)：\n\n```json source=../tracecite.json\n{\n  \"version\": 1,\n  \"paths\": [\n    \"README.mbt.md\",\n    \"docs/maintenance.md\",\n    \"docs/publishing.md\",\n    \"docs/acceptance.md\",\n    \"CHANGELOG.md\",\n    \"THIRD_PARTY_NOTICES.md\",\n    \"examples/maintenance/README.md\",\n    \"examples/review/README.md\",\n    \"docs/field-validation.md\",\n    \"ROADMAP.md\",\n    \"examples/compatibility/README.md\",\n    \"docs/json-report.md\",\n    \"examples/library/README.md\",\n    \"examples/anchors/README.md\",\n    \"examples/link-parsing/README.md\",\n    \"examples/quote-policy/README.md\"\n  ],\n  \"exclude\": [],\n  \"baseline\": \".tracecite-docs.json\",\n  \"strict\": true,\n  \"online\": false,\n  \"coverage\": {\n    \"max_skipped_web\": 63,\n    \"max_unbound_snippets\": 55\n  }\n}\n```\n\n| 字段 | 省略时的值 | 含义 |\n| --- | --- | --- |\n| `version` | 必填 | 当前为 `1`，未知版本和字段会报错 |\n| `paths` | `[\".\"]` | 文件、目录或通配符的数组，不能为空 |\n| `exclude` | `[]` | 排除文件、目录或通配符；字面目录包含其子路径 |\n| `baseline` | 无 | 可选的 `.json` 基线路径；`null` 表示不比较基线 |\n| `strict` | `true` | 待复核项导致失败 |\n| `online` | `false` | 是否访问网页来源 |\n| `coverage` | 不设置上限 | `max_skipped_web` / `max_unbound_snippets` 指定允许的跳过数量 |\n\n配置里的路径相对 `--root`，不相对配置文件所在目录；只接受根目录内的相对路径。即使 Action 的进程在工具目录运行，也读取调用方仓库的配置。配置文件上限为 64 KiB。\n\n参数覆盖规则：指定文件或目录时替换配置中的 `paths`；`--exclude` 追加排除项；`--baseline` 覆盖基线；`--online` / `--offline`、`--strict` / `--no-strict` 覆盖对应开关。`--max-skipped-web` / `--max-unbound-snippets` 覆盖对应数量上限。输出格式由 `--json` 或 `--github` 控制；`--review` 增加按来源汇总，`--preview-baseline` 增加只读候选与变化清单。\n\n`--config rules/project.json` 选择其他配置，明确指定的文件不存在时会报错；`init --config rules/project.json --snapshot rules/baseline.json` 可定制首次创建位置，父目录需已存在。`--no-config` 跳过自动加载，也保留旧版未配置的 CLI 默认值：离线、非严格、扫描当前根目录。\n\nGitHub Action 不填写输入时复用调用方配置；没有配置时保留严格、离线检查的原有默认行为。`report:` 兼容入口跳过项目配置。\n"
     },
     {
       "document": "README.mbt.md",
@@ -258,8 +270,8 @@
       "document": "docs/maintenance.md",
       "source": "../tracecite.json",
       "kind": "snippet",
-      "excerpt": "{\n  \"version\": 1,\n  \"paths\": [\n    \"README.mbt.md\",\n    \"docs/maintenance.md\",\n    \"docs/publishing.md\",\n    \"docs/acceptance.md\",\n    \"CHANGELOG.md\",\n    \"THIRD_PARTY_NOTICES.md\",\n    \"examples/maintenance/README.md\",\n    \"examples/review/README.md\",\n    \"docs/field-validation.md\",\n    \"ROADMAP.md\",\n    \"examples/compatibility/README.md\",\n    \"docs/json-report.md\",\n    \"examples/library/README.md\",\n    \"examples/anchors/README.md\",\n    \"examples/link-parsing/README.md\"\n  ],\n  \"exclude\": [],\n  \"baseline\": \".tracecite-docs.json\",\n  \"strict\": true,\n  \"online\": false,\n  \"coverage\": {\n    \"max_skipped_web\": 63,\n    \"max_unbound_snippets\": 50\n  }\n}",
-      "observed": "{\n  \"version\": 1,\n  \"paths\": [\n    \"README.mbt.md\",\n    \"docs/maintenance.md\",\n    \"docs/publishing.md\",\n    \"docs/acceptance.md\",\n    \"CHANGELOG.md\",\n    \"THIRD_PARTY_NOTICES.md\",\n    \"examples/maintenance/README.md\",\n    \"examples/review/README.md\",\n    \"docs/field-validation.md\",\n    \"ROADMAP.md\",\n    \"examples/compatibility/README.md\",\n    \"docs/json-report.md\",\n    \"examples/library/README.md\",\n    \"examples/anchors/README.md\",\n    \"examples/link-parsing/README.md\"\n  ],\n  \"exclude\": [],\n  \"baseline\": \".tracecite-docs.json\",\n  \"strict\": true,\n  \"online\": false,\n  \"coverage\": {\n    \"max_skipped_web\": 63,\n    \"max_unbound_snippets\": 50\n  }\n}"
+      "excerpt": "{\n  \"version\": 1,\n  \"paths\": [\n    \"README.mbt.md\",\n    \"docs/maintenance.md\",\n    \"docs/publishing.md\",\n    \"docs/acceptance.md\",\n    \"CHANGELOG.md\",\n    \"THIRD_PARTY_NOTICES.md\",\n    \"examples/maintenance/README.md\",\n    \"examples/review/README.md\",\n    \"docs/field-validation.md\",\n    \"ROADMAP.md\",\n    \"examples/compatibility/README.md\",\n    \"docs/json-report.md\",\n    \"examples/library/README.md\",\n    \"examples/anchors/README.md\",\n    \"examples/link-parsing/README.md\",\n    \"examples/quote-policy/README.md\"\n  ],\n  \"exclude\": [],\n  \"baseline\": \".tracecite-docs.json\",\n  \"strict\": true,\n  \"online\": false,\n  \"coverage\": {\n    \"max_skipped_web\": 63,\n    \"max_unbound_snippets\": 55\n  }\n}",
+      "observed": "{\n  \"version\": 1,\n  \"paths\": [\n    \"README.mbt.md\",\n    \"docs/maintenance.md\",\n    \"docs/publishing.md\",\n    \"docs/acceptance.md\",\n    \"CHANGELOG.md\",\n    \"THIRD_PARTY_NOTICES.md\",\n    \"examples/maintenance/README.md\",\n    \"examples/review/README.md\",\n    \"docs/field-validation.md\",\n    \"ROADMAP.md\",\n    \"examples/compatibility/README.md\",\n    \"docs/json-report.md\",\n    \"examples/library/README.md\",\n    \"examples/anchors/README.md\",\n    \"examples/link-parsing/README.md\",\n    \"examples/quote-policy/README.md\"\n  ],\n  \"exclude\": [],\n  \"baseline\": \".tracecite-docs.json\",\n  \"strict\": true,\n  \"online\": false,\n  \"coverage\": {\n    \"max_skipped_web\": 63,\n    \"max_unbound_snippets\": 55\n  }\n}"
     },
     {
       "document": "docs/maintenance.md",
@@ -295,6 +307,12 @@
     {
       "document": "docs/maintenance.md",
       "source": "../examples/anchors/README.md",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "docs/maintenance.md",
+      "source": "../examples/quote-policy/README.md",
       "kind": "link",
       "observed": ""
     },
@@ -791,6 +809,12 @@
       "observed": ""
     },
     {
+      "document": "docs/field-validation.md",
+      "source": "field-validation/0.8.0-development.json",
+      "kind": "link",
+      "observed": ""
+    },
+    {
       "document": "ROADMAP.md",
       "source": "CHANGELOG.md",
       "kind": "link",
@@ -801,6 +825,18 @@
       "source": "docs/acceptance.md",
       "kind": "link",
       "observed": ""
+    },
+    {
+      "document": "ROADMAP.md",
+      "source": "examples/quote-policy/README.md",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "ROADMAP.md",
+      "source": "docs/field-validation.md#080-开发版引号策略对比",
+      "kind": "link",
+      "observed": "## 0.8.0 开发版引号策略对比\n\n同一固定提交、扫描范围与离线设置下，对比默认 review 与显式 skip，结果见[开发验证回执](field-validation/0.8.0-development.json)。\n\n| 案例 | 已检查引用 | 失败 | 默认待复核 | skip 待复核 | 显式跳过引号 | 两次退出码 |\n| --- | --- | --- | --- | --- | --- | --- |\n| async | 65 | 2 | 14 | 4 | 10 | 2 |\n| moon | 221 | 0 | 52 | 12 | 40 | 2 |\n\n50 条无来源完整引号移入未检查统计；余下 8 条未闭合引号和 8 条编辑器路径警告继续待复核。真实断链、来源检查条目、网页跳过和未绑定代码块逐项保持一致。\n这不是修复了 50 条误报，也不表示上游认可忽略这些引号；引文意图仍需作者确认。对比预算按已有诊断数量设置，只用于复现，新增数量仍会触发预算失败。\n可先执行 moon build --target native，再运行 scripts/quote_policy_field_validation.py，传入 --binary _build/native/debug/build/cmd/main/main.exe 和一个不存在的 --output 目录。脚本获取固定提交，保留原始两份报告，并断言其他条目未变化。\n本结果仅针对开发源码；0.7.2 正式包及其历史验收证据保持不变。\n"
     },
     {
       "document": "ROADMAP.md",
@@ -1000,6 +1036,24 @@
       "source": "project/broken-first.md",
       "kind": "link",
       "observed": ""
+    },
+    {
+      "document": "examples/quote-policy/README.md",
+      "source": "project/tracecite.json",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "examples/quote-policy/README.md",
+      "source": "project/guide.md",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "examples/quote-policy/README.md",
+      "source": "../../docs/maintenance.md#无来源引号策略08-开发版",
+      "kind": "link",
+      "observed": "## 无来源引号策略（0.8 开发版）\n\n以下选项位于 main 的 0.8.0 开发源码，尚未发布到 Mooncakes；正式 0.7.2 和旧 Action 标签不支持这些配置字段。\n默认 unassociated_quotes 为 review，保留无来源引号的人工复核。作者确认项目中的这些完整引号可不作引文检查后，可显式选择 skip，并设置未检查预算：\n\n```json\n{\n  \"version\": 1,\n  \"paths\": [\"docs/**/*.md\"],\n  \"strict\": true,\n  \"unassociated_quotes\": \"skip\",\n  \"coverage\": {\"max_skipped_quotes\": 2}\n}\n```\n\n本地与 Action 均读取同一配置。CLI 参数优先于配置，init 会持久化所选策略和预算：\n\n```sh\nmoon run cmd/main init docs --root /path/to/project --unassociated-quotes skip --max-skipped-quotes 2\nmoon run cmd/main check --root /path/to/project\nmoon run cmd/main check --root /path/to/project --unassociated-quotes review\n```\n\n只有 UNASSOCIATED_QUOTE 对应的完整引号会被转为 UNASSOCIATED_QUOTE_SKIPPED。普通输出与 JSON 保留文档行；JSON 条目为 skipped/not_checked，并单独统计 skipped_quotes。\n它们不增加 checked_count，也不计入专用于网页的 skipped_count。工具没有判断这些文字是否确实属于术语；skip 是项目作者对检查范围的明确决定。\n未闭合引号、无效来源链接、显式 Quote/Source 块、有来源的逐字引文、代码片段、断链和越界检查都继续执行。\n\nmax_skipped_quotes 缺省或 null 表示不限数量，推荐显式设置预算，防止后来新增的无来源引号未被注意。超过预算时报告 SKIPPED_QUOTE_LIMIT_EXCEEDED；即使 --no-strict 也失败，不能生成候选或写入基线。\n只有跳过项而没有任何可独立核验的引用时也失败；跳过项不进入引用快照，因此基线比较不会追踪它们的文本变化。\n计数按解析器识别出的完整引号片段计算；同一行两个片段计为两项，不代表自然语言中的两条论断。跨行引文需改用支持的显式引文格式。\n[八步正反样例](../examples/quote-policy/README.md)验证默认复核、显式跳过、覆盖超限、init 持久化及来源变化。\n\nMoonBit 迁移：0.8.0 为公开 DocumentProjectConfig 增加 unassociated_quotes 字符串字段，为 DocumentCoveragePolicy 增加 max_skipped_quotes 可选整数。\n通过 parse_document_project_config 读取旧配置无需修改；直接构造上述结构时补入 unassociated_quotes 为 review、max_skipped_quotes 为 None 即可保持原行为。\nparse_document 仍返回全部解析警告，配置策略由 CLI 应用；库调用方不会因为读取 skip 配置而自动失去原始诊断。旧版本会拒绝新字段，降级前应删除它们并复核恢复后的检查范围。\n"
     }
   ]
 }

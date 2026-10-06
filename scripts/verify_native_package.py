@@ -91,6 +91,9 @@ def verify(archive):
         if tuple(map(int, manifest["version"].split("."))) >= (0, 7, 2):
             from verify_link_example import verify_links
             verify_links(binary, environment)
+        if tuple(map(int, manifest["version"].split("."))) >= (0, 8, 0):
+            from verify_quote_policy_example import verify_quote_policy
+            verify_quote_policy(binary, environment)
         demonstrate(root / "acceptance", binary)
         demonstrate_review(root / "review", binary)
         if tuple(map(int, manifest["version"].split("."))) >= (0, 7, 0):

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": ["guide.md"],
+  "strict": true,
+  "online": false,
+  "unassociated_quotes": "skip",
+  "coverage": {
+    "max_skipped_quotes": 2,
+    "max_skipped_web": 0,
+    "max_unbound_snippets": 0
+  }
+}

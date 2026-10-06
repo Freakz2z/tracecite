@@ -1,7 +1,8 @@
 ///|
 fn document_diagnostic_category(status : String, code : String) -> String {
   if code == "SKIPPED_WEB_LIMIT_EXCEEDED" ||
-    code == "UNBOUND_SNIPPET_LIMIT_EXCEEDED" {
+    code == "UNBOUND_SNIPPET_LIMIT_EXCEEDED" ||
+    code == "SKIPPED_QUOTE_LIMIT_EXCEEDED" {
     "coverage"
   } else {
     match status {

@@ -8,6 +8,7 @@ pub(all) struct DocumentProjectConfig {
   baseline : String?
   strict : Bool
   online : Bool
+  unassociated_quotes : String
   coverage : DocumentCoveragePolicy
 } derive(ToJson)
 
@@ -15,6 +16,7 @@ pub(all) struct DocumentProjectConfig {
 pub(all) struct DocumentCoveragePolicy {
   max_skipped_web : Int?
   max_unbound_snippets : Int?
+  max_skipped_quotes : Int?
 } derive(ToJson)
 
 ///|
@@ -52,6 +54,7 @@ pub fn parse_document_project_config(
     for key, _ in object {
       if ![
           "version", "paths", "exclude", "baseline", "strict", "online", "coverage",
+          "unassociated_quotes",
         ].contains(key) {
         add_diagnostic(
           diagnostics,
@@ -91,10 +94,29 @@ pub fn parse_document_project_config(
   }
   let strict = document_config_bool(value, "strict", true, diagnostics)
   let online = document_config_bool(value, "online", false, diagnostics)
+  let unassociated_quotes = match field(value, "unassociated_quotes") {
+    None => "review"
+    Some(String(policy)) if policy == "review" || policy == "skip" => policy
+    _ => {
+      add_diagnostic(
+        diagnostics, 1, "INVALID_QUOTE_POLICY", "unassociated_quotes must be review or skip",
+      )
+      "review"
+    }
+  }
   let coverage = document_config_coverage(value, diagnostics)
   {
     config: if diagnostics.is_empty() {
-      Some({ version: 1, paths, exclude, baseline, strict, online, coverage, })
+      Some({
+        version: 1,
+        paths,
+        exclude,
+        baseline,
+        strict,
+        online,
+        unassociated_quotes,
+        coverage,
+      })
     } else {
       None
     },
@@ -176,12 +198,15 @@ fn document_config_coverage(
   let empty : DocumentCoveragePolicy = {
     max_skipped_web: None,
     max_unbound_snippets: None,
+    max_skipped_quotes: None,
   }
   match field(value, "coverage") {
     None => empty
     Some(Object(object)) => {
       for key, _ in object {
-        if !["max_skipped_web", "max_unbound_snippets"].contains(key) {
+        if !["max_skipped_web", "max_unbound_snippets", "max_skipped_quotes"].contains(
+            key,
+          ) {
           add_diagnostic(
             diagnostics,
             1,
@@ -197,6 +222,9 @@ fn document_config_coverage(
         ),
         max_unbound_snippets: document_config_limit(
           policy, "max_unbound_snippets", diagnostics,
+        ),
+        max_skipped_quotes: document_config_limit(
+          policy, "max_skipped_quotes", diagnostics,
         ),
       }
     }

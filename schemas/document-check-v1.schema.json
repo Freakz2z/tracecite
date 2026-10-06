@@ -81,6 +81,19 @@
     },
     "baseline_preview": {
       "$ref": "#/$defs/preview"
+    },
+    "skipped_quotes": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Unassociated complete quotations explicitly skipped; absent before 0.8.0."
+    },
+    "unassociated_quotes": {
+      "type": "string",
+      "enum": [
+        "review",
+        "skip"
+      ],
+      "description": "Effective quote policy; absent before 0.8.0."
     }
   },
   "$defs": {
