@@ -668,6 +668,15 @@ async fn document_command(
           )
         _ => ("ok", "", "reference matches its current source")
       }
+      let (previous_context, current_context) = match previous {
+        Some(old) if status == "changed" => {
+          let (before, after) = @tracecite.document_change_context(
+            old, observed,
+          )
+          (Some(before), Some(after))
+        }
+        _ => (None, None)
+      }
       items.push({
         document,
         line: reference.line,
@@ -678,16 +687,8 @@ async fn document_command(
         message,
         category: document_diagnostic_category(status, code),
         expected,
-        actual: if status == "changed" {
-          Some(@tracecite.bounded_document_text(observed))
-        } else {
-          None
-        },
-        previous: if status == "changed" {
-          previous.map(@tracecite.bounded_document_text)
-        } else {
-          None
-        },
+        actual: current_context,
+        previous: previous_context,
       })
     }
   }
@@ -1213,17 +1214,24 @@ async fn render_document_report(
       @stdio.stdout.write(
         "  \{change.change}: \{change.document} -> \{change.source} (\{change.kind})\n",
       )
-      if change.previous is Some(text) {
-        render_document_excerpt(
-          "previously observed",
-          @tracecite.bounded_document_text(text),
-        )
+      let (previous, current) = match (change.previous, change.current) {
+        (Some(before), Some(after)) if change.change == "changed" => {
+          let (before, after) = @tracecite.document_change_context(
+            before, after,
+          )
+          (Some(before), Some(after))
+        }
+        _ =>
+          (
+            change.previous.map(@tracecite.bounded_document_text),
+            change.current.map(@tracecite.bounded_document_text),
+          )
       }
-      if change.current is Some(text) {
-        render_document_excerpt(
-          "current source",
-          @tracecite.bounded_document_text(text),
-        )
+      if previous is Some(text) {
+        render_document_excerpt("previously observed", text)
+      }
+      if current is Some(text) {
+        render_document_excerpt("current source", text)
       }
     }
   }

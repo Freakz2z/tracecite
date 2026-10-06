@@ -1,4 +1,50 @@
 ///|
+/// Paired display excerpts around the first changed character, with up to 100
+/// unchanged characters on either side. Each excerpt is at most 1600 characters;
+/// ellipses mark omitted text. This is not a complete diff or a snapshot.
+pub fn document_change_context(
+  previous : String,
+  current : String,
+) -> (String, String) {
+  let before = previous.to_array()
+  let after = current.to_array()
+  let mut prefix = 0
+  while prefix < before.length() &&
+        prefix < after.length() &&
+        before[prefix] == after[prefix] {
+    prefix += 1
+  }
+  let mut suffix = 0
+  while suffix < before.length() - prefix &&
+        suffix < after.length() - prefix &&
+        before[before.length() - suffix - 1] ==
+        after[after.length() - suffix - 1] {
+    suffix += 1
+  }
+  let start = if previous == current { 0 } else { Int::max(0, prefix - 100) }
+  (
+    document_change_excerpt(before, start, before.length() - suffix + 100),
+    document_change_excerpt(after, start, after.length() - suffix + 100),
+  )
+}
+
+///|
+fn document_change_excerpt(
+  chars : Array[Char],
+  start : Int,
+  end : Int,
+) -> String {
+  let end = Int::min(chars.length(), Int::min(end, start + 1596))
+  let text = String::from_array(chars[start:end])
+  let text = if start > 0 { "…\n" + text } else { text }
+  if end < chars.length() {
+    text + "\n…"
+  } else {
+    text
+  }
+}
+
+///|
 pub(all) struct DocumentSnapshotChange {
   document : String
   source : String

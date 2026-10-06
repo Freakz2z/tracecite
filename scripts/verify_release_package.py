@@ -86,6 +86,8 @@ def verify_package(metadata):
         "docs/field-validation/warning-review.json",
         "maintenance_v080_wbtest.mbt", "scripts/verify_quote_policy_example.py",
         "scripts/quote_policy_field_validation.py", "docs/field-validation/0.8.0-development.json",
+        "scripts/maintenance_history_replay.py", "docs/maintenance-trials.md",
+        "docs/field-validation/maintenance-history.json",
         "examples/quote-policy/README.md", "examples/quote-policy/project/tracecite.json",
         "examples/quote-policy/project/guide.md", "examples/quote-policy/project/source.md",
         "examples/link-parsing/README.md", "examples/link-parsing/project/guide.md",

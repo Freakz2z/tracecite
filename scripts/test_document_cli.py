@@ -614,6 +614,39 @@ class DocumentMaintenanceTests(unittest.TestCase):
         self.assertEqual(report["review"][0]["source"], "docs/source.md")
         self.assertEqual({item["document"] for item in report["review"][0]["locations"]}, {"docs/guide.md", "docs/nested/second.md"})
 
+    def test_late_source_change_is_visible_but_snapshot_and_preview_stay_complete(self):
+        padding = "Unchanged context. 😀\n" * 150
+        old = "# Settings\n" + padding + "OLD default\n" + padding
+        new = old.replace("OLD default", "NEW default")
+        self.write("docs/source.md", old)
+        self.write("docs/guide.md", "[settings](source.md#settings)\n")
+        self.run_cli("init", "docs/guide.md")
+        baseline = self.root / ".tracecite-docs.json"
+        original = baseline.read_bytes()
+        self.write("docs/source.md", new)
+        report = self.run_check("--preview-baseline", expected=2)
+        item = next(item for item in report["items"] if item["status"] == "changed")
+        self.assertIn("OLD default", item["previous"])
+        self.assertIn("NEW default", item["actual"])
+        self.assertLessEqual(len(item["previous"]), 1600)
+        self.assertLessEqual(len(item["actual"]), 1600)
+        self.assertTrue(item["previous"].startswith("…\n"))
+        self.assertTrue(item["actual"].endswith("\n…"))
+        self.assertEqual(report["review"][0]["locations"][0], item)
+        preview = report["baseline_preview"]
+        self.assertTrue(preview["can_update"])
+        self.assertEqual(preview["changes"][0]["previous"], old)
+        self.assertEqual(preview["changes"][0]["current"], new)
+        self.assertEqual(preview["snapshot"]["entries"][0]["observed"], new)
+        text = self.run_check("--preview-baseline", expected=2, structured=False).stdout
+        self.assertIn("OLD default", text)
+        self.assertIn("NEW default", text)
+        self.run_check("--baseline", ".tracecite-docs.json", "--snapshot", ".tracecite-docs.json", expected=2)
+        self.assertEqual(baseline.read_bytes(), original)
+        self.run_check("--snapshot", ".tracecite-docs.json")
+        self.assertEqual(json.loads(baseline.read_text()), preview["snapshot"])
+        self.run_check()
+
     def test_preview_exposes_add_change_remove_and_never_writes(self):
         self.run_cli("init", "docs/guide.md")
         baseline = self.root / ".tracecite-docs.json"

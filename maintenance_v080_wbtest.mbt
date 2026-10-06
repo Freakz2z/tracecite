@@ -1,4 +1,44 @@
 ///|
+test "change context preserves short replacements insertions and deletions" {
+  assert_eq(document_change_context("before", "after"), ("before", "after"))
+  assert_eq(document_change_context("ab", "a新😀b"), ("ab", "a新😀b"))
+  assert_eq(document_change_context("a新😀b", "ab"), ("a新😀b", "ab"))
+  assert_eq(document_change_context("", "new"), ("", "new"))
+  assert_eq(document_change_context("old", ""), ("old", ""))
+  assert_eq(document_change_context("same", "same"), ("same", "same"))
+  assert_eq(document_change_context("", ""), ("", ""))
+}
+
+///|
+test "change context finds late edits without splitting Unicode characters" {
+  let padding = String::from_array(Array::make(2000, '😀'))
+  let (before, after) = document_change_context(
+    padding + "OLD" + padding,
+    padding + "NEW" + padding,
+  )
+  let context = String::from_array(Array::make(100, '😀'))
+  assert_eq(before, "…\n" + context + "OLD" + context + "\n…")
+  assert_eq(after, "…\n" + context + "NEW" + context + "\n…")
+}
+
+///|
+test "change context bounds large replacements and shows the first edit" {
+  let padding = String::from_array(Array::make(2000, 'x'))
+  let (before, after) = document_change_context(
+    padding + "OLD" + padding + "old tail",
+    padding + "NEW" + padding + "new tail",
+  )
+  assert_true(before.contains("OLD"))
+  assert_true(after.contains("NEW"))
+  assert_true(before.has_suffix("\n…"))
+  assert_true(after.has_suffix("\n…"))
+  assert_true(before.to_array().length() <= 1600)
+  assert_true(after.to_array().length() <= 1600)
+  let (same, _) = document_change_context(padding, padding)
+  assert_true(same.to_array().length() <= 1600)
+}
+
+///|
 test "old configurations keep unassociated quotes under review" {
   let config = parse_document_project_config("{\"version\":1}").config.unwrap()
   assert_eq(config.unassociated_quotes, "review")

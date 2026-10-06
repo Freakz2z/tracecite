@@ -10,6 +10,7 @@
     "examples/maintenance/README.md",
     "examples/review/README.md",
     "docs/field-validation.md",
+    "docs/maintenance-trials.md",
     "ROADMAP.md",
     "examples/compatibility/README.md",
     "docs/json-report.md",
@@ -24,6 +25,6 @@
   "online": false,
   "coverage": {
     "max_skipped_web": 63,
-    "max_unbound_snippets": 55
+    "max_unbound_snippets": 56
   }
 }

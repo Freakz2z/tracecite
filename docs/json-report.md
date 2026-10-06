@@ -48,6 +48,7 @@ tracecite check --json > report.json
 每条 item 必含 document、line、source、kind、status、code、message、category。
 line 为文档内从 1 起算的行号；document 为工作区相对路径；没有明确来源的诊断 source 可为空。
 expected、actual、previous 是可选的有界展示文本，不代替完整来源。
+0.8.0 开发版中，status=changed 的 previous/actual 成对定位首个变化附近，每侧至多 1600 个 Unicode 字符，并用省略号标记遗漏内容；它们不是完整 diff。review.locations 采用同一展示文本。baseline_preview.changes 的 previous/current 和候选 snapshot 仍保存完整观察值，不能用精简展示文本重建基线。
 
 | category | 处理含义 |
 | --- | --- |

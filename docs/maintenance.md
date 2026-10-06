@@ -37,6 +37,7 @@ moon run cmd/main check --root /path/to/repository
     "examples/maintenance/README.md",
     "examples/review/README.md",
     "docs/field-validation.md",
+    "docs/maintenance-trials.md",
     "ROADMAP.md",
     "examples/compatibility/README.md",
     "docs/json-report.md",
@@ -51,7 +52,7 @@ moon run cmd/main check --root /path/to/repository
   "online": false,
   "coverage": {
     "max_skipped_web": 63,
-    "max_unbound_snippets": 55
+    "max_unbound_snippets": 56
   }
 }
 ```
@@ -235,6 +236,8 @@ moon run cmd/main check
 本地选择器记录被选中的内容；无选择器的代码块记录匹配片段。网页引文记录匹配位置前后各至多 100 个字符的归一化上下文，避免把整页导航和远处内容的改动都当作引用变化。普通无锚点链接仅记录存在性或可访问性，不做整份文件、整张图片或整页网页的变化监控。
 
 基线比较发现变化时返回退出码 2，展示之前观察到的内容和当前内容。先人工决定文档是否需要修改；确认后，用 `--snapshot` 命令保存新基线。它忽略配置中的旧基线，仍独立检查引用与来源是否匹配。显式同时提供 `--baseline` 时仍会比较旧基线；发现变化或待复核项会拒绝写入。工具不会把失败检查自动接受成新基线。
+
+0.8.0 开发版将来源变化的展示片段定位到首个差异附近，保留最多 100 个字符的相同前后文，每侧展示不超过 1600 个 Unicode 字符。省略处显示省略号；较长或多处变化可能无法全部展示，应检查完整来源。快照、JSON 预览 changes 的 previous/current 和候选 snapshot 保留完整观察值，终端预览使用精简片段。实际使用动机与可重放记录见 [持续维护试用](maintenance-trials.md)。
 
 来源片段在来源中出现多次时，无范围的逐字引文以首次匹配位置提取上下文；需要精确限制本地引用位置时应指定标题、行范围或命名区域。已有基线中的引用被从文档删除后，该引用不再检查；下一次保存基线会去掉它。比较文档子集只读取相关引用；保存快照会替换整个快照文件，应使用准备维护的完整文档范围。
 

@@ -14,6 +14,8 @@ pub fn compare_document_snapshots(DocumentSnapshot, DocumentSnapshot) -> Array[D
 
 pub fn compare_jsonl(String, String) -> DriftReport
 
+pub fn document_change_context(String, String) -> (String, String)
+
 pub fn document_excerpt_matches(String, String, String) -> Bool
 
 pub fn document_path_has_glob(String) -> Bool
