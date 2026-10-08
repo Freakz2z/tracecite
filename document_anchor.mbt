@@ -2,6 +2,9 @@
 /// Recognize only an empty standalone <a id=...></a> on one line. The caller
 /// excludes comments, code, and HTML blocks using the same scan as headings.
 fn document_standalone_anchor_id(line : String) -> String? {
+  if !line.has_prefix("<a") && !line.has_prefix("<A") {
+    return None
+  }
   let chars = line.to_array()
   let tags = document_html_tags(line[:]).filter(tag => tag.source == "")
   if tags.length() != 2 ||
@@ -35,6 +38,9 @@ fn document_standalone_anchor_id(line : String) -> String? {
       break
     }
     if chars[index] != '=' {
+      if name == "id" {
+        return None
+      }
       continue
     }
     index += 1

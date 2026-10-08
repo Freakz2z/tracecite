@@ -23,7 +23,7 @@ L 加数字的片段及 region: 前缀继续保留为源码范围选择器。
 两种情况都不会跨过下一个受支持的独立 HTML 锚点。选中的原始 Markdown 包含锚点行，不是渲染后的 HTML。
 因此重命名显示标题仍能找到固定 ID，但观察到的来源发生变化，仍要求复核基线。
 
-代码块、行内代码、注释、转义标签，带列表或引用前缀的标签，以及其他 HTML 容器内的类似文本不作为受支持的目标。
+代码块、行内代码、注释、转义标签，带列表或引用前缀的标签，以及其他 HTML 块内的类似文本不作为受支持的目标。
 工具不执行 HTML，也不推测站点专用规则。完整范围与限制见 [维护说明](../../docs/maintenance.md)。
 
 实际动机来自 [openseek 固定版本的语言文档](https://github.com/moonbitlang/openseek/blob/aaa46dc0c06959d13d35c9f2e2e806f6539cee70/share/doc/moonbit/language/packages.md)：其中用独立 HTML ID 定位 default-alias 段落。

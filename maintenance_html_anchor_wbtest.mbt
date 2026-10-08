@@ -72,3 +72,13 @@ test "HTML anchor lookalikes in hidden or unsupported contexts stay unresolved" 
     assert_false(select_document_source(source, "x").ok)
   }
 }
+
+///|
+test "unsupported entities and an empty first id cannot invent HTML targets" {
+  assert_false(select_document_source("<a id id=x></a>\n\nBody.", "x").ok)
+  assert_false(
+    select_document_source("<a id='&copy;'></a>\n\nBody.", "&copy;").ok,
+  )
+  assert_false(select_document_source("<a id='a&b'></a>\n\nBody.", "a&b").ok)
+  assert_true(select_document_source("<a id='a&amp;b'></a>\n\nBody.", "a&b").ok)
+}
