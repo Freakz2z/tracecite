@@ -94,6 +94,8 @@ def verify(archive):
         if tuple(map(int, manifest["version"].split("."))) >= (0, 8, 0):
             from verify_quote_policy_example import verify_quote_policy
             verify_quote_policy(binary, environment)
+            from verify_html_anchor_example import verify_html_anchors
+            verify_html_anchors(binary, environment)
         demonstrate(root / "acceptance", binary)
         demonstrate_review(root / "review", binary)
         if tuple(map(int, manifest["version"].split("."))) >= (0, 7, 0):

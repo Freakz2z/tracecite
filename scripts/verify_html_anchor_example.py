@@ -8,13 +8,13 @@ import sys
 ROOT = Path(__file__).resolve().parents[1] / "examples/html-anchors/project"
 
 
-def verify(binary):
+def verify_html_anchors(binary, environment=None):
     reports = {}
     for document, expected in (("guide.md", 0), ("broken.md", 2)):
         result = subprocess.run(
             [str(binary), "check", document, "--root", str(ROOT),
              "--no-config", "--strict", "--json"],
-            text=True, capture_output=True, timeout=90,
+            text=True, capture_output=True, timeout=90, env=environment,
         )
         if result.returncode != expected:
             raise RuntimeError(f"{document}: {result.returncode}\n{result.stdout}\n{result.stderr}")
@@ -32,4 +32,4 @@ def verify(binary):
 
 
 if __name__ == "__main__":
-    verify(Path(sys.argv[1]).resolve(strict=True))
+    verify_html_anchors(Path(sys.argv[1]).resolve(strict=True))
