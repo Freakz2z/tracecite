@@ -26,7 +26,7 @@
 
 > **0.7.2 已发布**：修复重复定义掩盖断链、Unicode 引用标签和链接地址边界，提供[正反回归样例](examples/link-parsing/README.md)。本地与 CI 共用项目配置，来源变化仍需复核。
 
-main 正在开发 **0.8.0**：提供显式无来源引号策略、覆盖预算和聚焦变化位置的复核片段。[八步样例](examples/quote-policy/README.md)与[真实提交维护回放](docs/maintenance-trials.md)可从源码运行。这些能力尚未包含在正式 0.7.2 包中；完整计划见 [Roadmap](ROADMAP.md)。
+main 正在开发 **0.8.0**：提供显式无来源引号策略、覆盖预算、聚焦变化位置的复核片段，以及[独立 HTML ID 支持](examples/html-anchors/README.md)。[八步样例](examples/quote-policy/README.md)与[真实提交维护回放](docs/maintenance-trials.md)可从源码运行。这些能力尚未包含在正式 0.7.2 包中；完整计划见 [Roadmap](ROADMAP.md)。
 
 同时保留[多语言标题的 12 条链接样例](examples/anchors/README.md)，确认有效链接通过，真实断链仍失败。
 

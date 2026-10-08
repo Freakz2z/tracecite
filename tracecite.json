@@ -17,14 +17,15 @@
     "examples/library/README.md",
     "examples/anchors/README.md",
     "examples/link-parsing/README.md",
-    "examples/quote-policy/README.md"
+    "examples/quote-policy/README.md",
+    "examples/html-anchors/README.md"
   ],
   "exclude": [],
   "baseline": ".tracecite-docs.json",
   "strict": true,
   "online": false,
   "coverage": {
-    "max_skipped_web": 63,
-    "max_unbound_snippets": 56
+    "max_skipped_web": 64,
+    "max_unbound_snippets": 57
   }
 }

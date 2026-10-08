@@ -44,15 +44,16 @@ moon run cmd/main check --root /path/to/repository
     "examples/library/README.md",
     "examples/anchors/README.md",
     "examples/link-parsing/README.md",
-    "examples/quote-policy/README.md"
+    "examples/quote-policy/README.md",
+    "examples/html-anchors/README.md"
   ],
   "exclude": [],
   "baseline": ".tracecite-docs.json",
   "strict": true,
   "online": false,
   "coverage": {
-    "max_skipped_web": 63,
-    "max_unbound_snippets": 56
+    "max_skipped_web": 64,
+    "max_unbound_snippets": 57
   }
 }
 ```
@@ -223,6 +224,15 @@ max_skipped_quotes 缺省或 null 表示不限数量，推荐显式设置预算�
 MoonBit 迁移：0.8.0 为公开 DocumentProjectConfig 增加 unassociated_quotes 字符串字段，为 DocumentCoveragePolicy 增加 max_skipped_quotes 可选整数。
 通过 parse_document_project_config 读取旧配置无需修改；直接构造上述结构时补入 unassociated_quotes 为 review、max_skipped_quotes 为 None 即可保持原行为。
 parse_document 仍返回全部解析警告，配置策略由 CLI 应用；库调用方不会因为读取 skip 配置而自动失去原始诊断。旧版本会拒绝新字段，降级前应删除它们并复核恢复后的检查范围。
+
+### 独立 HTML ID（0.8.0 开发版）
+
+支持同一行闭合、内容为空且单独占一行的 a 元素，通过 id 提供稳定目标。属性值可用单引号、双引号或无引号；ID 大小写和 Unicode 保留，不按标题规则转小写。
+锚点后隔空行紧接标题时，观察该标题及子章节；后面先有正文时，观察到下一标题。两种情况都止于下一个受支持的独立锚点。
+完整规则、实体限制、重复 ID 顺序及正反命令见 [独立 HTML 锚点样例](../examples/html-anchors/README.md)。
+
+这是有限语法支持，不是通用 HTML 解析。跨行标签、其他元素的 ID、name 属性及站点专用目标规则仍不在支持范围。
+代码、注释中的标签不产生目标；缺失目标继续失败。稳定 ID 可以避免标题改名造成断链，但正文或标题变化仍会触发基线复核。
 
 ## 快照与复核
 

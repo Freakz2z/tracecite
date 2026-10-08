@@ -66,7 +66,13 @@ fn document_standalone_anchor_id(line : String) -> String? {
     if name == "id" {
       let value = String::from_array(chars[first:index])
       if value == "" ||
-        value.contains("&#") ||
+        value
+        .replace_all(old="&quot;", new="")
+        .replace_all(old="&apos;", new="")
+        .replace_all(old="&lt;", new="")
+        .replace_all(old="&gt;", new="")
+        .replace_all(old="&amp;", new="")
+        .contains("&") ||
         value
         .iter()
         .any(ch => ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r') {

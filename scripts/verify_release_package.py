@@ -94,6 +94,10 @@ def verify_package(metadata):
         "examples/link-parsing/project/broken-first.md", "examples/link-parsing/project/valid.md",
         "examples/link-parsing/project/other.md", "examples/link-parsing/project/guide(v2.md",
         "examples/link-parsing/project/guide(v2).md",
+        "document_anchor.mbt", "maintenance_html_anchor_wbtest.mbt",
+        "scripts/verify_html_anchor_example.py", "examples/html-anchors/README.md",
+        "examples/html-anchors/project/guide.md", "examples/html-anchors/project/source.md",
+        "examples/html-anchors/project/broken.md",
         "document_glob.mbt", "document_review.mbt", "scripts/maintenance_review_demo.py",
         "examples/review/README.md", "examples/review/project/docs/guide.md",
         "examples/review/project/docs/drafts/draft.md", "examples/review/project/source.md",
@@ -145,6 +149,7 @@ def verify_package(metadata):
         run("python3", "scripts/verify_anchor_example.py", str(installed), cwd=package)
         run("python3", "scripts/verify_link_example.py", str(installed), cwd=package)
         run("python3", "scripts/verify_quote_policy_example.py", str(installed), cwd=package)
+        run("python3", "scripts/verify_html_anchor_example.py", str(installed), cwd=package)
         run("python3", "scripts/acceptance_demo.py", "--binary", str(installed),
             "--out", str(Path(temporary) / "acceptance"), cwd=package)
         run("python3", "scripts/maintenance_review_demo.py", "--binary", str(installed),
