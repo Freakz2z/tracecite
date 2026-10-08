@@ -9,7 +9,8 @@ pub(all) struct SelectedSource {
 pub extend SelectedSource with ToJson::{to_json}
 
 ///|
-/// Select the whole source, a #Lx-Ly range, a Markdown heading section, or
+/// Select the whole source, a #Lx-Ly range, a Markdown heading or standalone
+/// HTML anchor section, or
 /// #region:name between ANCHOR: name / ANCHOR_END: name comments.
 pub fn select_document_source(
   content : String,
@@ -20,7 +21,10 @@ pub fn select_document_source(
     return { ok: true, text, code: "", }
   }
   let lines = text.split("\n").map(line => line.to_owned()).to_array()
-  if fragment.has_prefix("L") {
+  if fragment.has_prefix("L") &&
+    fragment.to_array().length() > 1 &&
+    fragment.to_array()[1] >= '0' &&
+    fragment.to_array()[1] <= '9' {
     let range = fragment[1:].split_once("-L")
     let start = @string.parse_int(
       match range {
@@ -61,17 +65,11 @@ pub fn select_document_source(
     }
     return { ok: false, text: "", code: "REGION_NOT_FOUND", }
   }
+  let (headings, anchors) = document_source_headings(lines)
   let counts : Map[String, Int] = Map([])
-  let mut section_start : Int? = None
-  let mut section_level = 0
-  for heading in document_source_headings(lines) {
-    let index = heading.start
-    let level = heading.level
-    if section_start is Some(first) && level <= section_level {
-      return { ok: true, text: lines[first:index].join("\n"), code: "", }
-    }
-    let title = heading.title
-    let slug = markdown_heading_slug(title)
+  let mut selected : DocumentHeading? = None
+  for heading in headings {
+    let slug = markdown_heading_slug(heading.title)
     let mut count = counts.get(slug).unwrap_or(0)
     let mut unique = slug
     while counts.get(unique) is Some(_) {
@@ -81,13 +79,58 @@ pub fn select_document_source(
     counts.set(slug, count)
     counts.set(unique, 0)
     if unique == fragment {
-      section_start = Some(index)
-      section_level = level
+      selected = Some(heading)
+      break
     }
   }
-  match section_start {
-    Some(first) => { ok: true, text: lines[first:].join("\n"), code: "", }
-    None => { ok: false, text: "", code: "ANCHOR_NOT_FOUND", }
+  let anchor = anchors.iter().find_first(anchor => anchor.1 == fragment)
+  if anchor is Some((first, _)) &&
+    (selected is None || first < selected.unwrap().start) {
+    let mut end = lines.length()
+    for (index, _) in anchors {
+      if index > first {
+        end = index
+        break
+      }
+    }
+    let next = headings.iter().find_first(heading => heading.start > first)
+    if next is Some(heading) {
+      if lines[first + 1:heading.start].iter().all(line => line.trim() == "") {
+        for following in headings {
+          if following.start > heading.start &&
+            following.level <= heading.level {
+            end = Int::min(end, following.start)
+            break
+          }
+        }
+      } else {
+        end = Int::min(end, heading.start)
+      }
+    }
+    return { ok: true, text: lines[first:end].join("\n"), code: "", }
+  }
+  if selected is Some(heading) {
+    let mut end = lines.length()
+    for following in headings {
+      if following.start > heading.start && following.level <= heading.level {
+        end = following.start
+        break
+      }
+    }
+    return {
+      ok: true,
+      text: lines[heading.start:end].join("\n"),
+      code: "",
+    }
+  }
+  {
+    ok: false,
+    text: "",
+    code: if fragment.has_prefix("L") {
+      "INVALID_LINE_RANGE"
+    } else {
+      "ANCHOR_NOT_FOUND"
+    },
   }
 }
 
@@ -99,8 +142,11 @@ priv struct DocumentHeading {
 }
 
 ///|
-fn document_source_headings(lines : Array[String]) -> Array[DocumentHeading] {
+fn document_source_headings(
+  lines : Array[String],
+) -> (Array[DocumentHeading], Array[(Int, String)]) {
   let headings : Array[DocumentHeading] = []
+  let anchors : Array[(Int, String)] = []
   let paragraph : Array[String] = []
   let mut paragraph_start = 0
   let mut fence : (Char, Int)? = None
@@ -154,6 +200,9 @@ fn document_source_headings(lines : Array[String]) -> Array[DocumentHeading] {
         container = false
       }
       continue
+    }
+    if !container && document_standalone_anchor_id(line.to_owned()) is Some(id) {
+      anchors.push((index, id))
     }
     if document_heading_html_end(line.to_owned(), paragraph.is_empty())
       is Some(marker) {
@@ -229,7 +278,7 @@ fn document_source_headings(lines : Array[String]) -> Array[DocumentHeading] {
     }
     paragraph.push(line.to_owned())
   }
-  headings
+  (headings, anchors)
 }
 
 ///|

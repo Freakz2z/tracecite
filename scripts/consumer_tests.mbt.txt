@@ -98,3 +98,13 @@ test "explicit quote policy and coverage budget round trip through public config
   assert_eq(restored.coverage.max_skipped_quotes, Some(2))
   assert_true(@tracecite.parse_document("A \"term\".").warnings.length() == 1)
 }
+
+///|
+test "public source selection resolves a standalone explicit HTML id" {
+  let source = "<a id='stable'></a>\n\nSelected.\n\n## Other\nOutside."
+  let selected = @tracecite.select_document_source(source, "stable")
+  assert_true(selected.ok)
+  assert_true(selected.text.contains("Selected."))
+  assert_false(selected.text.contains("Outside."))
+  assert_false(@tracecite.select_document_source(source, "missing").ok)
+}

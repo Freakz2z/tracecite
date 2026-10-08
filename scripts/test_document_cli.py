@@ -614,6 +614,40 @@ class DocumentMaintenanceTests(unittest.TestCase):
         self.assertEqual(report["review"][0]["source"], "docs/source.md")
         self.assertEqual({item["document"] for item in report["review"][0]["locations"]}, {"docs/guide.md", "docs/nested/second.md"})
 
+    def test_standalone_html_anchor_supports_review_without_tracking_other_sections(self):
+        self.write("docs/source.md", '<a id="stable"></a>\n\n## Display name\nOld body.\n\n## Other\nUnrelated.\n')
+        self.write("docs/guide.md", "[Stable](source.md#stable)\n")
+        self.run_cli("init", "docs/guide.md")
+        baseline = self.root / ".tracecite-docs.json"
+        original = baseline.read_bytes()
+        self.write("docs/source.md", (self.root / "docs/source.md").read_text().replace("Unrelated.", "Changed elsewhere."))
+        self.run_check()
+        self.write("docs/source.md", (self.root / "docs/source.md").read_text().replace("Old body.", "New body."))
+        report = self.run_check("--preview-baseline", expected=2)
+        item = next(item for item in report["items"] if item["status"] == "changed")
+        self.assertEqual((item["line"], item["code"]), (1, "REFERENCED_SOURCE_CHANGED"))
+        self.assertIn("Old body.", item["previous"])
+        self.assertIn("New body.", item["actual"])
+        self.assertTrue(report["baseline_preview"]["can_update"])
+        self.assertNotIn("Changed elsewhere.", report["baseline_preview"]["changes"][0]["current"])
+        self.assertEqual(baseline.read_bytes(), original)
+        self.run_check("--snapshot", ".tracecite-docs.json")
+        self.assertEqual(json.loads(baseline.read_text()), report["baseline_preview"]["snapshot"])
+        self.run_check()
+        self.write("docs/source.md", (self.root / "docs/source.md").read_text().replace('id="stable"', 'id="removed"'))
+        broken = self.run_check("--preview-baseline", expected=2)
+        self.assertIn("ANCHOR_NOT_FOUND", [item["code"] for item in broken["items"]])
+        self.assertFalse(broken["baseline_preview"]["can_update"])
+
+    def test_standalone_html_id_decoding_and_selected_quote_boundaries(self):
+        self.write("docs/source.md", '<a id="État&amp;Mixed"></a>\n\nSelected body.\n\n## Other\nOutside claim.\n')
+        self.write("docs/guide.md", '"Selected body." ([source](source.md#%C3%89tat%26Mixed))\n')
+        report = self.run_check("docs/guide.md", "--no-config", "--strict")
+        self.assertEqual(report["checked_count"], 1)
+        self.write("docs/guide.md", '"Outside claim." ([source](source.md#%C3%89tat%26Mixed))\n')
+        report = self.run_check("docs/guide.md", "--no-config", "--strict", expected=2)
+        self.assertIn("DOCUMENT_EXCERPT_MISMATCH", [item["code"] for item in report["items"]])
+
     def test_late_source_change_is_visible_but_snapshot_and_preview_stay_complete(self):
         padding = "Unchanged context. 😀\n" * 150
         old = "# Settings\n" + padding + "OLD default\n" + padding
