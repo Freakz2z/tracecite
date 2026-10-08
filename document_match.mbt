@@ -97,8 +97,7 @@ pub fn select_document_source(
     if next is Some(heading) {
       if lines[first + 1:heading.start].iter().all(line => line.trim() == "") {
         for following in headings {
-          if following.start > heading.start &&
-            following.level <= heading.level {
+          if following.start > heading.start && following.level <= heading.level {
             end = Int::min(end, following.start)
             break
           }
@@ -117,11 +116,7 @@ pub fn select_document_source(
         break
       }
     }
-    return {
-      ok: true,
-      text: lines[heading.start:end].join("\n"),
-      code: "",
-    }
+    return { ok: true, text: lines[heading.start:end].join("\n"), code: "", }
   }
   {
     ok: false,

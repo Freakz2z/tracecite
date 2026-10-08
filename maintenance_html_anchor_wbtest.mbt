@@ -47,7 +47,9 @@ test "duplicate HTML ids and heading collisions select the first target" {
   let html_first = "<a id=x></a>\n\nFirst.\n\n## x\nSecond."
   assert_false(select_document_source(html_first, "x").text.contains("Second."))
   let heading_first = "## x\nFirst.\n\n## End\n\n<a id=x></a>\n\nSecond."
-  assert_false(select_document_source(heading_first, "x").text.contains("Second."))
+  assert_false(
+    select_document_source(heading_first, "x").text.contains("Second."),
+  )
   assert_false(
     select_document_source("<a id=first id=second></a>\n\nBody.", "second").ok,
   )
@@ -58,29 +60,15 @@ test "duplicate HTML ids and heading collisions select the first target" {
 
 ///|
 test "HTML anchor lookalikes in hidden or unsupported contexts stay unresolved" {
-  for source in [
-    "```html\n<a id=x></a>\n```\n",
-    "~~~html\n<a id=x></a>\n~~~\n",
-    "    <a id=x></a>\n",
-    "\t<a id=x></a>\n",
-    "<!--\n<a id=x></a>\n-->\n",
-    "`<a id=x></a>`\n",
-    "\\<a id=x></a>\n",
-    "prefix <a id=x></a>\n",
-    "<div>\n<a id=x></a>\n</div>\n",
-    "<script>\n<a id=x></a>\n</script>\n",
-    "<pre>\n<a id=x></a>\n</pre>\n",
-    "> <a id=x></a>\n",
-    "- <a id=x></a>\n",
-    "<a data-id=x></a>\n",
-    "<a name=x></a>\n",
-    "<a id=x>Visible text</a>\n",
-    "<a id=x>\n",
-    "<a id=\"x></a>\n",
-    "<a id=''></a>\n",
-    "<a id='bad id'></a>\n",
-    "<a id='&#120;'></a>\n",
-  ] {
+  for
+    source in [
+      "```html\n<a id=x></a>\n```\n", "~~~html\n<a id=x></a>\n~~~\n", "    <a id=x></a>\n",
+      "\t<a id=x></a>\n", "<!--\n<a id=x></a>\n-->\n", "`<a id=x></a>`\n", "\\<a id=x></a>\n",
+      "prefix <a id=x></a>\n", "<div>\n<a id=x></a>\n</div>\n", "<script>\n<a id=x></a>\n</script>\n",
+      "<pre>\n<a id=x></a>\n</pre>\n", "> <a id=x></a>\n", "- <a id=x></a>\n", "<a data-id=x></a>\n",
+      "<a name=x></a>\n", "<a id=x>Visible text</a>\n", "<a id=x>\n", "<a id=\"x></a>\n",
+      "<a id=''></a>\n", "<a id='bad id'></a>\n", "<a id='&#120;'></a>\n",
+    ] {
     assert_false(select_document_source(source, "x").ok)
   }
 }
