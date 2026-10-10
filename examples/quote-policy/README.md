@@ -1,6 +1,6 @@
 # 显式引号策略与覆盖预算
 
-这是 0.8.0 开发源码样例，尚未包含在正式 0.7.2 包或 Action 标签中。从仓库根目录运行：
+此样例需要 0.8.0 或更新的 CLI/Action。从仓库根目录运行：
 
 ```sh
 moon run cmd/main check --root examples/quote-policy/project
@@ -27,4 +27,4 @@ moon build --target native
 python3 scripts/verify_quote_policy_example.py _build/native/debug/build/cmd/main/main.exe
 ```
 
-源码包和未来正式包的消费验证也会执行相同八步流程。配置、公共结构迁移与限制见[维护说明](../../docs/maintenance.md#无来源引号策略08-开发版)。
+源码包、注册表与独立包的消费验证也会执行相同八步流程。配置、公共结构迁移与限制见[维护说明](../../docs/maintenance.md#无来源引号策略080)。

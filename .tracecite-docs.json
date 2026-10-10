@@ -17,7 +17,7 @@
       "document": "README.mbt.md",
       "source": "#快速开始",
       "kind": "link",
-      "observed": "## 快速开始\n\n### 1. 获取源码并检查仓库文档\n\n安装 [MoonBit](https://docs.moonbitlang.com/en/stable/tutorial/tour.html#installation)（`moonc >= 0.10.14`），然后执行：\n\n```sh\ngit clone https://github.com/Freakz2z/tracecite.git\ncd tracecite\nmoon update\nmoon run cmd/main check\n```\n\n### 2. 接入自己的项目\n\n选择需要长期维护的文件或目录，初始化一次：\n\n```sh\nmoon run cmd/main init docs README.md --root /path/to/your/repository\n```\n\n来源检查通过后，会生成 `tracecite.json` 和 `.tracecite-docs.json`。将它们一起提交到项目。之后无需重复填写扫描范围与基线：\n\n```sh\nmoon run cmd/main check --root /path/to/your/repository\n```\n\n**默认严格、离线检查。** 已有配置或基线时，`init` 会停止；检查失败时不会创建它们。`--root` 定义工作区边界，配置路径相对根目录，引用来源相对文档所在目录。\n\n需要回访网页来源时，在配置中设置 `online: true`，或临时添加 `--online`。配置字段与覆盖规则见 [维护指南](docs/maintenance.md#项目配置本地与-ci-用同一套规则)。\n\n0.6.0 的通配符与复核流程可按以下命令接入新项目；模式加引号，避免 shell 提前展开：\n\n```sh\nmoon run cmd/main init 'docs/**/*.md' --root /path/to/your/repository --exclude 'docs/drafts/**'\nmoon run cmd/main check --root /path/to/your/repository --review\nmoon run cmd/main check --root /path/to/your/repository --preview-baseline --json\n```\n\n预览不会写文件。`can_update` 表示当前来源核验与覆盖要求是否允许生成候选；来源变化仍返回退出码 2，等待人工复核。\n完整闭环见 [14 步维护复核演示](examples/review/README.md)。\n\n### 3. 构建独立可执行文件\n\n```sh\nbash scripts/package.sh\n./_build/native/release/build/cmd/main/main.exe check\n```\n\n打包脚本在 `dist/` 生成本机压缩包。**运行独立 native 二进制无需安装 MoonBit、Python 或 Node。** [打包工作流](.github/workflows/binaries.yml)支持手动触发或版本标签触发，构建 Linux/macOS 包。0.7.2 独立包与校验文件在 [GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.7.2) 下载；解压后直接运行其中的 `tracecite`。\n\n包内保留第三方许可与构建清单；联网 HTTPS 检查使用系统 TLS 库和证书。打包与演示脚本使用 Python 3，它仅是开发工具。\n\n### 4. 运行完整维护演示\n\n```sh\npython3 scripts/acceptance_demo.py\n```\n\n[13 步离线案例](examples/maintenance/README.md)展示来源变更后检查失败、定位文档行、修正片段与锚点、复核并更新基线、恢复通过。每一步保存 JSON 报告；案例在复制的临时项目中运行。\n这是受控功能演示，实际公开资料中发现的引文问题见 [外部审计记录](docs/external-audit.md)。\n"
+      "observed": "## 快速开始\n\n### 1. 获取源码并检查仓库文档\n\n安装 [MoonBit](https://docs.moonbitlang.com/en/stable/tutorial/tour.html#installation)（`moonc >= 0.10.14`），然后执行：\n\n```sh\ngit clone https://github.com/Freakz2z/tracecite.git\ncd tracecite\nmoon update\nmoon run cmd/main check\n```\n\n### 2. 接入自己的项目\n\n选择需要长期维护的文件或目录，初始化一次：\n\n```sh\nmoon run cmd/main init docs README.md --root /path/to/your/repository\n```\n\n来源检查通过后，会生成 `tracecite.json` 和 `.tracecite-docs.json`。将它们一起提交到项目。之后无需重复填写扫描范围与基线：\n\n```sh\nmoon run cmd/main check --root /path/to/your/repository\n```\n\n**默认严格、离线检查。** 已有配置或基线时，`init` 会停止；检查失败时不会创建它们。`--root` 定义工作区边界，配置路径相对根目录，引用来源相对文档所在目录。\n\n需要回访网页来源时，在配置中设置 `online: true`，或临时添加 `--online`。配置字段与覆盖规则见 [维护指南](docs/maintenance.md#项目配置本地与-ci-用同一套规则)。\n\n0.6.0 的通配符与复核流程可按以下命令接入新项目；模式加引号，避免 shell 提前展开：\n\n```sh\nmoon run cmd/main init 'docs/**/*.md' --root /path/to/your/repository --exclude 'docs/drafts/**'\nmoon run cmd/main check --root /path/to/your/repository --review\nmoon run cmd/main check --root /path/to/your/repository --preview-baseline --json\n```\n\n预览不会写文件。`can_update` 表示当前来源核验与覆盖要求是否允许生成候选；来源变化仍返回退出码 2，等待人工复核。\n完整闭环见 [14 步维护复核演示](examples/review/README.md)。\n\n### 3. 构建独立可执行文件\n\n```sh\nbash scripts/package.sh\n./_build/native/release/build/cmd/main/main.exe check\n```\n\n打包脚本在 `dist/` 生成本机压缩包。**运行独立 native 二进制无需安装 MoonBit、Python 或 Node。** [打包工作流](.github/workflows/binaries.yml)支持手动触发或版本标签触发，构建 Linux/macOS 包。0.8.0 独立包与校验文件在 [GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.8.0) 下载；解压后直接运行其中的 `tracecite`。\n\n包内保留第三方许可与构建清单；联网 HTTPS 检查使用系统 TLS 库和证书。打包与演示脚本使用 Python 3，它仅是开发工具。\n\n### 4. 运行完整维护演示\n\n```sh\npython3 scripts/acceptance_demo.py\n```\n\n[13 步离线案例](examples/maintenance/README.md)展示来源变更后检查失败、定位文档行、修正片段与锚点、复核并更新基线、恢复通过。每一步保存 JSON 报告；案例在复制的临时项目中运行。\n这是受控功能演示，实际公开资料中发现的引文问题见 [外部审计记录](docs/external-audit.md)。\n"
     },
     {
       "document": "README.mbt.md",
@@ -51,13 +51,13 @@
     },
     {
       "document": "README.mbt.md",
-      "source": "examples/link-parsing/README.md",
+      "source": "examples/quote-policy/README.md",
       "kind": "link",
       "observed": ""
     },
     {
       "document": "README.mbt.md",
-      "source": "examples/quote-policy/README.md",
+      "source": "examples/html-anchors/README.md",
       "kind": "link",
       "observed": ""
     },
@@ -76,6 +76,12 @@
     {
       "document": "README.mbt.md",
       "source": "examples/anchors/README.md",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "README.mbt.md",
+      "source": "examples/link-parsing/README.md",
       "kind": "link",
       "observed": ""
     },
@@ -302,7 +308,7 @@
       "document": "docs/maintenance.md",
       "source": "../README.mbt.md#快速开始",
       "kind": "link",
-      "observed": "## 快速开始\n\n### 1. 获取源码并检查仓库文档\n\n安装 [MoonBit](https://docs.moonbitlang.com/en/stable/tutorial/tour.html#installation)（`moonc >= 0.10.14`），然后执行：\n\n```sh\ngit clone https://github.com/Freakz2z/tracecite.git\ncd tracecite\nmoon update\nmoon run cmd/main check\n```\n\n### 2. 接入自己的项目\n\n选择需要长期维护的文件或目录，初始化一次：\n\n```sh\nmoon run cmd/main init docs README.md --root /path/to/your/repository\n```\n\n来源检查通过后，会生成 `tracecite.json` 和 `.tracecite-docs.json`。将它们一起提交到项目。之后无需重复填写扫描范围与基线：\n\n```sh\nmoon run cmd/main check --root /path/to/your/repository\n```\n\n**默认严格、离线检查。** 已有配置或基线时，`init` 会停止；检查失败时不会创建它们。`--root` 定义工作区边界，配置路径相对根目录，引用来源相对文档所在目录。\n\n需要回访网页来源时，在配置中设置 `online: true`，或临时添加 `--online`。配置字段与覆盖规则见 [维护指南](docs/maintenance.md#项目配置本地与-ci-用同一套规则)。\n\n0.6.0 的通配符与复核流程可按以下命令接入新项目；模式加引号，避免 shell 提前展开：\n\n```sh\nmoon run cmd/main init 'docs/**/*.md' --root /path/to/your/repository --exclude 'docs/drafts/**'\nmoon run cmd/main check --root /path/to/your/repository --review\nmoon run cmd/main check --root /path/to/your/repository --preview-baseline --json\n```\n\n预览不会写文件。`can_update` 表示当前来源核验与覆盖要求是否允许生成候选；来源变化仍返回退出码 2，等待人工复核。\n完整闭环见 [14 步维护复核演示](examples/review/README.md)。\n\n### 3. 构建独立可执行文件\n\n```sh\nbash scripts/package.sh\n./_build/native/release/build/cmd/main/main.exe check\n```\n\n打包脚本在 `dist/` 生成本机压缩包。**运行独立 native 二进制无需安装 MoonBit、Python 或 Node。** [打包工作流](.github/workflows/binaries.yml)支持手动触发或版本标签触发，构建 Linux/macOS 包。0.7.2 独立包与校验文件在 [GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.7.2) 下载；解压后直接运行其中的 `tracecite`。\n\n包内保留第三方许可与构建清单；联网 HTTPS 检查使用系统 TLS 库和证书。打包与演示脚本使用 Python 3，它仅是开发工具。\n\n### 4. 运行完整维护演示\n\n```sh\npython3 scripts/acceptance_demo.py\n```\n\n[13 步离线案例](examples/maintenance/README.md)展示来源变更后检查失败、定位文档行、修正片段与锚点、复核并更新基线、恢复通过。每一步保存 JSON 报告；案例在复制的临时项目中运行。\n这是受控功能演示，实际公开资料中发现的引文问题见 [外部审计记录](docs/external-audit.md)。\n"
+      "observed": "## 快速开始\n\n### 1. 获取源码并检查仓库文档\n\n安装 [MoonBit](https://docs.moonbitlang.com/en/stable/tutorial/tour.html#installation)（`moonc >= 0.10.14`），然后执行：\n\n```sh\ngit clone https://github.com/Freakz2z/tracecite.git\ncd tracecite\nmoon update\nmoon run cmd/main check\n```\n\n### 2. 接入自己的项目\n\n选择需要长期维护的文件或目录，初始化一次：\n\n```sh\nmoon run cmd/main init docs README.md --root /path/to/your/repository\n```\n\n来源检查通过后，会生成 `tracecite.json` 和 `.tracecite-docs.json`。将它们一起提交到项目。之后无需重复填写扫描范围与基线：\n\n```sh\nmoon run cmd/main check --root /path/to/your/repository\n```\n\n**默认严格、离线检查。** 已有配置或基线时，`init` 会停止；检查失败时不会创建它们。`--root` 定义工作区边界，配置路径相对根目录，引用来源相对文档所在目录。\n\n需要回访网页来源时，在配置中设置 `online: true`，或临时添加 `--online`。配置字段与覆盖规则见 [维护指南](docs/maintenance.md#项目配置本地与-ci-用同一套规则)。\n\n0.6.0 的通配符与复核流程可按以下命令接入新项目；模式加引号，避免 shell 提前展开：\n\n```sh\nmoon run cmd/main init 'docs/**/*.md' --root /path/to/your/repository --exclude 'docs/drafts/**'\nmoon run cmd/main check --root /path/to/your/repository --review\nmoon run cmd/main check --root /path/to/your/repository --preview-baseline --json\n```\n\n预览不会写文件。`can_update` 表示当前来源核验与覆盖要求是否允许生成候选；来源变化仍返回退出码 2，等待人工复核。\n完整闭环见 [14 步维护复核演示](examples/review/README.md)。\n\n### 3. 构建独立可执行文件\n\n```sh\nbash scripts/package.sh\n./_build/native/release/build/cmd/main/main.exe check\n```\n\n打包脚本在 `dist/` 生成本机压缩包。**运行独立 native 二进制无需安装 MoonBit、Python 或 Node。** [打包工作流](.github/workflows/binaries.yml)支持手动触发或版本标签触发，构建 Linux/macOS 包。0.8.0 独立包与校验文件在 [GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.8.0) 下载；解压后直接运行其中的 `tracecite`。\n\n包内保留第三方许可与构建清单；联网 HTTPS 检查使用系统 TLS 库和证书。打包与演示脚本使用 Python 3，它仅是开发工具。\n\n### 4. 运行完整维护演示\n\n```sh\npython3 scripts/acceptance_demo.py\n```\n\n[13 步离线案例](examples/maintenance/README.md)展示来源变更后检查失败、定位文档行、修正片段与锚点、复核并更新基线、恢复通过。每一步保存 JSON 报告；案例在复制的临时项目中运行。\n这是受控功能演示，实际公开资料中发现的引文问题见 [外部审计记录](docs/external-audit.md)。\n"
     },
     {
       "document": "docs/maintenance.md",
@@ -319,6 +325,12 @@
     {
       "document": "docs/maintenance.md",
       "source": "../examples/quote-policy/README.md",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "docs/maintenance.md",
+      "source": "../examples/html-anchors/README.md",
       "kind": "link",
       "observed": ""
     },
@@ -852,6 +864,12 @@
     },
     {
       "document": "ROADMAP.md",
+      "source": "examples/html-anchors/README.md",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "ROADMAP.md",
       "source": "examples/quote-policy/README.md",
       "kind": "link",
       "observed": ""
@@ -1016,8 +1034,8 @@
       "document": "examples/library/README.md",
       "source": "../../templates/document-check.yml",
       "kind": "snippet",
-      "excerpt": "name: Check documentation\non: [push, pull_request]\npermissions:\n  contents: read\njobs:\n  documents:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v5\n      - uses: Freakz2z/tracecite@v0.7.2",
-      "observed": "name: Check documentation\non: [push, pull_request]\npermissions:\n  contents: read\njobs:\n  documents:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v5\n      - uses: Freakz2z/tracecite@v0.7.2"
+      "excerpt": "name: Check documentation\non: [push, pull_request]\npermissions:\n  contents: read\njobs:\n  documents:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v5\n      - uses: Freakz2z/tracecite@v0.8.0",
+      "observed": "name: Check documentation\non: [push, pull_request]\npermissions:\n  contents: read\njobs:\n  documents:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v5\n      - uses: Freakz2z/tracecite@v0.8.0"
     },
     {
       "document": "examples/anchors/README.md",
@@ -1081,27 +1099,9 @@
     },
     {
       "document": "examples/quote-policy/README.md",
-      "source": "../../docs/maintenance.md#无来源引号策略08-开发版",
+      "source": "../../docs/maintenance.md#无来源引号策略080",
       "kind": "link",
-      "observed": "## 无来源引号策略（0.8 开发版）\n\n以下选项位于 main 的 0.8.0 开发源码，尚未发布到 Mooncakes；正式 0.7.2 和旧 Action 标签不支持这些配置字段。\n默认 unassociated_quotes 为 review，保留无来源引号的人工复核。作者确认项目中的这些完整引号可不作引文检查后，可显式选择 skip，并设置未检查预算：\n\n```json\n{\n  \"version\": 1,\n  \"paths\": [\"docs/**/*.md\"],\n  \"strict\": true,\n  \"unassociated_quotes\": \"skip\",\n  \"coverage\": {\"max_skipped_quotes\": 2}\n}\n```\n\n本地与 Action 均读取同一配置。CLI 参数优先于配置，init 会持久化所选策略和预算：\n\n```sh\nmoon run cmd/main init docs --root /path/to/project --unassociated-quotes skip --max-skipped-quotes 2\nmoon run cmd/main check --root /path/to/project\nmoon run cmd/main check --root /path/to/project --unassociated-quotes review\n```\n\n只有 UNASSOCIATED_QUOTE 对应的完整引号会被转为 UNASSOCIATED_QUOTE_SKIPPED。普通输出与 JSON 保留文档行；JSON 条目为 skipped/not_checked，并单独统计 skipped_quotes。\n它们不增加 checked_count，也不计入专用于网页的 skipped_count。工具没有判断这些文字是否确实属于术语；skip 是项目作者对检查范围的明确决定。\n未闭合引号、无效来源链接、显式 Quote/Source 块、有来源的逐字引文、代码片段、断链和越界检查都继续执行。\n\nmax_skipped_quotes 缺省或 null 表示不限数量，推荐显式设置预算，防止后来新增的无来源引号未被注意。超过预算时报告 SKIPPED_QUOTE_LIMIT_EXCEEDED；即使 --no-strict 也失败，不能生成候选或写入基线。\n只有跳过项而没有任何可独立核验的引用时也失败；跳过项不进入引用快照，因此基线比较不会追踪它们的文本变化。\n计数按解析器识别出的完整引号片段计算；同一行两个片段计为两项，不代表自然语言中的两条论断。跨行引文需改用支持的显式引文格式。\n[八步正反样例](../examples/quote-policy/README.md)验证默认复核、显式跳过、覆盖超限、init 持久化及来源变化。\n\nMoonBit 迁移：0.8.0 为公开 DocumentProjectConfig 增加 unassociated_quotes 字符串字段，为 DocumentCoveragePolicy 增加 max_skipped_quotes 可选整数。\n通过 parse_document_project_config 读取旧配置无需修改；直接构造上述结构时补入 unassociated_quotes 为 review、max_skipped_quotes 为 None 即可保持原行为。\nparse_document 仍返回全部解析警告，配置策略由 CLI 应用；库调用方不会因为读取 skip 配置而自动失去原始诊断。旧版本会拒绝新字段，降级前应删除它们并复核恢复后的检查范围。\n"
-    },
-    {
-      "document": "README.mbt.md",
-      "source": "examples/html-anchors/README.md",
-      "kind": "link",
-      "observed": ""
-    },
-    {
-      "document": "docs/maintenance.md",
-      "source": "../examples/html-anchors/README.md",
-      "kind": "link",
-      "observed": ""
-    },
-    {
-      "document": "ROADMAP.md",
-      "source": "examples/html-anchors/README.md",
-      "kind": "link",
-      "observed": ""
+      "observed": "## 无来源引号策略（0.8.0）\n\n以下选项从 0.8.0 起提供；0.7.2 及更早的 CLI、库和 Action 标签不支持这些配置字段。升级时同时更新本地安装版本与 CI 标签。\n默认 unassociated_quotes 为 review，保留无来源引号的人工复核。作者确认项目中的这些完整引号可不作引文检查后，可显式选择 skip，并设置未检查预算：\n\n```json\n{\n  \"version\": 1,\n  \"paths\": [\"docs/**/*.md\"],\n  \"strict\": true,\n  \"unassociated_quotes\": \"skip\",\n  \"coverage\": {\"max_skipped_quotes\": 2}\n}\n```\n\n本地与 Action 均读取同一配置。CLI 参数优先于配置，init 会持久化所选策略和预算：\n\n```sh\nmoon run cmd/main init docs --root /path/to/project --unassociated-quotes skip --max-skipped-quotes 2\nmoon run cmd/main check --root /path/to/project\nmoon run cmd/main check --root /path/to/project --unassociated-quotes review\n```\n\n只有 UNASSOCIATED_QUOTE 对应的完整引号会被转为 UNASSOCIATED_QUOTE_SKIPPED。普通输出与 JSON 保留文档行；JSON 条目为 skipped/not_checked，并单独统计 skipped_quotes。\n它们不增加 checked_count，也不计入专用于网页的 skipped_count。工具没有判断这些文字是否确实属于术语；skip 是项目作者对检查范围的明确决定。\n未闭合引号、无效来源链接、显式 Quote/Source 块、有来源的逐字引文、代码片段、断链和越界检查都继续执行。\n\nmax_skipped_quotes 缺省或 null 表示不限数量，推荐显式设置预算，防止后来新增的无来源引号未被注意。超过预算时报告 SKIPPED_QUOTE_LIMIT_EXCEEDED；即使 --no-strict 也失败，不能生成候选或写入基线。\n只有跳过项而没有任何可独立核验的引用时也失败；跳过项不进入引用快照，因此基线比较不会追踪它们的文本变化。\n计数按解析器识别出的完整引号片段计算；同一行两个片段计为两项，不代表自然语言中的两条论断。跨行引文需改用支持的显式引文格式。\n[八步正反样例](../examples/quote-policy/README.md)验证默认复核、显式跳过、覆盖超限、init 持久化及来源变化。\n\nMoonBit 迁移：0.8.0 为公开 DocumentProjectConfig 增加 unassociated_quotes 字符串字段，为 DocumentCoveragePolicy 增加 max_skipped_quotes 可选整数。\n通过 parse_document_project_config 读取旧配置无需修改；直接构造上述结构时补入 unassociated_quotes 为 review、max_skipped_quotes 为 None 即可保持原行为。\nparse_document 仍返回全部解析警告，配置策略由 CLI 应用；库调用方不会因为读取 skip 配置而自动失去原始诊断。旧版本会拒绝新字段，降级前应删除它们并复核恢复后的检查范围。\n"
     },
     {
       "document": "examples/html-anchors/README.md",

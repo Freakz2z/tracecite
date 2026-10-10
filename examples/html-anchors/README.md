@@ -1,6 +1,6 @@
 # 独立 HTML 锚点
 
-此样例适用于 0.8.0 开发源码，尚未包含在正式 0.7.2 中。
+此样例适用于 0.8.0 或更新版本；0.7.2 尚不支持这些独立 HTML 锚点。
 [有效引用](project/guide.md)包含 4 条引用；[真实缺失目标](project/broken.md)必须失败；正文见 [source.md](project/source.md)。
 
 在 TraceCite 源码根目录运行：

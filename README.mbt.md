@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/Freakz2z/tracecite/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Freakz2z/tracecite/ci.yml?branch=main&amp;style=flat-square&amp;label=CI" alt="CI status"></a>
-  <img src="https://img.shields.io/badge/version-0.7.2-317d72?style=flat-square" alt="TraceCite 0.7.2">
+  <img src="https://img.shields.io/badge/version-0.8.0-317d72?style=flat-square" alt="TraceCite 0.8.0">
   <img src="https://img.shields.io/badge/built_with-MoonBit-4664b7?style=flat-square" alt="Built with MoonBit">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-586874?style=flat-square" alt="Apache 2.0 license"></a>
 </p>
@@ -24,11 +24,11 @@
   <a href="docs/acceptance.md">验收与交付证据</a>
 </p>
 
-> **0.7.2 已发布**：修复重复定义掩盖断链、Unicode 引用标签和链接地址边界，提供[正反回归样例](examples/link-parsing/README.md)。本地与 CI 共用项目配置，来源变化仍需复核。
+> **0.8.0**：让严格检查适合日常 CI。显式控制无来源引号、限制跳过数量，来源变化时直接展示变化附近的内容；真实断链和片段不匹配仍会失败。
 
-main 正在开发 **0.8.0**：提供显式无来源引号策略、覆盖预算、聚焦变化位置的复核片段，以及[独立 HTML ID 支持](examples/html-anchors/README.md)。[八步样例](examples/quote-policy/README.md)与[真实提交维护回放](docs/maintenance-trials.md)可从源码运行。这些能力尚未包含在正式 0.7.2 包中；完整计划见 [Roadmap](ROADMAP.md)。
+通过[八步样例](examples/quote-policy/README.md)复现配置、预算与失败保护；[独立 HTML ID 样例](examples/html-anchors/README.md)验证稳定锚点，[真实提交维护回放](docs/maintenance-trials.md)演示变化复核。后续计划见 [Roadmap](ROADMAP.md)。
 
-同时保留[多语言标题的 12 条链接样例](examples/anchors/README.md)，确认有效链接通过，真实断链仍失败。
+同时保留[多语言标题的 12 条链接样例](examples/anchors/README.md)和[引用解析正反样例](examples/link-parsing/README.md)，确认有效链接通过，真实断链仍失败。
 
 ## 为什么需要 TraceCite
 
@@ -98,7 +98,7 @@ bash scripts/package.sh
 ./_build/native/release/build/cmd/main/main.exe check
 ```
 
-打包脚本在 `dist/` 生成本机压缩包。**运行独立 native 二进制无需安装 MoonBit、Python 或 Node。** [打包工作流](.github/workflows/binaries.yml)支持手动触发或版本标签触发，构建 Linux/macOS 包。0.7.2 独立包与校验文件在 [GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.7.2) 下载；解压后直接运行其中的 `tracecite`。
+打包脚本在 `dist/` 生成本机压缩包。**运行独立 native 二进制无需安装 MoonBit、Python 或 Node。** [打包工作流](.github/workflows/binaries.yml)支持手动触发或版本标签触发，构建 Linux/macOS 包。0.8.0 独立包与校验文件在 [GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.8.0) 下载；解压后直接运行其中的 `tracecite`。
 
 包内保留第三方许可与构建清单；联网 HTTPS 检查使用系统 TLS 库和证书。打包与演示脚本使用 Python 3，它仅是开发工具。
 
@@ -212,10 +212,10 @@ Action 安装并编译 MoonBit，在调用方仓库中解析引用，失败时�
 核心库可在 MoonBit 项目中导入，支持 native、JS、Wasm；CLI 另提供独立 native 包。消费项目可执行：
 
 ```sh
-moon add Freakz2z/tracecite@0.7.2
+moon add Freakz2z/tracecite@0.8.0
 ```
 
-需要命令行时可安装 `moon install Freakz2z/tracecite/cmd/tracecite@0.7.2`，以后直接运行 `tracecite init` 和 `tracecite check`。
+需要命令行时可安装 `moon install Freakz2z/tracecite/cmd/tracecite@0.8.0`，以后直接运行 `tracecite init` 和 `tracecite check`。
 
 维护者使用 `bash scripts/release.sh` 生成并验证源码包，包含解包后的文档检查和三个目标的消费项目测试。准备完成且登录有发布权限的 Mooncakes 账户后，使用 `bash scripts/release.sh --publish` 上传并确认版本。具体步骤见 [发布与接入指南](docs/publishing.md)。
 

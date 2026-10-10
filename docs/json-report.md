@@ -31,8 +31,8 @@ tracecite check --json > report.json
 | failed_count | error、unavailable、mismatch、changed 项数量 |
 | warning_count | warning 项数量；严格模式下这些项也使检查失败 |
 | skipped_count | 离线模式未回源的网页引用数量，不含跳过引号 |
-| skipped_quotes | 0.8.0 开发版新增：显式跳过的无来源完整引号数量；旧报告缺省视为 0 |
-| unassociated_quotes | 0.8.0 开发版新增：本次生效的 review 或 skip 策略；旧报告为 review |
+| skipped_quotes | 0.8.0新增：显式跳过的无来源完整引号数量；旧报告缺省视为 0 |
+| unassociated_quotes | 0.8.0新增：本次生效的 review 或 skip 策略；旧报告为 review |
 | unbound_snippets | 没有 source= 的代码块数量，不计为已检查 |
 | online | 本次是否启用网页回源 |
 | items | 完整逐项结果，包含成功、失败、警告和跳过项 |
@@ -48,7 +48,7 @@ tracecite check --json > report.json
 每条 item 必含 document、line、source、kind、status、code、message、category。
 line 为文档内从 1 起算的行号；document 为工作区相对路径；没有明确来源的诊断 source 可为空。
 expected、actual、previous 是可选的有界展示文本，不代替完整来源。
-0.8.0 开发版中，status=changed 的 previous/actual 成对定位首个变化附近，每侧至多 1600 个 Unicode 字符，并用省略号标记遗漏内容；它们不是完整 diff。review.locations 采用同一展示文本。baseline_preview.changes 的 previous/current 和候选 snapshot 仍保存完整观察值，不能用精简展示文本重建基线。
+0.8.0中，status=changed 的 previous/actual 成对定位首个变化附近，每侧至多 1600 个 Unicode 字符，并用省略号标记遗漏内容；它们不是完整 diff。review.locations 采用同一展示文本。baseline_preview.changes 的 previous/current 和候选 snapshot 仍保存完整观察值，不能用精简展示文本重建基线。
 
 | category | 处理含义 |
 | --- | --- |
