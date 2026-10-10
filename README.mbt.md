@@ -24,7 +24,7 @@
   <a href="docs/acceptance.md">验收与交付证据</a>
 </p>
 
-> **0.8.0**：让严格检查适合日常 CI。显式控制无来源引号、限制跳过数量，来源变化时直接展示变化附近的内容；真实断链和片段不匹配仍会失败。
+> **0.8.0 已发布**：让严格检查适合日常 CI。显式控制无来源引号、限制跳过数量，来源变化时直接展示变化附近的内容；真实断链和片段不匹配仍会失败。
 
 通过[八步样例](examples/quote-policy/README.md)复现配置、预算与失败保护；[独立 HTML ID 样例](examples/html-anchors/README.md)验证稳定锚点，[真实提交维护回放](docs/maintenance-trials.md)演示变化复核。后续计划见 [Roadmap](ROADMAP.md)。
 

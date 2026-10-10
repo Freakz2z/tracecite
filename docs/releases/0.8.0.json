@@ -1,0 +1,395 @@
+{
+  "schema": 1,
+  "module": "Freakz2z/tracecite",
+  "version": "0.8.0",
+  "tag": "v0.8.0",
+  "revision": "072ba161100a788d577ed2023c9c35383248f696",
+  "modified_checkout": false,
+  "release_url": "https://github.com/Freakz2z/tracecite/releases/tag/v0.8.0",
+  "release_published_at": "2026-10-10T04:36:55Z",
+  "mooncakes_url": "https://mooncakes.io/docs/Freakz2z/tracecite",
+  "source": {
+    "schema": 1,
+    "module": "Freakz2z/tracecite",
+    "version": "0.8.0",
+    "revision": "072ba161100a788d577ed2023c9c35383248f696",
+    "modified_checkout": false,
+    "archive": "Freakz2z-tracecite-0.8.0.zip",
+    "sha256": "db445cd240114f2e643e9fb153b5a740790f7fe14902df489169d2cf1dd97296"
+  },
+  "registry_consumption": {
+    "schema": 1,
+    "module": "Freakz2z/tracecite",
+    "version": "0.8.0",
+    "registry_sha256": "db445cd240114f2e643e9fb153b5a740790f7fe14902df489169d2cf1dd97296",
+    "targets": [
+      "native",
+      "js",
+      "wasm"
+    ],
+    "cli_install": "registry",
+    "maintenance_steps": 13,
+    "review_steps": 14,
+    "compatibility_example": true,
+    "library_example_targets": [
+      "native",
+      "js",
+      "wasm"
+    ],
+    "library_example_results": {
+      "native": {
+        "references": 1,
+        "before_matches": true,
+        "after_matches": false,
+        "changes": [
+          {
+            "document": "guide.md",
+            "source": "config.toml",
+            "kind": "snippet",
+            "excerpt": "timeout = 20",
+            "change": "changed",
+            "previous": "timeout = 20",
+            "current": "timeout = 30"
+          }
+        ]
+      },
+      "js": {
+        "references": 1,
+        "before_matches": true,
+        "after_matches": false,
+        "changes": [
+          {
+            "document": "guide.md",
+            "source": "config.toml",
+            "kind": "snippet",
+            "excerpt": "timeout = 20",
+            "change": "changed",
+            "previous": "timeout = 20",
+            "current": "timeout = 30"
+          }
+        ]
+      },
+      "wasm": {
+        "references": 1,
+        "before_matches": true,
+        "after_matches": false,
+        "changes": [
+          {
+            "document": "guide.md",
+            "source": "config.toml",
+            "kind": "snippet",
+            "excerpt": "timeout = 20",
+            "change": "changed",
+            "previous": "timeout = 20",
+            "current": "timeout = 30"
+          }
+        ]
+      }
+    },
+    "onboarding_steps": 8,
+    "action_config_checked": true,
+    "unicode_anchor_example": {
+      "tool_version": "0.8.0",
+      "references": 12,
+      "failed": 0,
+      "warnings": 0,
+      "skipped_web": 0,
+      "unbound_snippets": 0
+    },
+    "link_parsing_examples": {
+      "guide.md": {
+        "tool_version": "0.8.0",
+        "exit_code": 0,
+        "references": 12,
+        "failed": 0,
+        "warnings": 0,
+        "skipped_web": 0,
+        "unbound_snippets": 0,
+        "sources": [
+          "valid.md",
+          "valid.md",
+          "valid.md",
+          "valid.md",
+          "valid.md",
+          "other.md",
+          "valid.md",
+          "valid.md",
+          "guide(v2.md",
+          "guide(v2).md",
+          "valid.md",
+          "valid.md"
+        ],
+        "codes": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "broken-first.md": {
+        "tool_version": "0.8.0",
+        "exit_code": 2,
+        "references": 1,
+        "failed": 1,
+        "warnings": 0,
+        "skipped_web": 0,
+        "unbound_snippets": 0,
+        "sources": [
+          "missing.md"
+        ],
+        "codes": [
+          "SOURCE_NOT_FOUND"
+        ]
+      }
+    },
+    "quote_policy_example": {
+      "configured_check": {
+        "tool_version": "0.8.0",
+        "exit_code": 0,
+        "checked": 2,
+        "skipped_quotes": 2,
+        "failed": 0,
+        "warnings": 0,
+        "codes": [
+          "UNASSOCIATED_QUOTE_SKIPPED",
+          "UNASSOCIATED_QUOTE_SKIPPED"
+        ]
+      },
+      "review_override": {
+        "tool_version": "0.8.0",
+        "exit_code": 2,
+        "checked": 2,
+        "skipped_quotes": 0,
+        "failed": 0,
+        "warnings": 2,
+        "codes": [
+          "UNASSOCIATED_QUOTE",
+          "UNASSOCIATED_QUOTE"
+        ]
+      },
+      "budget_preview": {
+        "tool_version": "0.8.0",
+        "exit_code": 2,
+        "checked": 2,
+        "skipped_quotes": 2,
+        "failed": 1,
+        "warnings": 0,
+        "codes": [
+          "UNASSOCIATED_QUOTE_SKIPPED",
+          "UNASSOCIATED_QUOTE_SKIPPED",
+          "SKIPPED_QUOTE_LIMIT_EXCEEDED"
+        ]
+      },
+      "budget_snapshot": {
+        "tool_version": "0.8.0",
+        "exit_code": 2,
+        "checked": 2,
+        "skipped_quotes": 2,
+        "failed": 1,
+        "warnings": 0,
+        "codes": [
+          "UNASSOCIATED_QUOTE_SKIPPED",
+          "UNASSOCIATED_QUOTE_SKIPPED",
+          "SKIPPED_QUOTE_LIMIT_EXCEEDED"
+        ]
+      },
+      "init": {
+        "tool_version": "0.8.0",
+        "exit_code": 0,
+        "checked": 2,
+        "skipped_quotes": 2,
+        "failed": 0,
+        "warnings": 0,
+        "codes": [
+          "UNASSOCIATED_QUOTE_SKIPPED",
+          "UNASSOCIATED_QUOTE_SKIPPED"
+        ]
+      },
+      "round_trip": {
+        "tool_version": "0.8.0",
+        "exit_code": 0,
+        "checked": 2,
+        "skipped_quotes": 2,
+        "failed": 0,
+        "warnings": 0,
+        "codes": [
+          "UNASSOCIATED_QUOTE_SKIPPED",
+          "UNASSOCIATED_QUOTE_SKIPPED"
+        ]
+      },
+      "source_drift": {
+        "tool_version": "0.8.0",
+        "exit_code": 2,
+        "checked": 2,
+        "skipped_quotes": 2,
+        "failed": 2,
+        "warnings": 0,
+        "codes": [
+          "UNASSOCIATED_QUOTE_SKIPPED",
+          "UNASSOCIATED_QUOTE_SKIPPED",
+          "REFERENCED_SOURCE_CHANGED",
+          "DOCUMENT_EXCERPT_MISMATCH"
+        ]
+      },
+      "unclosed_quote": {
+        "tool_version": "0.8.0",
+        "exit_code": 2,
+        "checked": 2,
+        "skipped_quotes": 2,
+        "failed": 0,
+        "warnings": 1,
+        "codes": [
+          "UNASSOCIATED_QUOTE_SKIPPED",
+          "UNASSOCIATED_QUOTE_SKIPPED",
+          "UNCLOSED_QUOTE"
+        ]
+      }
+    },
+    "html_anchor_example": {
+      "guide.md": {
+        "schema_version": 1,
+        "tool_version": "0.8.0",
+        "document_count": 1,
+        "checked_count": 4,
+        "failed_count": 0,
+        "warning_count": 0,
+        "skipped_count": 0,
+        "unbound_snippets": 0,
+        "skipped_quotes": 0,
+        "unassociated_quotes": "review",
+        "online": false,
+        "items": [
+          {
+            "document": "guide.md",
+            "line": 3,
+            "source": "source.md#stable-overview",
+            "kind": "link",
+            "status": "ok",
+            "code": "",
+            "message": "reference matches its current source",
+            "category": "verified"
+          },
+          {
+            "document": "guide.md",
+            "line": 5,
+            "source": "source.md#configuration",
+            "kind": "link",
+            "status": "ok",
+            "code": "",
+            "message": "reference matches its current source",
+            "category": "verified"
+          },
+          {
+            "document": "guide.md",
+            "line": 7,
+            "source": "source.md#Mixed-%C3%89%26quoted",
+            "kind": "link",
+            "status": "ok",
+            "code": "",
+            "message": "reference matches its current source",
+            "category": "verified"
+          },
+          {
+            "document": "guide.md",
+            "line": 9,
+            "source": "source.md#configuration",
+            "kind": "quote",
+            "status": "ok",
+            "code": "",
+            "message": "reference matches its current source",
+            "category": "verified",
+            "expected": "The timeout is twenty seconds."
+          }
+        ],
+        "review": []
+      },
+      "broken.md": {
+        "schema_version": 1,
+        "tool_version": "0.8.0",
+        "document_count": 1,
+        "checked_count": 1,
+        "failed_count": 1,
+        "warning_count": 0,
+        "skipped_count": 0,
+        "unbound_snippets": 0,
+        "skipped_quotes": 0,
+        "unassociated_quotes": "review",
+        "online": false,
+        "items": [
+          {
+            "document": "broken.md",
+            "line": 1,
+            "source": "source.md#missing",
+            "kind": "diagnostic",
+            "status": "mismatch",
+            "code": "ANCHOR_NOT_FOUND",
+            "message": "referenced section or line range no longer exists",
+            "category": "content_mismatch"
+          }
+        ],
+        "review": []
+      }
+    },
+    "passed": true
+  },
+  "native_assets": [
+    {
+      "file": "tracecite-0.8.0-darwin-arm64.tar.gz",
+      "sha256": "0105540d60f3d497d09242e916ab2d249e4d99228b127ec25bb2e51b17394bf6",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "moonc": "v0.10.14+7d59c7ec9 (2026-09-18)",
+      "moon": "moon 0.1.20260920 (914d7da 2026-09-20)\n\nFeature flags enabled: rr_moon_mod,rr_moon_pkg"
+    },
+    {
+      "file": "tracecite-0.8.0-linux-x86_64.tar.gz",
+      "sha256": "763f1a8be2eec34141f7634598e1334f70137a57e7fcc7634f82a0298a72cb77",
+      "platform": "linux",
+      "architecture": "x86_64",
+      "moonc": "v0.10.14+7d59c7ec9 (2026-09-18)",
+      "moon": "moon 0.1.20260920 (914d7da 2026-09-20)\n\nFeature flags enabled: rr_moon_mod,rr_moon_pkg"
+    }
+  ],
+  "ci": {
+    "release_commit_checks": "https://github.com/Freakz2z/tracecite/actions/runs/38023778992",
+    "tag_checks": "https://github.com/Freakz2z/tracecite/actions/runs/38024164266",
+    "native_packages": "https://github.com/Freakz2z/tracecite/actions/runs/38024164241",
+    "source_attachment": "https://github.com/Freakz2z/tracecite/actions/runs/38024322180"
+  },
+  "validation": {
+    "native_tests": 125,
+    "js_tests": 110,
+    "wasm_tests": 110,
+    "cli_integration_tests": 75,
+    "json_contract_tests": 8,
+    "adapter_tests": 6,
+    "native_license_tests": 9,
+    "release_guard_tests": 15,
+    "registry_api_tests_per_target": 10,
+    "library_example_tests_per_target": 1,
+    "library_example_outputs_match": true,
+    "source_and_registry_onboarding_steps": 8,
+    "downloaded_linux_cli_onboarding_steps": 6,
+    "downloaded_linux_maintenance_steps": 13,
+    "downloaded_linux_review_steps": 14,
+    "quote_policy_steps": 8,
+    "html_anchor_references": 4,
+    "missing_html_anchor_exit": 2,
+    "unicode_anchor_references": 12,
+    "link_parsing_references": 12,
+    "broken_first_definition_exit": 2,
+    "release_assets": 9,
+    "downloaded_asset_digests_match_github": true,
+    "tag_document_references": 187,
+    "tag_skipped_web_references": 64,
+    "tag_unbound_snippets": 57
+  }
+}

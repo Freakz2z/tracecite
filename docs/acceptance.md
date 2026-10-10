@@ -1,12 +1,12 @@
 # TraceCite 成果与验收说明
 
-整理日期：2026-10-05（北京时间）。本说明依据 Git 历史中的申报稿技术目标重建成果对照，
+整理日期：2026-10-10（北京时间）。本说明依据 Git 历史中的申报稿技术目标重建成果对照，
 正式提交的申报书仍以申报人保存的版本为准。它提供可检查的证据，不代替组委会的最终验收判断。
 
 ## 九项验收清单
 
-本节逐项对应组委会提供的验收指南。九项要求均已有可复核的交付材料。当前交付依据 0.7.2 固定源码提交
-`24c4c627d07fc4f48221b4080afcb4793099d49d` 及该标签的 CI、打包与实际注册表消费验证。
+本节逐项对应组委会提供的验收指南。九项要求均已有可复核的交付材料。当前交付依据 0.8.0 固定源码提交
+`072ba161100a788d577ed2023c9c35383248f696` 及该标签的 CI、打包与实际注册表消费验证。
 验收记录在发布后补入 main，不修改已发布包与版本标签。
 
 | 序号 | 验收要求 | 交付与复核方式 |
@@ -17,8 +17,8 @@
 | 4 | README 包含目标、安装、用法、示例并可复现 | README.mbt.md 为主说明，README.md 指向它；包含源码启动、Mooncakes 库/CLI 安装、独立包、配置、Action、边界和维护演示。 |
 | 5 | CI 覆盖检查、构建、测试 | .github/workflows/ci.yml 执行最低版本检查、moon check、三目标构建和测试、CLI/适配器/打包测试、实例运行及源码 ZIP 消费验证。 |
 | 6 | 至少一个可运行示例 | examples/maintenance/project 提供离线最小项目，下面的一条命令可直接检查；acceptance_demo.py 提供 13 步维护闭环。 |
-| 7 | 测试覆盖核心路径 | native 112 项、JS/Wasm 各 97 项；CLI 集成 66 项、JSON 契约 7 项、适配器 6 项、许可打包 9 项、发布保护 15 项。正常路径与失败保护对应关系见下表。 |
-| 8 | 发布到 mooncakes.io | 已发布 Freakz2z/tracecite@0.7.2；库和 cmd/tracecite 均通过实际注册表安装验证。发布提交、源码摘要与安装命令见后文和发布指南。 |
+| 7 | 测试覆盖核心路径 | native 125 项、JS/Wasm 各 110 项；CLI 集成 75 项、JSON 契约 8 项、适配器 6 项、许可打包 9 项、发布保护 15 项。正常路径与失败保护对应关系见下表。 |
+| 8 | 发布到 mooncakes.io | 已发布 Freakz2z/tracecite@0.8.0；库和 cmd/tracecite 均通过实际注册表安装验证。发布提交、源码摘要与安装命令见后文和发布指南。 |
 | 9 | OSI 开源许可证与上游合规 | 项目采用 Apache-2.0；moon.mod 元数据一致。THIRD_PARTY_NOTICES.md 和 third_party/ 保留依赖、移植来源与 SDK 许可；native 包完整附带 LICENSE/NOTICE 和构建清单，缺项会停止。 |
 
 此前验收材料提交 `4c459edcfc0dd66ee80f59e0936048e9fae0c0d4` 的 [常规 CI](https://github.com/Freakz2z/tracecite/actions/runs/36699193496)
@@ -154,6 +154,20 @@ Action 的检查脚本在本地验证两次，本仓库 CI 同时运行完整 co
 正式发布身份与消费结果见下节，历史记录保持不变。
 
 ## 发布身份与复核方式
+
+### 0.8.0
+
+已发布 Freakz2z/tracecite@0.8.0，[GitHub Release](https://github.com/Freakz2z/tracecite/releases/tag/v0.8.0) 提供九项资产。
+固定提交为 `072ba161100a788d577ed2023c9c35383248f696`，原始注册表 ZIP SHA-256 为
+`db445cd240114f2e643e9fb153b5a740790f7fe14902df489169d2cf1dd97296`。
+[标签 CI](https://github.com/Freakz2z/tracecite/actions/runs/38024164266)、
+[Linux/macOS 打包](https://github.com/Freakz2z/tracecite/actions/runs/38024164241)、
+[原始 ZIP 与注册表消费](https://github.com/Freakz2z/tracecite/actions/runs/38024322180) 全部通过。
+三个目标各 10 项公共 API 消费测试及独立库样例通过；安装后的 CLI 跑通八步引号策略、四条 HTML 锚点引用与缺失目标负例，以及 13 步、14 步维护和八步接入流程。
+两个平台包的固定提交、摘要和完整许可载荷均已核对；下载的 Linux 包在不含 MoonBit 的 PATH 下再次通过正反样例及六步纯 CLI 接入。
+显式跳过的引号仍单独计数并受预算约束，来源变化与缺失目标仍失败；完整快照保留，报告只精简展示上下文。
+发布标签的离线自检覆盖 187 条引用，另有 64 个网页和 57 个未绑定代码块未检查。发布后的 main 新增两个交付记录引用和四个 CI/Release 链接，网页预算按实际数量更新为 68，仍全部计入未检查内容。
+完整身份与实际检查结果见 [0.8.0 交付记录](releases/0.8.0.json)。原有版本标签和发布包保持不变。
 
 ### 0.7.2
 
