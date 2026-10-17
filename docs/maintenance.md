@@ -45,7 +45,9 @@ moon run cmd/main check --root /path/to/repository
     "examples/anchors/README.md",
     "examples/link-parsing/README.md",
     "examples/quote-policy/README.md",
-    "examples/html-anchors/README.md"
+    "examples/html-anchors/README.md",
+    "docs/engineering-depth.md",
+    "examples/engineering/README.md"
   ],
   "exclude": [],
   "baseline": ".tracecite-docs.json",
@@ -53,7 +55,7 @@ moon run cmd/main check --root /path/to/repository
   "online": false,
   "coverage": {
     "max_skipped_web": 68,
-    "max_unbound_snippets": 57
+    "max_unbound_snippets": 58
   }
 }
 ```
@@ -188,6 +190,12 @@ ATX 标题支持 `#` 后的空格或制表符，以及可选的结尾 `#`；标�
 ```
 
 网页检查需要 `--online`。这会独立访问来源，验证可见文本中的引文；普通网页链接只检查可访问性，不检查它支持了什么主张，也不验证网页 URL 的标题锚点。引文忽略排版空白和引号字形差异；明确的省略号允许有序的较长原文片段。
+
+## 多处来源差异（0.9.0 开发线）
+
+来源变化时，终端和 --review 列出观察文本中的多个连续编辑块，显示增删行和新旧起始位置。行号相对已保存/当前观察值，可能是选中的章节、区域或引文上下文，不能当作完整源文件的绝对位置。
+
+JSON 条目的 change_analysis 提供相同结果。计算预算耗尽会明确报告分析未完成，源变化仍返回退出码 2；展示被截断也会明确标记，完整快照不裁剪。独立算法、资源边界和可运行案例见 [工程说明](engineering-depth.md)。本能力尚未包含在正式 0.8.0 中。
 
 ## 无来源引号策略（0.8.0）
 

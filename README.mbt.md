@@ -26,6 +26,8 @@
 
 > **0.8.0 已发布**：让严格检查适合日常 CI。显式控制无来源引号、限制跳过数量，来源变化时直接展示变化附近的内容；真实断链和片段不匹配仍会失败。
 
+当前 0.9.0 开发线优先补强独立工程职责：新增 MoonBit 多处行差异分析、资源预算与可执行失败案例。组委会意见回应与职责边界见 [工程说明](docs/engineering-depth.md)，可从 [演示](examples/engineering/README.md)复现；正式安装版本仍为 0.8.0。
+
 通过[八步样例](examples/quote-policy/README.md)复现配置、预算与失败保护；[独立 HTML ID 样例](examples/html-anchors/README.md)验证稳定锚点，[真实提交维护回放](docs/maintenance-trials.md)演示变化复核。后续计划见 [Roadmap](ROADMAP.md)。
 
 同时保留[多语言标题的 12 条链接样例](examples/anchors/README.md)和[引用解析正反样例](examples/link-parsing/README.md)，确认有效链接通过，真实断链仍失败。

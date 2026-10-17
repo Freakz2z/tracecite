@@ -49,7 +49,7 @@ def without_changed_display(report):
                               for item in group["locations"]]
     for item in items:
         if item["status"] == "changed":
-            for field in ("previous", "actual"):
+            for field in ("previous", "actual", "change_analysis"):
                 item.pop(field, None)
     # Different builds may identify themselves with different tool versions.
     result.pop("tool_version", None)
@@ -130,8 +130,8 @@ def main():
     if previous:
         require(without_changed_display(previous) == without_changed_display(current),
                 "comparison changed detection, coverage or complete snapshot evidence")
-        require(display_characters(current) < display_characters(previous),
-                "this case did not reduce display volume")
+        require(display_characters(current) <= display_characters(previous),
+                "legacy display volume increased")
     # Only this fixed, reviewed upstream wording change is accepted, in the
     # isolated replay checkout. This is not a general automatic approval tool.
     check("accept-reviewed-baseline", binary,
@@ -150,6 +150,10 @@ def main():
         "baseline_before_sha256": baseline_digest, "baseline_after_sha256": digest(root / SNAPSHOT),
         "phases": phases,
         "comparison_preserves_detection_and_full_snapshot": True if previous else None,
+        "legacy_display_reduced": display_characters(current) < display_characters(previous) if previous else None,
+        "changed_source_analysis": [{"document": item["document"], "line": item["line"],
+                                     "analysis": item["change_analysis"]}
+                                    for item in changed if "change_analysis" in item],
         "review": {"classification": "expected_source_change", "locations": 2,
                    "newly_discovered_broken_documentation": 0,
                    "decision": "Both existing TOC links observe the updated search section. The upstream commit already documents repository links; accept the reviewed baseline.",

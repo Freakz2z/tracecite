@@ -50,6 +50,13 @@ line 为文档内从 1 起算的行号；document 为工作区相对路径；没
 expected、actual、previous 是可选的有界展示文本，不代替完整来源。
 0.8.0中，status=changed 的 previous/actual 成对定位首个变化附近，每侧至多 1600 个 Unicode 字符，并用省略号标记遗漏内容；它们不是完整 diff。review.locations 采用同一展示文本。baseline_preview.changes 的 previous/current 和候选 snapshot 仍保存完整观察值，不能用精简展示文本重建基线。
 
+
+0.9.0 开发线增加可选 change_analysis：来源变化或有旧观察值的片段失配时，包含结构化行差异；review.locations 复用相同信息。schema_version 仍为 1，旧读取器可以忽略这个字段，原有计数和 previous/actual 含义不变。
+
+change_analysis.algorithm 为 bounded_lcs_lines_v1，coordinate_system 为 observed_source_1_based。hunks 提供 previous_start_line / current_start_line（从 1 起）及各侧行数、文本；零行数表示插入或删除位置，位置可以在末行之后。坐标属于保存/当前观察文本，不是完整源文件的绝对行号。文本保留换行和 CRLF 身份。
+
+complete=true 时 added_lines、removed_lines、total_hunks 为完整计算结果。display_truncated 独立表示编辑块或文本展示被省略；每个块的 text_truncated 标记自身文本省略。complete=false 时 reason 为 input_limit、line_limit 或 cell_limit，编辑数量缺省，不能当作零；原有来源变化或片段失配仍失败。完整证据继续由快照及 baseline_preview.changes 保存，差异块不能在展示截断时重建原始证据。预算及验证方法见 [工程说明](engineering-depth.md)。
+
 | category | 处理含义 |
 | --- | --- |
 | verified | 当前来源与引用匹配 |

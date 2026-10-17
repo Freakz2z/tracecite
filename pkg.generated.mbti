@@ -14,6 +14,8 @@ pub fn compare_document_snapshots(DocumentSnapshot, DocumentSnapshot) -> Array[D
 
 pub fn compare_jsonl(String, String) -> DriftReport
 
+pub fn diff_document_source(String, String) -> DocumentSourceDiff
+
 pub fn document_change_context(String, String) -> (String, String)
 
 pub fn document_excerpt_matches(String, String, String) -> Bool
@@ -151,6 +153,32 @@ pub(all) struct DocumentSnapshotEntry {
 } derive(ToJson, @json.FromJson)
 pub fn DocumentSnapshotEntry::from_json(Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
 pub fn DocumentSnapshotEntry::to_json(Self) -> Json
+
+pub(all) struct DocumentSourceDiff {
+  algorithm : String
+  coordinate_system : String
+  complete : Bool
+  reason : String?
+  previous_line_count : Int?
+  current_line_count : Int?
+  added_lines : Int?
+  removed_lines : Int?
+  total_hunks : Int?
+  hunks : Array[DocumentSourceDiffHunk]
+  display_truncated : Bool
+} derive(ToJson)
+pub fn DocumentSourceDiff::to_json(Self) -> Json
+
+pub(all) struct DocumentSourceDiffHunk {
+  previous_start_line : Int
+  previous_line_count : Int
+  current_start_line : Int
+  current_line_count : Int
+  previous_text : String
+  current_text : String
+  text_truncated : Bool
+} derive(ToJson)
+pub fn DocumentSourceDiffHunk::to_json(Self) -> Json
 
 pub(all) struct DriftReport {
   old_run_id : String?

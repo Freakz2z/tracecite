@@ -143,6 +143,9 @@
         "line": {
           "type": "integer",
           "minimum": 1
+        },
+        "change_analysis": {
+          "$ref": "#/$defs/source_diff"
         }
       },
       "additionalProperties": true
@@ -268,6 +271,151 @@
           "$ref": "#/$defs/snapshot"
         }
       },
+      "additionalProperties": true
+    },
+    "source_diff_hunk": {
+      "type": "object",
+      "required": [
+        "previous_start_line",
+        "previous_line_count",
+        "current_start_line",
+        "current_line_count",
+        "previous_text",
+        "current_text",
+        "text_truncated"
+      ],
+      "properties": {
+        "previous_start_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "previous_line_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "current_start_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "current_line_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "previous_text": {
+          "type": "string",
+          "maxLength": 514
+        },
+        "current_text": {
+          "type": "string",
+          "maxLength": 514
+        },
+        "text_truncated": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "source_diff": {
+      "type": "object",
+      "required": [
+        "algorithm",
+        "coordinate_system",
+        "complete",
+        "hunks",
+        "display_truncated"
+      ],
+      "properties": {
+        "algorithm": {
+          "const": "bounded_lcs_lines_v1"
+        },
+        "coordinate_system": {
+          "const": "observed_source_1_based"
+        },
+        "complete": {
+          "type": "boolean"
+        },
+        "reason": {
+          "enum": [
+            "input_limit",
+            "line_limit",
+            "cell_limit"
+          ]
+        },
+        "previous_line_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "current_line_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "added_lines": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "removed_lines": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_hunks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hunks": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "$ref": "#/$defs/source_diff_hunk"
+          }
+        },
+        "display_truncated": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "complete": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "previous_line_count",
+              "current_line_count",
+              "added_lines",
+              "removed_lines",
+              "total_hunks"
+            ]
+          },
+          "else": {
+            "required": [
+              "reason"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "added_lines"
+                  ]
+                },
+                {
+                  "required": [
+                    "removed_lines"
+                  ]
+                },
+                {
+                  "required": [
+                    "total_hunks"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
       "additionalProperties": true
     }
   },

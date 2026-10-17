@@ -11,6 +11,7 @@ priv struct DocumentCheckItem {
   expected : String?
   actual : String?
   previous : String?
+  change_analysis : @tracecite.DocumentSourceDiff?
 } derive(ToJson)
 
 ///|
@@ -608,6 +609,19 @@ async fn document_command(
           }
         None => if !remote && fragment != "" { selection.text } else { "" }
       }
+      let previous = match baseline {
+        Some(snapshot) =>
+          snapshot.entries
+          .iter()
+          .find_first(old => {
+            old.document == document &&
+            old.source == reference.source &&
+            old.kind == reference.kind &&
+            old.excerpt == reference.excerpt
+          })
+          .map(old => old.observed)
+        None => None
+      }
       let expected = reference.excerpt.map(@tracecite.bounded_document_text)
       if !matched {
         items.push({
@@ -621,19 +635,10 @@ async fn document_command(
           message: "document excerpt was not found in the selected source; review the candidate excerpt",
           expected,
           actual: Some(@tracecite.bounded_document_text(observed)),
-          previous: if baseline is Some(snapshot) {
-            snapshot.entries
-            .iter()
-            .find_first(old => {
-              old.document == document &&
-              old.source == reference.source &&
-              old.kind == reference.kind &&
-              old.excerpt == reference.excerpt
-            })
-            .map(old => @tracecite.bounded_document_text(old.observed))
-          } else {
-            None
-          },
+          previous: previous.map(@tracecite.bounded_document_text),
+          change_analysis: previous.map(old => {
+            @tracecite.diff_document_source(old, observed)
+          }),
         })
         continue
       }
@@ -645,18 +650,6 @@ async fn document_command(
         observed,
       }
       entries.push(entry)
-      let mut previous : String? = None
-      if baseline is Some(baseline) {
-        for old in baseline.entries {
-          if old.document == entry.document &&
-            old.source == entry.source &&
-            old.kind == entry.kind &&
-            old.excerpt == entry.excerpt {
-            previous = Some(old.observed)
-            break
-          }
-        }
-      }
       let (status, code, message) = match previous {
         Some(old) if old != observed =>
           (
@@ -689,6 +682,11 @@ async fn document_command(
         expected,
         actual: current_context,
         previous: previous_context,
+        change_analysis: if status == "changed" {
+          previous.map(old => @tracecite.diff_document_source(old, observed))
+        } else {
+          None
+        },
       })
     }
   }
@@ -1155,6 +1153,7 @@ fn document_problem(
     expected: None,
     actual: None,
     previous: None,
+    change_analysis: None,
   }
 }
 
@@ -1194,15 +1193,7 @@ async fn render_document_report(
         @stdio.stdout.write(
           "    \{item.document}:\{item.line} [\{item.code}] \{item.message}\n",
         )
-        if item.expected is Some(text) {
-          render_document_excerpt("document excerpt", text)
-        }
-        if item.previous is Some(text) {
-          render_document_excerpt("previously observed", text)
-        }
-        if item.actual is Some(text) {
-          render_document_excerpt("current source candidate", text)
-        }
+        render_document_item_evidence(item)
       }
     }
   }
@@ -1248,15 +1239,7 @@ async fn render_document_report(
       @stdio.stdout.write(
         "  \{item.document}:\{item.line} [\{item.code}] \{item.source}\n    \{item.message}\n",
       )
-      if item.expected is Some(expected) {
-        render_document_excerpt("document excerpt", expected)
-      }
-      if item.previous is Some(previous) {
-        render_document_excerpt("previously observed", previous)
-      }
-      if item.actual is Some(actual) {
-        render_document_excerpt("current source candidate", actual)
-      }
+      render_document_item_evidence(item)
     }
     if github {
       let level = if item.status == "warning" { "warning" } else { "error" }
@@ -1264,6 +1247,42 @@ async fn render_document_report(
         "::\{level} file=\{github_escape(item.document, property=true)},line=\{item.line},title=\{github_escape(item.code, property=true)}::\{github_escape(item.message + " (" + item.source + ")")}\n",
       )
     }
+  }
+}
+
+///|
+async fn render_document_item_evidence(item : DocumentCheckItem) -> Unit {
+  if item.expected is Some(text) {
+    render_document_excerpt("document excerpt", text)
+  }
+  if item.change_analysis is Some(diff) {
+    if diff.complete {
+      @stdio.stdout.write(
+        "    Source diff: +\{diff.added_lines.unwrap_or(0)} -\{diff.removed_lines.unwrap_or(0)} lines; \{diff.total_hunks.unwrap_or(0)} hunks; coordinates within saved/current observations\n",
+      )
+      for hunk in diff.hunks {
+        @stdio.stdout.write(
+          "    Observation lines: previous \{hunk.previous_start_line} count \{hunk.previous_line_count}; current \{hunk.current_start_line} count \{hunk.current_line_count}\n",
+        )
+        render_document_excerpt("removed", hunk.previous_text)
+        render_document_excerpt("added", hunk.current_text)
+      }
+      if diff.display_truncated {
+        @stdio.stdout.write(
+          "    Diff display truncated; inspect the full source and snapshot before review.\n",
+        )
+      }
+      return
+    }
+    @stdio.stdout.write(
+      "    Source diff incomplete: \{diff.reason.unwrap_or("unknown_limit")}; edit counts unavailable; inspect the full source.\n",
+    )
+  }
+  if item.previous is Some(text) {
+    render_document_excerpt("previously observed", text)
+  }
+  if item.actual is Some(text) {
+    render_document_excerpt("current source candidate", text)
   }
 }
 

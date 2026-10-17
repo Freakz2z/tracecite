@@ -53,6 +53,55 @@ class DocumentMaintenanceTests(unittest.TestCase):
         self.assertEqual(result.returncode, expected, result.stdout + result.stderr)
         return result
 
+    def test_source_diff_exposes_two_separated_edits_and_preserves_full_candidate(self):
+        self.write("docs/guide.md", "[Settings](source.md#settings)\n")
+        source = "# Settings\nfirst old\n" + "stable context\n" * 120 + "last old\n"
+        self.write("docs/source.md", source)
+        self.run_cli("init", "docs/guide.md")
+        baseline = (self.root / ".tracecite-docs.json").read_bytes()
+        self.write("docs/source.md", source.replace("first old", "first new").replace("last old", "last new"))
+        report = self.run_check("--preview-baseline", expected=2)
+        item = next(i for i in report["items"] if i["status"] == "changed")
+        diff = item["change_analysis"]
+        self.assertTrue(diff["complete"])
+        self.assertEqual(diff["total_hunks"], 2)
+        self.assertEqual([h["previous_start_line"] for h in diff["hunks"]], [2, 123])
+        self.assertEqual(diff["hunks"][1]["current_text"], "last new\n")
+        self.assertIn("stable context\n" * 120, report["baseline_preview"]["changes"][0]["current"])
+        self.assertEqual((self.root / ".tracecite-docs.json").read_bytes(), baseline)
+        self.assertEqual(report["review"][0]["locations"][0]["change_analysis"], diff)
+        rendered = self.run_check("--review", expected=2, structured=False).stdout
+        self.assertIn("2 hunks", rendered)
+        self.assertIn("last new", rendered)
+        self.assertIn("observations", rendered)
+
+    def test_source_diff_budget_is_explicit_and_does_not_accept_source_changes(self):
+        self.write("docs/guide.md", "[Settings](source.md#settings)\n")
+        self.write("docs/source.md", "# Settings\n" + "".join(f"old-{i}\n" for i in range(520)))
+        self.run_cli("init", "docs/guide.md")
+        baseline = (self.root / ".tracecite-docs.json").read_bytes()
+        self.write("docs/source.md", "# Settings\n" + "".join(f"new-{i}\n" for i in range(520)))
+        report = self.run_check(expected=2)
+        diff = next(i for i in report["items"] if i["status"] == "changed")["change_analysis"]
+        self.assertFalse(diff["complete"])
+        self.assertEqual(diff["reason"], "cell_limit")
+        self.assertNotIn("added_lines", diff)
+        self.assertNotIn("total_hunks", diff)
+        self.run_check("--baseline", ".tracecite-docs.json", "--snapshot", ".tracecite-docs.json", expected=2)
+        self.assertEqual((self.root / ".tracecite-docs.json").read_bytes(), baseline)
+        self.assertIn("Source diff incomplete: cell_limit", self.run_check(expected=2, structured=False).stdout)
+
+    def test_mismatched_excerpt_has_diff_but_cannot_receive_baseline_candidate(self):
+        self.write("docs/guide.md", "```toml source=../config.toml#L1-L1\ntimeout = 20\n```\n")
+        self.run_cli("init", "docs/guide.md")
+        self.write("config.toml", "timeout = 30\n")
+        report = self.run_check("--preview-baseline", expected=2)
+        item = next(i for i in report["items"] if i["code"] == "DOCUMENT_EXCERPT_MISMATCH")
+        self.assertTrue(item["change_analysis"]["complete"])
+        self.assertEqual(item["change_analysis"]["hunks"][0]["current_text"], "timeout = 30")
+        self.assertFalse(report["baseline_preview"]["can_update"])
+        self.assertNotIn("snapshot", report["baseline_preview"])
+
     def test_quote_skip_is_explicit_counted_and_independent_of_web_coverage(self):
         self.write("docs/guide.md", 'The "fast" and "safe" modes.\n[Local](source.md)\n[Web](https://example.org/)\n')
         self.config()

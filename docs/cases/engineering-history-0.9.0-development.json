@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "mode": "historical_replay",
+  "repository": "https://github.com/moonbitlang/moon.git",
+  "checked_at": "2026-10-17T18:44:47.664433+00:00",
+  "before": "bfdd73d8ae88b5d2f1403c8c77f6d3912667d1ef",
+  "after": "37f067473211ada78d395883e21f0444c74e0fa0",
+  "documents": [
+    "docs/manual/src/commands.md",
+    "docs/manual-zh/src/commands.md"
+  ],
+  "upstream_subject": "feat(search): show repo url",
+  "upstream_document_patch_sha256": "e7219dd227e5dd06e6272530da5397d6081136c18cfe034594ef77097bc14f28",
+  "tool_version": "0.9.0",
+  "baseline_before_sha256": "3f518ec0ce9dea7367d3fdf07eb7afda4e006f896677fc93626eb01c71855b00",
+  "baseline_after_sha256": "1001a5d8159a98a55591737c51dfc7b95692e5cfd3586ee51af39e7c2b2b2877",
+  "phases": [
+    {
+      "phase": "before-check",
+      "binary_sha256": "92d432390893d951f73aeb3814d42cd3d35b17e2c47cc04002a9c6810b414ba1",
+      "arguments": [
+        "check",
+        "docs/manual/src/commands.md",
+        "docs/manual-zh/src/commands.md",
+        "--no-config",
+        "--strict",
+        "--root",
+        "<isolated-checkout>",
+        "--json"
+      ],
+      "exit_code": 0,
+      "machine_seconds": 0.67107,
+      "counts": {
+        "document_count": 2,
+        "checked_count": 80,
+        "failed_count": 0,
+        "warning_count": 0,
+        "skipped_count": 2,
+        "unbound_snippets": 0,
+        "skipped_quotes": 0
+      },
+      "changed_display_characters": 0
+    },
+    {
+      "phase": "before-init",
+      "binary_sha256": "92d432390893d951f73aeb3814d42cd3d35b17e2c47cc04002a9c6810b414ba1",
+      "arguments": [
+        "init",
+        "docs/manual/src/commands.md",
+        "docs/manual-zh/src/commands.md",
+        "--config",
+        "tracecite-history-replay.json",
+        "--snapshot",
+        ".tracecite-history-replay.json",
+        "--root",
+        "<isolated-checkout>",
+        "--json"
+      ],
+      "exit_code": 0,
+      "machine_seconds": 0.740103,
+      "counts": {
+        "document_count": 2,
+        "checked_count": 80,
+        "failed_count": 0,
+        "warning_count": 0,
+        "skipped_count": 2,
+        "unbound_snippets": 0,
+        "skipped_quotes": 0
+      },
+      "changed_display_characters": 0
+    },
+    {
+      "phase": "after-previous-build",
+      "binary_sha256": "8ba172b23579bd17f62f9a8c36deff55bfd8c8095fa56d8cbec648ab6ad400fd",
+      "arguments": [
+        "check",
+        "--config",
+        "tracecite-history-replay.json",
+        "--preview-baseline",
+        "--root",
+        "<isolated-checkout>",
+        "--json"
+      ],
+      "exit_code": 2,
+      "machine_seconds": 0.146423,
+      "counts": {
+        "document_count": 2,
+        "checked_count": 80,
+        "failed_count": 2,
+        "warning_count": 0,
+        "skipped_count": 2,
+        "unbound_snippets": 0,
+        "skipped_quotes": 0
+      },
+      "changed_display_characters": 850
+    },
+    {
+      "phase": "after-current-build",
+      "binary_sha256": "92d432390893d951f73aeb3814d42cd3d35b17e2c47cc04002a9c6810b414ba1",
+      "arguments": [
+        "check",
+        "--config",
+        "tracecite-history-replay.json",
+        "--preview-baseline",
+        "--root",
+        "<isolated-checkout>",
+        "--json"
+      ],
+      "exit_code": 2,
+      "machine_seconds": 0.717151,
+      "counts": {
+        "document_count": 2,
+        "checked_count": 80,
+        "failed_count": 2,
+        "warning_count": 0,
+        "skipped_count": 2,
+        "unbound_snippets": 0,
+        "skipped_quotes": 0
+      },
+      "changed_display_characters": 850
+    },
+    {
+      "phase": "accept-reviewed-baseline",
+      "binary_sha256": "92d432390893d951f73aeb3814d42cd3d35b17e2c47cc04002a9c6810b414ba1",
+      "arguments": [
+        "check",
+        "--config",
+        "tracecite-history-replay.json",
+        "--snapshot",
+        ".tracecite-history-replay.json",
+        "--root",
+        "<isolated-checkout>",
+        "--json"
+      ],
+      "exit_code": 0,
+      "machine_seconds": 0.710934,
+      "counts": {
+        "document_count": 2,
+        "checked_count": 80,
+        "failed_count": 0,
+        "warning_count": 0,
+        "skipped_count": 2,
+        "unbound_snippets": 0,
+        "skipped_quotes": 0
+      },
+      "changed_display_characters": 0
+    },
+    {
+      "phase": "after-accepted-check",
+      "binary_sha256": "92d432390893d951f73aeb3814d42cd3d35b17e2c47cc04002a9c6810b414ba1",
+      "arguments": [
+        "check",
+        "--config",
+        "tracecite-history-replay.json",
+        "--root",
+        "<isolated-checkout>",
+        "--json"
+      ],
+      "exit_code": 0,
+      "machine_seconds": 0.706249,
+      "counts": {
+        "document_count": 2,
+        "checked_count": 80,
+        "failed_count": 0,
+        "warning_count": 0,
+        "skipped_count": 2,
+        "unbound_snippets": 0,
+        "skipped_quotes": 0
+      },
+      "changed_display_characters": 0
+    }
+  ],
+  "comparison_preserves_detection_and_full_snapshot": true,
+  "legacy_display_reduced": false,
+  "changed_source_analysis": [
+    {
+      "document": "docs/manual/src/commands.md",
+      "line": 26,
+      "analysis": {
+        "algorithm": "bounded_lcs_lines_v1",
+        "coordinate_system": "observed_source_1_based",
+        "complete": true,
+        "previous_line_count": 22,
+        "current_line_count": 22,
+        "added_lines": 1,
+        "removed_lines": 1,
+        "total_hunks": 1,
+        "hunks": [
+          {
+            "previous_start_line": 5,
+            "previous_line_count": 1,
+            "current_start_line": 5,
+            "current_line_count": 1,
+            "previous_text": "Results follow the registry's ranking, as on mooncakes.io (most downloaded first). Each module includes its version, description, download count, and matching package excerpts when available. Summaries from older versions are labeled, and a count indicates when only some matching packages are shown.\n",
+            "current_text": "Results follow the registry's ranking, as on mooncakes.io (most downloaded first). Each module includes its version, description, download count, repository link, and matching package excerpts when available. Summaries from older versions are labeled, and a count indicates when only some matching packages are shown.\n",
+            "text_truncated": false
+          }
+        ],
+        "display_truncated": false
+      }
+    },
+    {
+      "document": "docs/manual-zh/src/commands.md",
+      "line": 26,
+      "analysis": {
+        "algorithm": "bounded_lcs_lines_v1",
+        "coordinate_system": "observed_source_1_based",
+        "complete": true,
+        "previous_line_count": 22,
+        "current_line_count": 22,
+        "added_lines": 1,
+        "removed_lines": 1,
+        "total_hunks": 1,
+        "hunks": [
+          {
+            "previous_start_line": 5,
+            "previous_line_count": 1,
+            "current_start_line": 5,
+            "current_line_count": 1,
+            "previous_text": "Results follow the registry's ranking, as on mooncakes.io (most downloaded first). Each module includes its version, description, download count, and matching package excerpts when available. Summaries from older versions are labeled, and a count indicates when only some matching packages are shown.\n",
+            "current_text": "Results follow the registry's ranking, as on mooncakes.io (most downloaded first). Each module includes its version, description, download count, repository link, and matching package excerpts when available. Summaries from older versions are labeled, and a count indicates when only some matching packages are shown.\n",
+            "text_truncated": false
+          }
+        ],
+        "display_truncated": false
+      }
+    }
+  ],
+  "review": {
+    "classification": "expected_source_change",
+    "locations": 2,
+    "newly_discovered_broken_documentation": 0,
+    "decision": "Both existing TOC links observe the updated search section. The upstream commit already documents repository links; accept the reviewed baseline.",
+    "human_review_seconds": null,
+    "maintainer_feedback": null,
+    "external_adoption": false
+  },
+  "limits": [
+    "Two selected documents, not a whole-repository acceptance result.",
+    "Two web references remain unchecked; no source snippets are unbound in this scope.",
+    "Historical replay is not prospective CI use or maintainer feedback.",
+    "Machine seconds exclude build/fetch and do not measure human review time.",
+    "Display characters count changed items once, excluding duplicated review groups and full preview JSON."
+  ]
+}

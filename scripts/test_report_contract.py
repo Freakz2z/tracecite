@@ -29,6 +29,11 @@ class ReportContractTests(unittest.TestCase):
             with self.subTest(value=value), self.assertRaises(ValueError):
                 reader.summarize({**self.report, "skipped_quotes": value})
 
+    def test_change_analysis_is_additive_to_existing_consumer_counts(self):
+        expected = reader.summarize(self.report)
+        self.report["items"][0]["change_analysis"] = {"complete": False, "reason": "cell_limit"}
+        self.assertEqual(reader.summarize(self.report), expected)
+
     def test_unknown_categories_remain_visible_for_review(self):
         self.report["items"].append({"category": "future_category"})
         self.assertEqual(reader.summarize(self.report)["unknown_items_need_review"], 1)

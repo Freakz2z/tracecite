@@ -45,6 +45,12 @@ CLI 从样例根目录读取真实来源，不需要模型或网页服务。CI �
 | 网页与代理 | HTML/charset/重定向/代理解析；非公开地址、带凭证或异常端口来源拒绝 | cli/remote_wbtest.mbt、cli/proxy_wbtest.mbt、scripts/smoke.sh |
 | 发布与许可完整性 | 全新消费项目、CLI 安装、native 解包案例；遗漏 NOTICE、摘要改变、旧文件混入、重复版本和错位标签拒绝 | scripts/verify_release_package.py、scripts/test_native_package.py、scripts/test_release.py、scripts/verify_native_package.py |
 
+## 工程深度补充（0.9.0 开发线）
+
+组委会关于基础匹配与关联之外工程职责的意见，作为持续迭代目标记录。新增有界来源行差异引擎，并将独立回源、观察范围、差异计算及基线状态控制分别对应到源码与可执行案例。职责、依赖归属、预算和边界见 [工程说明](engineering-depth.md)，复现步骤见 [演示](../examples/engineering/README.md)。
+
+本轮属于开发增强，正式版本仍为 0.8.0；现有基本交付清单与组委会对工程深度的进一步判断分别保留，后者不由测试数量或版本号推定。
+
 ## 申报方向与当前产品
 
 历史申报稿的方向为 **AI Agent 引用回源验证与来源变化检测**：独立读取网页或本地文件，

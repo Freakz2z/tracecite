@@ -108,3 +108,17 @@ test "public source selection resolves a standalone explicit HTML id" {
   assert_false(selected.text.contains("Outside."))
   assert_false(@tracecite.select_document_source(source, "missing").ok)
 }
+
+///|
+test "public bounded source diff locates every separated edit and exposes limits" {
+  let diff = @tracecite.diff_document_source("alpha\nkeep\nomega\n", "ALPHA\nkeep\nOMEGA\n")
+  assert_true(diff.complete)
+  assert_eq(diff.total_hunks, Some(2))
+  assert_eq(diff.hunks[1].previous_start_line, 3)
+  assert_eq(diff.hunks[1].current_text, "OMEGA\n")
+  assert_eq(diff.coordinate_system, "observed_source_1_based")
+  let limited = @tracecite.diff_document_source(String::from_array(Array::make(262145, 'x')), "")
+  assert_false(limited.complete)
+  assert_eq(limited.reason, Some("input_limit"))
+  assert_eq(limited.added_lines, None)
+}

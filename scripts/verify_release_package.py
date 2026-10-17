@@ -94,6 +94,10 @@ def verify_package(metadata):
         "examples/link-parsing/project/broken-first.md", "examples/link-parsing/project/valid.md",
         "examples/link-parsing/project/other.md", "examples/link-parsing/project/guide(v2.md",
         "examples/link-parsing/project/guide(v2).md",
+        "document_diff.mbt", "document_diff_wbtest.mbt", "scripts/engineering_demo.py",
+        "docs/engineering-depth.md", "examples/engineering/README.md",
+        "docs/cases/engineering-0.9.0-development.json",
+        "docs/cases/engineering-history-0.9.0-development.json",
         "document_anchor.mbt", "maintenance_html_anchor_wbtest.mbt",
         "scripts/verify_html_anchor_example.py", "examples/html-anchors/README.md",
         "examples/html-anchors/project/guide.md", "examples/html-anchors/project/source.md",
@@ -155,6 +159,8 @@ def verify_package(metadata):
         run("python3", "scripts/maintenance_review_demo.py", "--binary", str(installed),
             "--out", str(Path(temporary) / "review"), cwd=package)
 
+        run("python3", "scripts/engineering_demo.py", "--binary", str(installed),
+            "--out", str(Path(temporary) / "engineering"), cwd=package)
         from verify_library_example import verify_example
         verify_example(Path(temporary), metadata, package=package)
         run("python3", "scripts/onboarding_demo.py", "--binary", str(installed),
@@ -225,6 +231,8 @@ def verify_registry(metadata, consume=False):
         quote_policy = verify_quote_policy(binary)
         from verify_html_anchor_example import verify_html_anchors
         html_anchors = verify_html_anchors(binary)
+        from engineering_demo import demonstrate_engineering
+        engineering = demonstrate_engineering(evidence / (os.path.basename(temporary) + "-engineering"), binary)
         demonstrate(evidence / os.path.basename(temporary), binary)
         demonstrate_review(evidence / (os.path.basename(temporary) + "-review"), binary)
         from onboarding_demo import demonstrate_onboarding
@@ -233,7 +241,7 @@ def verify_registry(metadata, consume=False):
                "registry_sha256": checksum, "targets": ["native", "js", "wasm"],
                "cli_install": "registry", "maintenance_steps": 13, "review_steps": 14, "compatibility_example": True, "library_example_targets": ["native", "js", "wasm"], "library_example_results": library_results,
                "onboarding_steps": len(onboarding["steps"]), "action_config_checked": onboarding["action_checked"],
-               "unicode_anchor_example": unicode_anchors, "link_parsing_examples": link_parsing, "quote_policy_example": quote_policy, "html_anchor_example": html_anchors, "passed": True}
+               "unicode_anchor_example": unicode_anchors, "link_parsing_examples": link_parsing, "quote_policy_example": quote_policy, "html_anchor_example": html_anchors, "engineering_cases": engineering, "passed": True}
     archive.with_suffix(".published.json").write_text(json.dumps(receipt, indent=2) + "\n")
     print("Actual registry consumers and installed CLI verified")
 

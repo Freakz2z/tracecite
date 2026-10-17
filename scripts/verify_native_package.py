@@ -96,6 +96,9 @@ def verify(archive):
             verify_quote_policy(binary, environment)
             from verify_html_anchor_example import verify_html_anchors
             verify_html_anchors(binary, environment)
+        if tuple(map(int, manifest["version"].split("."))) >= (0, 9, 0):
+            from engineering_demo import demonstrate_engineering
+            demonstrate_engineering(root / "engineering", binary)
         demonstrate(root / "acceptance", binary)
         demonstrate_review(root / "review", binary)
         if tuple(map(int, manifest["version"].split("."))) >= (0, 7, 0):

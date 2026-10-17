@@ -1,0 +1,162 @@
+{
+  "schema": 1,
+  "case_type": "controlled_regression",
+  "tool_version": "0.9.0",
+  "semantic_truth_checked": false,
+  "external_adoption": false,
+  "phases": [
+    {
+      "name": "01-init",
+      "exit_code": 0,
+      "checked": 1,
+      "failed": 0,
+      "warnings": 0,
+      "skipped_web": 0
+    },
+    {
+      "name": "02-outside-selected-section",
+      "exit_code": 0,
+      "checked": 1,
+      "failed": 0,
+      "warnings": 0,
+      "skipped_web": 0
+    },
+    {
+      "name": "03-two-separated-changes",
+      "exit_code": 2,
+      "checked": 1,
+      "failed": 1,
+      "warnings": 0,
+      "skipped_web": 0
+    },
+    {
+      "name": "04-previous-release",
+      "exit_code": 2,
+      "checked": 1,
+      "failed": 1,
+      "warnings": 0,
+      "skipped_web": 0
+    },
+    {
+      "name": "05-bulk-init",
+      "exit_code": 0,
+      "checked": 1,
+      "failed": 0,
+      "warnings": 0,
+      "skipped_web": 0
+    },
+    {
+      "name": "06-budget-fallback",
+      "exit_code": 2,
+      "checked": 1,
+      "failed": 1,
+      "warnings": 0,
+      "skipped_web": 0
+    },
+    {
+      "name": "07-unreviewed-overwrite-rejected",
+      "exit_code": 2,
+      "checked": 1,
+      "failed": 1,
+      "warnings": 0,
+      "skipped_web": 0
+    },
+    {
+      "name": "08-snippet-init",
+      "exit_code": 0,
+      "checked": 1,
+      "failed": 0,
+      "warnings": 0,
+      "skipped_web": 0
+    },
+    {
+      "name": "09-invalid-excerpt-no-candidate",
+      "exit_code": 2,
+      "checked": 1,
+      "failed": 1,
+      "warnings": 0,
+      "skipped_web": 0
+    },
+    {
+      "name": "10-invalid-excerpt-no-overwrite",
+      "exit_code": 2,
+      "checked": 1,
+      "failed": 1,
+      "warnings": 0,
+      "skipped_web": 0
+    },
+    {
+      "name": "11-path-boundary",
+      "exit_code": 2,
+      "checked": 1,
+      "failed": 1,
+      "warnings": 0,
+      "skipped_web": 0
+    },
+    {
+      "name": "12-network-boundary",
+      "exit_code": 2,
+      "checked": 1,
+      "failed": 1,
+      "warnings": 0,
+      "skipped_web": 0
+    }
+  ],
+  "multi_change_analysis": {
+    "algorithm": "bounded_lcs_lines_v1",
+    "coordinate_system": "observed_source_1_based",
+    "complete": true,
+    "previous_line_count": 123,
+    "current_line_count": 123,
+    "added_lines": 2,
+    "removed_lines": 2,
+    "total_hunks": 2,
+    "hunks": [
+      {
+        "previous_start_line": 2,
+        "previous_line_count": 1,
+        "current_start_line": 2,
+        "current_line_count": 1,
+        "previous_text": "Timeout: 20 seconds.\n",
+        "current_text": "Timeout: 30 seconds.\n",
+        "text_truncated": false
+      },
+      {
+        "previous_start_line": 123,
+        "previous_line_count": 1,
+        "current_start_line": 123,
+        "current_line_count": 1,
+        "previous_text": "Permission: read.",
+        "current_text": "Permission: write.",
+        "text_truncated": false
+      }
+    ],
+    "display_truncated": false
+  },
+  "budget_fallback": {
+    "algorithm": "bounded_lcs_lines_v1",
+    "coordinate_system": "observed_source_1_based",
+    "complete": false,
+    "reason": "cell_limit",
+    "previous_line_count": 521,
+    "current_line_count": 521,
+    "hunks": [],
+    "display_truncated": false
+  },
+  "comparison": {
+    "previous_version": "0.8.0",
+    "current_version": "0.9.0",
+    "validation_and_full_preview_identical": true,
+    "previous_display_has_second_change": false,
+    "current_diff_has_both_changes": true
+  },
+  "baseline_unchanged_after_rejected_writes": true,
+  "binary_sha256": "0d3f52711a75c07a13b9359d1691a61790292951ad440fc0440748d8a11a8e99",
+  "comparison_binary_sha256": "8ba172b23579bd17f62f9a8c36deff55bfd8c8095fa56d8cbec648ab6ad400fd",
+  "implementation_sha256": {
+    "document_diff.mbt": "58d552dda5fc26a8a22da2c817c819001cc5a66f17a53f72126384a9188dcbc3",
+    "cli/document.mbt": "42a18c2a2c43ac1a5fe2ab3580e465f93b232aa2c184a45a672d108a467b61ba",
+    "cli/main.mbt": "f957e80250d61466a578be289d1c0bbb72e0e3f2d188e7a29a4f1c15e666191c"
+  },
+  "passed": true
+}

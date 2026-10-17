@@ -66,6 +66,7 @@ jobs:
         run: |
           python3 scripts/acceptance_demo.py --out _build/acceptance/ci
           python3 scripts/maintenance_review_demo.py --out _build/acceptance/review-ci
+          python3 scripts/engineering_demo.py --out _build/acceptance/engineering-ci
           python3 scripts/test_native_package.py
           python3 scripts/test_release.py
       - name: Exercise shared-config onboarding
@@ -77,6 +78,7 @@ jobs:
           path: |
             _build/acceptance/ci/
             _build/acceptance/review-ci/
+            _build/acceptance/engineering-ci/
             _build/acceptance/onboarding-ci/
           if-no-files-found: error
       - name: Exercise public report action

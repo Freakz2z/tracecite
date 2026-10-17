@@ -18,7 +18,9 @@
     "examples/anchors/README.md",
     "examples/link-parsing/README.md",
     "examples/quote-policy/README.md",
-    "examples/html-anchors/README.md"
+    "examples/html-anchors/README.md",
+    "docs/engineering-depth.md",
+    "examples/engineering/README.md"
   ],
   "exclude": [],
   "baseline": ".tracecite-docs.json",
@@ -26,6 +28,6 @@
   "online": false,
   "coverage": {
     "max_skipped_web": 68,
-    "max_unbound_snippets": 57
+    "max_unbound_snippets": 58
   }
 }
