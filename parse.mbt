@@ -11,7 +11,7 @@ fn field(value : Json, key : String) -> Json? {
 fn required_string(
   value : Json,
   key : String,
-  line : Int,
+  line : Int32,
   diagnostics : Array[Diagnostic],
 ) -> String? {
   match field(value, key) {
@@ -32,7 +32,7 @@ fn required_string(
 fn required_bool(
   value : Json,
   key : String,
-  line : Int,
+  line : Int32,
   diagnostics : Array[Diagnostic],
 ) -> Bool? {
   match field(value, key) {
@@ -54,7 +54,7 @@ fn required_bool(
 fn optional_string(
   value : Json,
   key : String,
-  line : Int,
+  line : Int32,
   diagnostics : Array[Diagnostic],
 ) -> String? {
   match field(value, key) {
@@ -75,7 +75,7 @@ fn optional_string(
 ///|
 fn parse_sources(
   value : Json,
-  line : Int,
+  line : Int32,
   diagnostics : Array[Diagnostic],
 ) -> Array[Source]? {
   match field(value, "sources") {
@@ -117,7 +117,7 @@ fn parse_sources(
 ///|
 fn parse_citations(
   value : Json,
-  line : Int,
+  line : Int32,
   diagnostics : Array[Diagnostic],
 ) -> Array[ClaimCitation]? {
   if field(value, "citations") is Some(Array(items)) {
@@ -171,7 +171,7 @@ fn parse_citations(
 ///|
 fn parse_claims(
   value : Json,
-  line : Int,
+  line : Int32,
   diagnostics : Array[Diagnostic],
 ) -> Array[Claim]? {
   match field(value, "claims") {
@@ -210,7 +210,7 @@ fn parse_claims(
 ///|
 fn parse_event(
   value : Json,
-  line : Int,
+  line : Int32,
   diagnostics : Array[Diagnostic],
 ) -> Event? {
   match value {

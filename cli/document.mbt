@@ -1,7 +1,7 @@
 ///|
 priv struct DocumentCheckItem {
   document : String
-  line : Int
+  line : Int32
   source : String
   kind : String
   status : String
@@ -16,15 +16,15 @@ priv struct DocumentCheckItem {
 
 ///|
 priv struct DocumentCheckReport {
-  schema_version : Int
+  schema_version : Int32
   tool_version : String
-  document_count : Int
-  checked_count : Int
-  failed_count : Int
-  warning_count : Int
-  skipped_count : Int
-  unbound_snippets : Int
-  skipped_quotes : Int
+  document_count : Int32
+  checked_count : Int32
+  failed_count : Int32
+  warning_count : Int32
+  skipped_count : Int32
+  unbound_snippets : Int32
+  skipped_quotes : Int32
   unassociated_quotes : String
   online : Bool
   items : Array[DocumentCheckItem]
@@ -41,9 +41,9 @@ priv struct DocumentReviewGroup {
 ///|
 priv struct DocumentBaselinePreview {
   can_update : Bool
-  added_count : Int
-  changed_count : Int
-  removed_count : Int
+  added_count : Int32
+  changed_count : Int32
+  removed_count : Int32
   changes : Array[@tracecite.DocumentSnapshotChange]
   scanned_documents : Array[String]
   snapshot : @tracecite.DocumentSnapshot?
@@ -52,9 +52,9 @@ priv struct DocumentBaselinePreview {
 ///|
 async fn document_command(
   args : Array[String],
-  start : Int,
-  initialize? : Bool = false,
-) -> Int {
+  start : Int32,
+  initialize~ : Bool = false,
+) -> Int32 {
   let targets : Array[String] = []
   let excludes : Array[String] = []
   let mut root_arg = "."
@@ -70,9 +70,9 @@ async fn document_command(
   let mut github = false
   let mut review_output = false
   let mut preview_baseline = false
-  let mut max_skipped_web : Int? = None
-  let mut max_unbound_snippets : Int? = None
-  let mut max_skipped_quotes : Int? = None
+  let mut max_skipped_web : Int32? = None
+  let mut max_unbound_snippets : Int32? = None
+  let mut max_skipped_quotes : Int32? = None
   let mut index = start
   while index < args.length() {
     let option = args[index]
@@ -954,7 +954,7 @@ async fn document_review_groups(
   root : String,
 ) -> Array[DocumentReviewGroup] {
   let groups : Array[DocumentReviewGroup] = []
-  let indices : Map[String, Int] = Map([])
+  let indices : Map[String, Int32] = Map([])
   for item in items {
     if item.status == "ok" || item.status == "skipped" {
       continue
@@ -1006,7 +1006,7 @@ async fn collect_document_paths(
   excludes : Array[String],
   paths : Array[String],
   seen : Map[String, Bool],
-  pattern? : String? = None,
+  pattern~ : String? = None,
 ) -> Unit {
   let canonical = @fs.realpath(path)
   if !inside_document_root(root, canonical) {
@@ -1120,7 +1120,7 @@ fn decode_document_path(path : String) -> String? {
 }
 
 ///|
-fn hex_digit(byte : Byte) -> Int {
+fn hex_digit(byte : Byte) -> Int32 {
   if byte >= b'0' && byte <= b'9' {
     byte.to_int() - b'0'.to_int()
   } else if byte >= b'a' && byte <= b'f' {
@@ -1135,7 +1135,7 @@ fn hex_digit(byte : Byte) -> Int {
 ///|
 fn document_problem(
   document : String,
-  line : Int,
+  line : Int32,
   source : String,
   status : String,
   code : String,
@@ -1161,7 +1161,7 @@ fn document_problem(
 async fn render_document_report(
   report : DocumentCheckReport,
   github : Bool,
-  review_output? : Bool = false,
+  review_output~ : Bool = false,
 ) -> Unit {
   let status = if report.failed_count > 0 {
     "FAIL"
@@ -1295,7 +1295,7 @@ async fn render_document_excerpt(label : String, text : String) -> Unit {
 }
 
 ///|
-fn github_escape(text : String, property? : Bool = false) -> String {
+fn github_escape(text : String, property~ : Bool = false) -> String {
   let text = text
     .replace_all(old="%", new="%25")
     .replace_all(old="\r", new="%0D")

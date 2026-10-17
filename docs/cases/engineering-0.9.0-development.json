@@ -151,12 +151,12 @@
     "current_diff_has_both_changes": true
   },
   "baseline_unchanged_after_rejected_writes": true,
-  "binary_sha256": "0d3f52711a75c07a13b9359d1691a61790292951ad440fc0440748d8a11a8e99",
+  "binary_sha256": "0ca09c4c651609753867d6973628668d4f6ffa803eb62cc176568fa0adf483b6",
   "comparison_binary_sha256": "8ba172b23579bd17f62f9a8c36deff55bfd8c8095fa56d8cbec648ab6ad400fd",
   "implementation_sha256": {
-    "document_diff.mbt": "58d552dda5fc26a8a22da2c817c819001cc5a66f17a53f72126384a9188dcbc3",
-    "cli/document.mbt": "42a18c2a2c43ac1a5fe2ab3580e465f93b232aa2c184a45a672d108a467b61ba",
-    "cli/main.mbt": "f957e80250d61466a578be289d1c0bbb72e0e3f2d188e7a29a4f1c15e666191c"
+    "document_diff.mbt": "a826aa58cc7242f1a51e2bc6eced1c9661e3594b5c50a665d940918547318320",
+    "cli/document.mbt": "ecb87b4ece1a6f61aaa954bdb595f8ba3fcb3aef708072e4c851c979ab047365",
+    "cli/main.mbt": "b794993da3391fb3d21dacf8b2f28f5337d414dac936f4f5289ba8b7d41c370c"
   },
   "passed": true
 }

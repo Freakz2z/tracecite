@@ -1,6 +1,6 @@
 ///|
 pub(all) struct Diagnostic {
-  line : Int
+  line : Int32
   code : String
   message : String
 } derive(ToJson)
@@ -14,7 +14,7 @@ pub(all) struct SourceRecord {
   uri : String
   title : String?
   call_id : String
-  line : Int
+  line : Int32
   content_present : Bool
 } derive(ToJson)
 
@@ -23,10 +23,10 @@ pub extend SourceRecord with ToJson::{to_json}
 
 ///|
 pub(all) struct CitationEdge {
-  claim_index : Int
+  claim_index : Int32
   source_id : String
   call_id : String?
-  line : Int
+  line : Int32
   evidence_status : String
 } derive(ToJson)
 
@@ -36,11 +36,11 @@ pub extend CitationEdge with ToJson::{to_json}
 ///|
 pub(all) struct Report {
   run_id : String?
-  event_count : Int
-  call_count : Int
-  source_count : Int
-  claim_count : Int
-  verified_citation_count : Int
+  event_count : Int32
+  call_count : Int32
+  source_count : Int32
+  claim_count : Int32
+  verified_citation_count : Int32
   sources : Array[SourceRecord]
   citations : Array[CitationEdge]
   diagnostics : Array[Diagnostic]
@@ -75,15 +75,15 @@ priv struct ClaimCitation {
 
 ///|
 priv enum Event {
-  ToolCall(String, String, Int)
-  ToolResult(String, String, Bool, Array[Source], Int)
-  Answer(String, Array[Claim], Int)
+  ToolCall(String, String, Int32)
+  ToolResult(String, String, Bool, Array[Source], Int32)
+  Answer(String, Array[Claim], Int32)
 }
 
 ///|
 fn add_diagnostic(
   diagnostics : Array[Diagnostic],
-  line : Int,
+  line : Int32,
   code : String,
   message : String,
 ) -> Unit {

@@ -15,12 +15,12 @@ pub fn validate_evidence_jsonl(input : String) -> Report {
 fn validate_jsonl_internal(input : String, require_evidence : Bool) -> Report {
   let diagnostics : Array[Diagnostic] = []
   let events = parse_jsonl(input, diagnostics)
-  let calls : Map[String, Int] = Map([])
-  let results : Map[String, Int] = Map([])
-  let source_lines : Map[String, Int] = Map([])
+  let calls : Map[String, Int32] = Map([])
+  let results : Map[String, Int32] = Map([])
+  let source_lines : Map[String, Int32] = Map([])
   let source_calls : Map[String, String] = Map([])
   let source_contents : Map[String, String] = Map([])
-  let source_uris : Map[String, Int] = Map([])
+  let source_uris : Map[String, Int32] = Map([])
   let source_records : Array[SourceRecord] = []
   let citations : Array[CitationEdge] = []
   let call_ids : Array[String] = []

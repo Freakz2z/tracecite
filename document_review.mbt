@@ -21,7 +21,7 @@ pub fn document_change_context(
         after[after.length() - suffix - 1] {
     suffix += 1
   }
-  let start = if previous == current { 0 } else { Int::max(0, prefix - 100) }
+  let start = if previous == current { 0 } else { Int32::max(0, prefix - 100) }
   (
     document_change_excerpt(before, start, before.length() - suffix + 100),
     document_change_excerpt(after, start, after.length() - suffix + 100),
@@ -31,10 +31,10 @@ pub fn document_change_context(
 ///|
 fn document_change_excerpt(
   chars : Array[Char],
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> String {
-  let end = Int::min(chars.length(), Int::min(end, start + 1596))
+  let end = Int32::min(chars.length(), Int32::min(end, start + 1596))
   let text = String::from_array(chars[start:end])
   let text = if start > 0 { "…\n" + text } else { text }
   if end < chars.length() {

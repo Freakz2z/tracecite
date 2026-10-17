@@ -2,10 +2,10 @@
 /// An edit block in the saved/current observation, not in the original file.
 /// Starts are one-based; a zero count denotes an insertion/deletion position.
 pub(all) struct DocumentSourceDiffHunk {
-  previous_start_line : Int
-  previous_line_count : Int
-  current_start_line : Int
-  current_line_count : Int
+  previous_start_line : Int32
+  previous_line_count : Int32
+  current_start_line : Int32
+  current_line_count : Int32
   previous_text : String
   current_text : String
   text_truncated : Bool
@@ -22,11 +22,11 @@ pub(all) struct DocumentSourceDiff {
   coordinate_system : String
   complete : Bool
   reason : String?
-  previous_line_count : Int?
-  current_line_count : Int?
-  added_lines : Int?
-  removed_lines : Int?
-  total_hunks : Int?
+  previous_line_count : Int32?
+  current_line_count : Int32?
+  added_lines : Int32?
+  removed_lines : Int32?
+  total_hunks : Int32?
   hunks : Array[DocumentSourceDiffHunk]
   display_truncated : Bool
 } derive(ToJson)
@@ -37,8 +37,8 @@ pub extend DocumentSourceDiff with ToJson::{to_json}
 ///|
 fn source_diff_unavailable(
   reason : String,
-  previous_line_count : Int?,
-  current_line_count : Int?,
+  previous_line_count : Int32?,
+  current_line_count : Int32?,
 ) -> DocumentSourceDiff {
   {
     algorithm: "bounded_lcs_lines_v1",
@@ -121,13 +121,13 @@ pub fn diff_document_source(
   if n + 1 > 262144 / width {
     return source_diff_unavailable("cell_limit", before_count, after_count)
   }
-  let table : Array[Int] = Array::make((n + 1) * width, 0)
+  let table : Array[Int32] = Array::make((n + 1) * width, 0)
   for i = n - 1; i >= 0; i = i - 1 {
     for j = m - 1; j >= 0; j = j - 1 {
       table[i * width + j] = if before[prefix + i] == after[prefix + j] {
         1 + table[(i + 1) * width + j + 1]
       } else {
-        Int::max(table[(i + 1) * width + j], table[i * width + j + 1])
+        Int32::max(table[(i + 1) * width + j], table[i * width + j + 1])
       }
     }
   }

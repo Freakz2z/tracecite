@@ -4,7 +4,7 @@ pub(all) struct CitationNote {
   claim : String
   quote : String
   url : String
-  line : Int
+  line : Int32
 } derive(ToJson)
 
 ///|
@@ -131,7 +131,7 @@ pub fn parse_citation_notes(input : String) -> CitationNotes {
 fn finish_citation_note(
   notes : Array[CitationNote],
   diagnostics : Array[Diagnostic],
-  line : Int,
+  line : Int32,
   claim : String?,
   quote : String?,
   url : String?,

@@ -50,7 +50,7 @@ pub fn select_document_source(
     return { ok: true, text: lines[start - 1:end].join("\n"), code: "", }
   }
   if fragment.strip_prefix("region:") is Some(region) {
-    let mut start : Int? = None
+    let mut start : Int32? = None
     for index = 0; index < lines.length(); index = index + 1 {
       if region_marker(lines[index], "ANCHOR:") == Some(region.to_owned()) {
         if start is Some(_) {
@@ -66,7 +66,7 @@ pub fn select_document_source(
     return { ok: false, text: "", code: "REGION_NOT_FOUND", }
   }
   let (headings, anchors) = document_source_headings(lines)
-  let counts : Map[String, Int] = Map([])
+  let counts : Map[String, Int32] = Map([])
   let mut selected : DocumentHeading? = None
   for heading in headings {
     let slug = markdown_heading_slug(heading.title)
@@ -98,12 +98,12 @@ pub fn select_document_source(
       if lines[first + 1:heading.start].iter().all(line => line.trim() == "") {
         for following in headings {
           if following.start > heading.start && following.level <= heading.level {
-            end = Int::min(end, following.start)
+            end = Int32::min(end, following.start)
             break
           }
         }
       } else {
-        end = Int::min(end, heading.start)
+        end = Int32::min(end, heading.start)
       }
     }
     return { ok: true, text: lines[first:end].join("\n"), code: "", }
@@ -131,20 +131,20 @@ pub fn select_document_source(
 
 ///|
 priv struct DocumentHeading {
-  start : Int
-  level : Int
+  start : Int32
+  level : Int32
   title : String
 }
 
 ///|
 fn document_source_headings(
   lines : Array[String],
-) -> (Array[DocumentHeading], Array[(Int, String)]) {
+) -> (Array[DocumentHeading], Array[(Int32, String)]) {
   let headings : Array[DocumentHeading] = []
-  let anchors : Array[(Int, String)] = []
+  let anchors : Array[(Int32, String)] = []
   let paragraph : Array[String] = []
   let mut paragraph_start = 0
-  let mut fence : (Char, Int)? = None
+  let mut fence : (Char, Int32)? = None
   let mut comment = false
   let mut html_end : String? = None
   let mut container = false
@@ -388,7 +388,7 @@ fn region_marker(line : String, marker : String) -> String? {
 ///|
 pub fn markdown_heading_slug(title : String) -> String {
   let chars = title.to_array()
-  let hidden : Array[(Int, Int)] = []
+  let hidden : Array[(Int32, Int32)] = []
   for tag in document_html_tags(title[:]) {
     hidden.push((tag.start, tag.end))
   }
@@ -539,7 +539,7 @@ pub extend DocumentSnapshotEntry with @json.FromJson::{from_json}
 
 ///|
 pub(all) struct DocumentSnapshot {
-  version : Int
+  version : Int32
   entries : Array[DocumentSnapshotEntry]
 } derive(ToJson, @json.FromJson)
 

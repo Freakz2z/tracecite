@@ -2,7 +2,7 @@
 /// Result for one quote checked against the current text fetched from a source.
 pub(all) struct LiveCitationMatch {
   source_id : String
-  claim_index : Int
+  claim_index : Int32
   quote_present : Bool
 } derive(ToJson)
 

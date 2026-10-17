@@ -2,7 +2,7 @@
 priv struct RemoteUrl {
   scheme : String
   host : String
-  port : Int
+  port : Int32
   path : String
   full : String
 }
@@ -16,19 +16,19 @@ priv struct RemoteFetch {
 
 ///|
 priv struct UrlCheckItem {
-  index : Int
+  index : Int32
   url : String
   ok : Bool
-  citation_count : Int
-  matched_count : Int
+  citation_count : Int32
+  matched_count : Int32
   diagnostics : Array[String]
 } derive(ToJson)
 
 ///|
 priv struct UrlCheckReport {
-  source_count : Int
-  citation_count : Int
-  matched_count : Int
+  source_count : Int32
+  citation_count : Int32
+  matched_count : Int32
   items : Array[UrlCheckItem]
 } derive(ToJson)
 
@@ -38,7 +38,7 @@ priv struct CitationInputErrors {
 } derive(ToJson)
 
 ///|
-async fn verify_urls_command(path : String, json_output : Bool) -> Int {
+async fn verify_urls_command(path : String, json_output : Bool) -> Int32 {
   let input = @fs.read_file(path).text() catch {
     _ => {
       @stdio.stderr.write("Cannot read input file: \{path}\n")
@@ -129,7 +129,7 @@ async fn verify_notes_command(
   path : String,
   json_output : Bool,
   markdown_report : Bool,
-) -> Int {
+) -> Int32 {
   let input = @fs.read_file(path).text() catch {
     _ => {
       @stdio.stderr.write("Cannot read input file: \{path}\n")
@@ -240,7 +240,7 @@ async fn fetch_public_text(raw_url : String) -> RemoteFetch {
 ///|
 async fn fetch_public_text_inner(
   raw_url : String,
-  get_env? : (String) -> String? = @env.get_env_var,
+  get_env~ : (String) -> String? = @env.get_env_var,
 ) -> RemoteFetch {
   let mut current = match parse_remote_url(raw_url) {
     Some(url) => url
@@ -540,7 +540,7 @@ fn is_public_ipv4_host(host : String) -> Bool {
   if parts.length() != 4 {
     return false
   }
-  let octets : Array[Int] = []
+  let octets : Array[Int32] = []
   for part in parts {
     octets.push(@string.parse_int(part) catch { _ => return false })
   }
@@ -548,7 +548,7 @@ fn is_public_ipv4_host(host : String) -> Bool {
 }
 
 ///|
-fn is_public_ipv4_octets(a : Int, b : Int, c : Int) -> Bool {
+fn is_public_ipv4_octets(a : Int32, b : Int32, c : Int32) -> Bool {
   !(a == 0 ||
   a == 10 ||
   a == 127 ||
@@ -611,7 +611,12 @@ async fn check_public_target(url : RemoteUrl) -> String? {
 }
 
 ///|
-fn is_allowed_resolved_ipv4(scheme : String, a : Int, b : Int, c : Int) -> Bool {
+fn is_allowed_resolved_ipv4(
+  scheme : String,
+  a : Int32,
+  b : Int32,
+  c : Int32,
+) -> Bool {
   is_public_ipv4_octets(a, b, c) ||
   (scheme == "https" && a == 198 && b >= 18 && b <= 19)
 }

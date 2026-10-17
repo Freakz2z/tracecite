@@ -24,9 +24,15 @@ jobs:
           import subprocess
 
           version = subprocess.check_output(["moonc", "-v"], text=True).strip()
+          # Review toolchain upgrades separately before formatter/API migration.
+          if not version.startswith("v0.10.15+943464bfa "):
+              raise SystemExit(f"Unreviewed compiler drift: {version}; expected v0.10.15+943464bfa")
+          moon_version = subprocess.check_output(["moon", "version"], text=True).strip()
+          if not moon_version.startswith("moon 0.1.20261012 (748b63c "):
+              raise SystemExit(f"Unreviewed moon drift: {moon_version}")
           match = re.search(r"v?(\d+)\.(\d+)\.(\d+)", version)
-          if match is None or tuple(map(int, match.groups())) < (0, 10, 14):
-              raise SystemExit(f"moonc >= 0.10.14 required, got {version}")
+          if match is None or tuple(map(int, match.groups())) < (0, 10, 15):
+              raise SystemExit(f"moonc >= 0.10.15 required, got {version}")
           PY
       - name: Check
         run: |

@@ -11,7 +11,7 @@
 
 | 序号 | 验收要求 | 交付与复核方式 |
 | --- | --- | --- |
-| 1 | MoonBit 为主要实现语言，moonc ≥ 0.10.14 | 核心库、文件与网页 I/O、CLI 均为 MoonBit；Python/shell 用于开发测试与打包。CI 实际使用 moonc v0.10.14+7d59c7ec9，并检查最低版本。 |
+| 1 | MoonBit 为主要实现语言，moonc ≥ 0.10.14 | 核心库、文件与网页 I/O、CLI 均为 MoonBit；Python/shell 用于开发测试与打包。0.8.0 标签 CI 使用 moonc v0.10.14+7d59c7ec9；main 的 0.9.0 开发源码已适配 0.10.15，并检查已验证的工具链身份和最低版本。 |
 | 2 | GitHub 仓库公开可访问，提交清晰 | Freakz2z/tracecite 为 public 仓库，main 保留功能、修复、发布与验收的提交；CHANGELOG.md 列出版本里程碑，docs/releases/ 记录各版本固定提交。 |
 | 3 | 结构清晰，实现声明的核心功能 | 根包为 portable 解析/校验/比较逻辑；cli/ 为 native 文件和 HTTP 实现；cmd/main 与 cmd/tracecite 共用实现。回源核验、追溯、变化比较和文档维护都有可执行入口。 |
 | 4 | README 包含目标、安装、用法、示例并可复现 | README.mbt.md 为主说明，README.md 指向它；包含源码启动、Mooncakes 库/CLI 安装、独立包、配置、Action、边界和维护演示。 |
@@ -73,7 +73,7 @@ CLI 从样例根目录读取真实来源，不需要模型或网页服务。CI �
 
 ## 可复现验收
 
-在固定的源码提交中安装 MoonBit（moonc ≥ 0.10.14）和 Python 3 后执行：
+在固定的源码提交中安装 MoonBit 和 Python 3 后执行。0.8.0 标签使用 moonc ≥ 0.10.14；当前 0.9.0 开发主线使用 ≥ 0.10.15，CI 另核对已验证的确切工具链身份：
 
 ```sh
 moon update

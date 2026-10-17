@@ -2,7 +2,7 @@
 // Unicode License V3: third_party/licenses/Unicode-LICENSE.txt.
 
 ///|
-let document_unicode_punctuation_ranges : Array[(Int, Int)] = [
+let document_unicode_punctuation_ranges : Array[(Int32, Int32)] = [
   (0xA1, 0xA1),
   (0xA7, 0xA7),
   (0xAB, 0xAB),

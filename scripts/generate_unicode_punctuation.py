@@ -19,7 +19,7 @@ def generate(check=False):
                 ranges.append([value, value])
     path = REPO / "document_unicode.mbt"
     original = path.read_text()
-    pattern = r"(?s)(let document_unicode_punctuation_ranges : Array\[\(Int, Int\)\] = \[\n).*?(\n\])"
+    pattern = r"(?s)(let document_unicode_punctuation_ranges : Array\[\(Int32, Int32\)\] = \[\n).*?(\n\])"
     body = "\n".join(f"  (0x{start:X}, 0x{end:X})," for start, end in ranges)
     generated, count = re.subn(pattern, lambda match: match[1] + body + match[2], original)
     if count != 1:

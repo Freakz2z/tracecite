@@ -103,7 +103,7 @@ pub fn parse_markdown_report(input : String) -> CitationNotes {
 fn collect_inline_report_quotes(
   line : StringView,
   heading : String,
-  line_number : Int,
+  line_number : Int32,
   notes : Array[CitationNote],
   diagnostics : Array[Diagnostic],
 ) -> Unit {

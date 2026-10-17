@@ -55,7 +55,7 @@ TraceCite 把引用当作文档依赖，直接读取 Markdown 与来源。**本�
 
 ### 1. 获取源码并检查仓库文档
 
-安装 [MoonBit](https://docs.moonbitlang.com/en/stable/tutorial/tour.html#installation)（`moonc >= 0.10.14`），然后执行：
+安装 [MoonBit](https://docs.moonbitlang.com/en/stable/tutorial/tour.html#installation)（当前 main 的 0.9.0 开发源码需要 `moonc >= 0.10.15`；正式 0.8.0 保留 0.10.14 验证基线），然后执行：
 
 ```sh
 git clone https://github.com/Freakz2z/tracecite.git

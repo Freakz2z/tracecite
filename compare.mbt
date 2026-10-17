@@ -13,7 +13,7 @@ pub(all) struct DriftReport {
   new_run_id : String?
   old_valid : Bool
   new_valid : Bool
-  unchanged_count : Int
+  unchanged_count : Int32
   changes : Array[SourceChange]
   old_diagnostics : Array[Diagnostic]
   new_diagnostics : Array[Diagnostic]

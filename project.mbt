@@ -2,7 +2,7 @@
 /// Portable project settings shared by local checks and CI. Paths are relative
 /// to the explicit workspace root, never to the process running the CLI.
 pub(all) struct DocumentProjectConfig {
-  version : Int
+  version : Int32
   paths : Array[String]
   exclude : Array[String]
   baseline : String?
@@ -14,9 +14,9 @@ pub(all) struct DocumentProjectConfig {
 
 ///|
 pub(all) struct DocumentCoveragePolicy {
-  max_skipped_web : Int?
-  max_unbound_snippets : Int?
-  max_skipped_quotes : Int?
+  max_skipped_web : Int32?
+  max_unbound_snippets : Int32?
+  max_skipped_quotes : Int32?
 } derive(ToJson)
 
 ///|
@@ -242,7 +242,7 @@ fn document_config_limit(
   value : Json,
   key : String,
   diagnostics : Array[Diagnostic],
-) -> Int? {
+) -> Int32? {
   match field(value, key) {
     None | Some(Null) => None
     Some(Number(number, ..)) if number >= 0.0 &&

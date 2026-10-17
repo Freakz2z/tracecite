@@ -5,7 +5,7 @@ let tracecite_version : String = "0.9.0"
 /// Exit codes: 0 for a valid trace, 1 for usage or I/O failure, 2 for a trace
 /// with structural diagnostics.
 #cfg(target="native")
-extern "c" fn process_exit(code : Int) = "exit"
+extern "c" fn process_exit(code : Int32) = "exit"
 
 ///|
 pub async fn run() -> Unit {

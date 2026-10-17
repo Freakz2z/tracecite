@@ -69,7 +69,7 @@ fn parse_proxy_url(raw : String) -> String? {
     return None
   }
   for ch in parts[0].iter() {
-    if !(ch is ('a'..='z' | 'A'..='Z' | '0'..='9' | '.' | '-')) {
+    if !(ch is ('a'..<='z' | 'A'..<='Z' | '0'..<='9' | '.' | '-')) {
       return None
     }
   }
@@ -78,7 +78,7 @@ fn parse_proxy_url(raw : String) -> String? {
       return None
     }
     for ch in parts[1].iter() {
-      if !(ch is ('0'..='9')) {
+      if !(ch is ('0'..<='9')) {
         return None
       }
     }

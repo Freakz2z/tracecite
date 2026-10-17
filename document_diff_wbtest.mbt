@@ -42,7 +42,7 @@ test "line diff preserves empty sources newline identity and insertion positions
 
 ///|
 // Independent oracle: enumerate subsequences rather than dynamic programming.
-fn diff_test_lcs_oracle(before : Array[String], after : Array[String]) -> Int {
+fn diff_test_lcs_oracle(before : Array[String], after : Array[String]) -> Int32 {
   let mut combinations = 1
   for _ in before {
     combinations *= 2
@@ -68,7 +68,7 @@ fn diff_test_lcs_oracle(before : Array[String], after : Array[String]) -> Int {
       divisor *= 2
     }
     if valid {
-      longest = Int::max(longest, length)
+      longest = Int32::max(longest, length)
     }
   }
   longest

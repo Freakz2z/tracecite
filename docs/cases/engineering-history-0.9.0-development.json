@@ -2,7 +2,7 @@
   "schema_version": 1,
   "mode": "historical_replay",
   "repository": "https://github.com/moonbitlang/moon.git",
-  "checked_at": "2026-10-17T18:44:47.664433+00:00",
+  "checked_at": "2026-10-17T18:54:23.912677+00:00",
   "before": "bfdd73d8ae88b5d2f1403c8c77f6d3912667d1ef",
   "after": "37f067473211ada78d395883e21f0444c74e0fa0",
   "documents": [
@@ -17,7 +17,7 @@
   "phases": [
     {
       "phase": "before-check",
-      "binary_sha256": "92d432390893d951f73aeb3814d42cd3d35b17e2c47cc04002a9c6810b414ba1",
+      "binary_sha256": "0ca09c4c651609753867d6973628668d4f6ffa803eb62cc176568fa0adf483b6",
       "arguments": [
         "check",
         "docs/manual/src/commands.md",
@@ -29,7 +29,7 @@
         "--json"
       ],
       "exit_code": 0,
-      "machine_seconds": 0.67107,
+      "machine_seconds": 0.545154,
       "counts": {
         "document_count": 2,
         "checked_count": 80,
@@ -43,7 +43,7 @@
     },
     {
       "phase": "before-init",
-      "binary_sha256": "92d432390893d951f73aeb3814d42cd3d35b17e2c47cc04002a9c6810b414ba1",
+      "binary_sha256": "0ca09c4c651609753867d6973628668d4f6ffa803eb62cc176568fa0adf483b6",
       "arguments": [
         "init",
         "docs/manual/src/commands.md",
@@ -57,7 +57,7 @@
         "--json"
       ],
       "exit_code": 0,
-      "machine_seconds": 0.740103,
+      "machine_seconds": 0.525647,
       "counts": {
         "document_count": 2,
         "checked_count": 80,
@@ -82,7 +82,7 @@
         "--json"
       ],
       "exit_code": 2,
-      "machine_seconds": 0.146423,
+      "machine_seconds": 0.144298,
       "counts": {
         "document_count": 2,
         "checked_count": 80,
@@ -96,7 +96,7 @@
     },
     {
       "phase": "after-current-build",
-      "binary_sha256": "92d432390893d951f73aeb3814d42cd3d35b17e2c47cc04002a9c6810b414ba1",
+      "binary_sha256": "0ca09c4c651609753867d6973628668d4f6ffa803eb62cc176568fa0adf483b6",
       "arguments": [
         "check",
         "--config",
@@ -107,7 +107,7 @@
         "--json"
       ],
       "exit_code": 2,
-      "machine_seconds": 0.717151,
+      "machine_seconds": 0.541841,
       "counts": {
         "document_count": 2,
         "checked_count": 80,
@@ -121,7 +121,7 @@
     },
     {
       "phase": "accept-reviewed-baseline",
-      "binary_sha256": "92d432390893d951f73aeb3814d42cd3d35b17e2c47cc04002a9c6810b414ba1",
+      "binary_sha256": "0ca09c4c651609753867d6973628668d4f6ffa803eb62cc176568fa0adf483b6",
       "arguments": [
         "check",
         "--config",
@@ -133,7 +133,7 @@
         "--json"
       ],
       "exit_code": 0,
-      "machine_seconds": 0.710934,
+      "machine_seconds": 0.617797,
       "counts": {
         "document_count": 2,
         "checked_count": 80,
@@ -147,7 +147,7 @@
     },
     {
       "phase": "after-accepted-check",
-      "binary_sha256": "92d432390893d951f73aeb3814d42cd3d35b17e2c47cc04002a9c6810b414ba1",
+      "binary_sha256": "0ca09c4c651609753867d6973628668d4f6ffa803eb62cc176568fa0adf483b6",
       "arguments": [
         "check",
         "--config",
@@ -157,7 +157,7 @@
         "--json"
       ],
       "exit_code": 0,
-      "machine_seconds": 0.706249,
+      "machine_seconds": 0.53834,
       "counts": {
         "document_count": 2,
         "checked_count": 80,

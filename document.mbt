@@ -1,7 +1,7 @@
 ///|
 /// A document dependency. Snippets preserve code exactly; quotes use text matching.
 pub(all) struct DocumentReference {
-  line : Int
+  line : Int32
   source : String
   kind : String
   excerpt : String?
@@ -15,7 +15,7 @@ pub(all) struct DocumentReferences {
   references : Array[DocumentReference]
   diagnostics : Array[Diagnostic]
   warnings : Array[Diagnostic]
-  unbound_snippets : Int
+  unbound_snippets : Int32
 } derive(ToJson)
 
 ///|
@@ -23,8 +23,8 @@ pub extend DocumentReferences with ToJson::{to_json}
 
 ///|
 priv struct MarkdownLink {
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
   source : String
 }
 
@@ -37,7 +37,7 @@ pub fn parse_document(input : String) -> DocumentReferences {
   let warnings : Array[Diagnostic] = []
   let lines = input.replace_all(old="\r\n", new="\n").split("\n").to_array()
   let definitions : Map[String, String] = Map([])
-  let mut definition_fence : (Char, Int)? = None
+  let mut definition_fence : (Char, Int32)? = None
   let mut definition_comment = false
   for raw in lines {
     let (visible, in_comment) = if definition_fence is None {
@@ -72,7 +72,7 @@ pub fn parse_document(input : String) -> DocumentReferences {
   let mut fence_line = 0
   let mut snippet_source : String? = None
   let snippet_lines : Array[String] = []
-  let mut pending_quote : (Int, String)? = None
+  let mut pending_quote : (Int32, String)? = None
   let mut in_comment = false
   for index = 0; index < lines.length(); index = index + 1 {
     let (visible, next_comment) = if fence_char is None {
@@ -189,7 +189,7 @@ pub fn parse_document(input : String) -> DocumentReferences {
         links.push(tag)
       }
     }
-    let used : Map[Int, Bool] = Map([])
+    let used : Map[Int32, Bool] = Map([])
     let chars = line.to_owned().to_array()
     let mut position = 0
     while position < chars.length() {
@@ -223,7 +223,7 @@ pub fn parse_document(input : String) -> DocumentReferences {
         )
         break
       }
-      let mut associated : Int? = None
+      let mut associated : Int32? = None
       for link_index = 0
           link_index < links.length()
           link_index = link_index + 1 {
@@ -311,7 +311,7 @@ pub fn parse_document(input : String) -> DocumentReferences {
 }
 
 ///|
-fn document_fence(line : StringView) -> (Char, Int, String)? {
+fn document_fence(line : StringView) -> (Char, Int32, String)? {
   let chars = line.to_owned().to_array()
   if chars.length() < 3 || (chars[0] != '`' && chars[0] != '~') {
     return None
@@ -353,7 +353,7 @@ fn snippet_source_attribute(info : String) -> String? {
 fn document_links(
   line : StringView,
   definitions : Map[String, String],
-  nesting? : Int = 0,
+  nesting~ : Int32 = 0,
 ) -> Array[MarkdownLink] {
   let chars = line.to_owned().to_array()
   let html_tags = document_html_tags(line)
@@ -452,7 +452,7 @@ fn document_links(
 }
 
 ///|
-fn document_is_escaped(chars : Array[Char], index : Int) -> Bool {
+fn document_is_escaped(chars : Array[Char], index : Int32) -> Bool {
   let mut before = index
   while before > 0 && chars[before - 1] == '\\' {
     before = before - 1
@@ -464,7 +464,7 @@ fn document_is_escaped(chars : Array[Char], index : Int) -> Bool {
 /// Code spans close only at a backtick run of the same length. An unmatched
 /// opener is literal text, so advance only past that run instead of hiding the
 /// rest of the line. Backslashes inside a code span do not escape its closer.
-fn document_code_span_end(chars : Array[Char], start : Int) -> Int {
+fn document_code_span_end(chars : Array[Char], start : Int32) -> Int32 {
   if document_is_escaped(chars, start) {
     return start + 1
   }
@@ -624,8 +624,8 @@ fn document_unescape_destination(value : String) -> String {
 // quoted title or an angle-bracket destination do not balance the outer link.
 fn document_link_destination(
   chars : Array[Char],
-  start : Int,
-) -> (String, Int)? {
+  start : Int32,
+) -> (String, Int32)? {
   let mut index = start
   while index < chars.length() && document_link_space(chars[index]) {
     index = index + 1
