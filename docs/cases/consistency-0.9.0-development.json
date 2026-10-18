@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "case_type": "controlled_concurrency_regression",
+  "tool_version": "0.9.0",
+  "platform": "linux",
+  "barrier": "stdout_pipe_4096_bytes_after_scan_before_commit",
+  "filesystem_transaction": false,
+  "external_adoption": false,
+  "phases": [
+    {
+      "changed_input": "source.toml",
+      "scan_failed_count": 0,
+      "exit_code": 2,
+      "commit_diagnostic": "CHECK_INPUT_CHANGED",
+      "preserved": "original_baseline",
+      "baseline_before_sha256": "19c77ad323ec07bf39248c5ffcc5d1535187cfa306dbbfd3c98a111757a0a894",
+      "baseline_after_sha256": "19c77ad323ec07bf39248c5ffcc5d1535187cfa306dbbfd3c98a111757a0a894",
+      "temporary_removed": true
+    },
+    {
+      "changed_input": "guide.md",
+      "scan_failed_count": 0,
+      "exit_code": 2,
+      "commit_diagnostic": "CHECK_INPUT_CHANGED",
+      "preserved": "original_baseline",
+      "baseline_before_sha256": "19c77ad323ec07bf39248c5ffcc5d1535187cfa306dbbfd3c98a111757a0a894",
+      "baseline_after_sha256": "19c77ad323ec07bf39248c5ffcc5d1535187cfa306dbbfd3c98a111757a0a894",
+      "temporary_removed": true
+    },
+    {
+      "changed_input": "tracecite.json",
+      "scan_failed_count": 0,
+      "exit_code": 2,
+      "commit_diagnostic": "CHECK_INPUT_CHANGED",
+      "preserved": "original_baseline",
+      "baseline_before_sha256": "19c77ad323ec07bf39248c5ffcc5d1535187cfa306dbbfd3c98a111757a0a894",
+      "baseline_after_sha256": "19c77ad323ec07bf39248c5ffcc5d1535187cfa306dbbfd3c98a111757a0a894",
+      "temporary_removed": true
+    },
+    {
+      "changed_input": "baseline.json",
+      "scan_failed_count": 0,
+      "exit_code": 2,
+      "commit_diagnostic": "SNAPSHOT_CONFLICT",
+      "preserved": "concurrent_writer",
+      "baseline_before_sha256": "19c77ad323ec07bf39248c5ffcc5d1535187cfa306dbbfd3c98a111757a0a894",
+      "baseline_after_sha256": "8cc8b14a82be7330562686c83fe64f0a32c6a6317a8d7e78a12b3295e7337cde",
+      "temporary_removed": true
+    }
+  ],
+  "implementation_sha256": {
+    "cli/document.mbt": "fea4148b0f1850af9996c22467562f8e8c0aa913968b944892a4837e4aa9b459",
+    "cli/document_consistency.mbt": "63a2a91a1da5bcf8298c67761e2723c2bbc69767f4c6be822845147b71735849"
+  },
+  "binary_sha256": null,
+  "passed": true
+}

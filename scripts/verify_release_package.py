@@ -10,6 +10,7 @@ from pathlib import Path, PurePosixPath
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import zipfile
 
@@ -95,6 +96,8 @@ def verify_package(metadata):
         "examples/link-parsing/project/other.md", "examples/link-parsing/project/guide(v2.md",
         "examples/link-parsing/project/guide(v2).md",
         "document_diff.mbt", "document_diff_wbtest.mbt", "scripts/engineering_demo.py",
+        "cli/document_consistency.mbt", "cli/document_consistency_wbtest.mbt",
+        "scripts/consistency_demo.py", "docs/cases/consistency-0.9.0-development.json",
         "docs/engineering-depth.md", "examples/engineering/README.md",
         "docs/cases/engineering-0.9.0-development.json",
         "docs/cases/engineering-history-0.9.0-development.json",
@@ -161,6 +164,9 @@ def verify_package(metadata):
 
         run("python3", "scripts/engineering_demo.py", "--binary", str(installed),
             "--out", str(Path(temporary) / "engineering"), cwd=package)
+        if sys.platform == "linux":
+            run("python3", "scripts/consistency_demo.py", "--binary", str(installed),
+                "--out", str(Path(temporary) / "consistency"), cwd=package)
         from verify_library_example import verify_example
         verify_example(Path(temporary), metadata, package=package)
         run("python3", "scripts/onboarding_demo.py", "--binary", str(installed),

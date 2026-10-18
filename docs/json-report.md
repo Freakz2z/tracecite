@@ -9,6 +9,8 @@ tracecite check --json > report.json
 
 保留 check 的退出码；读取报告不会代替 CI 判定。退出 0 表示按当前规则通过，退出 2 表示未通过或没有可检查引用。
 参数、配置或路径范围错误退出 1，错误写入 stderr，可能没有 JSON 报告；调用方需同时处理进程退出码和输出是否存在。
+
+0.9.0 开发线在报告前复查本地输入，发现变化时增加 unavailable/CHECK_INPUT_CHANGED 条目，归入 source_unavailable，阻止可写候选与保存。保存阶段还会在输出报告后重新验证；此时发生输入变化或目标基线并发更新，进程退出 2，stderr 提供 CHECK_INPUT_CHANGED 或 SNAPSHOT_CONFLICT。JSON 表示扫描结果，failed_count=0 不保证基线已保存，必须保留进程退出码。临时预约占用等写入错误仍退出 1。
 快照写入失败也可能在输出报告后返回 1，不应仅凭报告中的计数判定整个命令成功。
 
 ## 版本与兼容性

@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import subprocess
+import sys
 import tarfile
 import tempfile
 
@@ -99,6 +100,9 @@ def verify(archive):
         if tuple(map(int, manifest["version"].split("."))) >= (0, 9, 0):
             from engineering_demo import demonstrate_engineering
             demonstrate_engineering(root / "engineering", binary)
+            if sys.platform == "linux":
+                from consistency_demo import demonstrate_consistency
+                demonstrate_consistency(root / "consistency", binary)
         demonstrate(root / "acceptance", binary)
         demonstrate_review(root / "review", binary)
         if tuple(map(int, manifest["version"].split("."))) >= (0, 7, 0):

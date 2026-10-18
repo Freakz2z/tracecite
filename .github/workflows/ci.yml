@@ -54,6 +54,7 @@ jobs:
           sh scripts/smoke.sh
           python3 scripts/test_document_cli.py
           python3 scripts/test_report_contract.py
+          python3 scripts/consistency_demo.py --out _build/acceptance/consistency-ci
           python3 scripts/generate_unicode_punctuation.py --check
           python3 scripts/generate_unicode_case.py --check
           python3 scripts/generate_unicode_casefold.py --check
@@ -85,6 +86,7 @@ jobs:
             _build/acceptance/ci/
             _build/acceptance/review-ci/
             _build/acceptance/engineering-ci/
+            _build/acceptance/consistency-ci/
             _build/acceptance/onboarding-ci/
           if-no-files-found: error
       - name: Exercise public report action

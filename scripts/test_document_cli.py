@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -74,6 +75,29 @@ class DocumentMaintenanceTests(unittest.TestCase):
         self.assertIn("2 hunks", rendered)
         self.assertIn("last new", rendered)
         self.assertIn("observations", rendered)
+
+    @unittest.skipUnless(sys.platform == "linux", "deterministic stdout backpressure uses Linux pipe sizing")
+    def test_changes_after_report_do_not_commit_stale_inputs_or_overwrite_another_writer(self):
+        from consistency_demo import demonstrate_consistency
+        binary = os.environ.get("TRACECITE_BIN")
+        receipt = demonstrate_consistency(self.root / "consistency", Path(binary) if binary else None)
+        self.assertTrue(receipt["passed"])
+        self.assertEqual(len(receipt["phases"]), 4)
+
+    def test_snapshot_reservation_and_symlink_destinations_preserve_user_files(self):
+        self.write("baseline.json", "previous baseline\n")
+        self.write("baseline.json.tmp", "other writer reservation\n")
+        result = self.run_check("docs/guide.md", "--snapshot", "baseline.json", expected=1, structured=False)
+        self.assertIn(".tmp reservation", result.stderr)
+        self.assertEqual((self.root / "baseline.json").read_text(), "previous baseline\n")
+        self.assertEqual((self.root / "baseline.json.tmp").read_text(), "other writer reservation\n")
+        (self.root / "baseline.json.tmp").unlink()
+        (self.root / "baseline.json").unlink()
+        (self.root / "baseline.json").symlink_to(self.root / "config.toml")
+        before = (self.root / "config.toml").read_bytes()
+        self.run_check("docs/guide.md", "--snapshot", "baseline.json", expected=1, structured=False)
+        self.assertTrue((self.root / "baseline.json").is_symlink())
+        self.assertEqual((self.root / "config.toml").read_bytes(), before)
 
     def test_source_diff_budget_is_explicit_and_does_not_accept_source_changes(self):
         self.write("docs/guide.md", "[Settings](source.md#settings)\n")

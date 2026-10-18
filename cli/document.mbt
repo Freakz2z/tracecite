@@ -201,12 +201,22 @@ async fn document_command(
     return 1
   }
   let mut project : @tracecite.DocumentProjectConfig? = None
+  let input_versions : Map[String, DocumentInputVersion] = Map([])
   if !initialize && use_config {
     let config_path = root_join(root, config_arg)
     if config_explicit || @fs.exists(config_path) {
       let input = try {
         if @fs.file_size(config_path) <= 65_536 {
-          @fs.read_file(config_path).text()
+          let canonical = @fs.realpath(config_path)
+          let bytes = @fs.read_file(config_path).binary()
+          remember_document_input(
+            input_versions,
+            config_path,
+            canonical,
+            Regular,
+            Some(bytes),
+          )
+          @utf8.decode(bytes)
         } else {
           fail("configuration exceeds 64 KiB")
         }
@@ -308,9 +318,33 @@ async fn document_command(
       }
     }
   }
+  let destination_version = match snapshot_path {
+    Some(path) =>
+      document_destination_version(root_join(root, path)) catch {
+        _ => {
+          @stdio.stderr.write(
+            "Cannot inspect snapshot destination: \{path}; use a regular file or a new path\n",
+          )
+          return 1
+        }
+      }
+    None => None
+  }
   let mut baseline : @tracecite.DocumentSnapshot? = None
   if baseline_path is Some(path) {
-    let input = @fs.read_file(root_join(root, path)).text() catch {
+    let input = try {
+      let lookup = root_join(root, path)
+      let canonical = @fs.realpath(lookup)
+      let bytes = @fs.read_file(lookup).binary()
+      remember_document_input(
+        input_versions,
+        lookup,
+        canonical,
+        Regular,
+        Some(bytes),
+      )
+      @utf8.decode(bytes)
+    } catch {
       _ => {
         @stdio.stderr.write("Cannot read baseline: \{path}\n")
         return 1
@@ -398,7 +432,11 @@ async fn document_command(
       )
       continue
     }
-    let content = @fs.read_file(path).text() catch {
+    let content = try {
+      let bytes = @fs.read_file(path).binary()
+      remember_document_input(input_versions, path, path, Regular, Some(bytes))
+      @utf8.decode(bytes)
+    } catch {
       _ => {
         items.push(
           document_problem(
@@ -523,14 +561,43 @@ async fn document_command(
             } else if @fs.kind(canonical) == Directory &&
               reference.excerpt is None &&
               fragment == "" {
+              remember_document_input(
+                input_versions,
+                resolved,
+                canonical,
+                Directory,
+                None,
+              )
               { ok: true, text: "", error_code: None, }
             } else if @fs.kind(canonical) != Regular {
               remote_failure("SOURCE_NOT_A_FILE")
             } else if reference.excerpt is None && fragment == "" {
+              remember_document_input(
+                input_versions,
+                resolved,
+                canonical,
+                Regular,
+                None,
+              )
               { ok: true, text: "", error_code: None, }
             } else {
               match fetched.get(canonical) {
-                Some(result) => result
+                Some(result) => {
+                  if result.ok &&
+                    input_versions
+                    .get(resolved)
+                    .map(version => version.content is None)
+                    .unwrap_or(true) {
+                    remember_document_input(
+                      input_versions,
+                      resolved,
+                      canonical,
+                      Regular,
+                      Some(@utf8.encode(result.text)),
+                    )
+                  }
+                  result
+                }
                 None => {
                   let result = if @fs.file_size(canonical) > 2_097_152 {
                     remote_failure("SOURCE_TOO_LARGE")
@@ -539,6 +606,13 @@ async fn document_command(
                     if text == "" {
                       remote_failure("SOURCE_EMPTY_OR_UNREADABLE")
                     } else {
+                      remember_document_input(
+                        input_versions,
+                        resolved,
+                        canonical,
+                        Regular,
+                        Some(@utf8.encode(text)),
+                      )
                       { ok: true, text, error_code: None, }
                     }
                   }
@@ -740,6 +814,20 @@ async fn document_command(
       ),
     )
   }
+  for _, version in input_versions {
+    if !document_input_is_current(version) {
+      items.push(
+        document_problem(
+          relative_document_path(root, version.path),
+          1,
+          "",
+          "unavailable",
+          "CHECK_INPUT_CHANGED",
+          "local input changed or became unreadable during this check; rerun before reviewing or saving a baseline",
+        ),
+      )
+    }
+  }
   let independently_verified = checked_count > 0 &&
     !items.any(item => {
       item.status != "ok" &&
@@ -827,20 +915,31 @@ async fn document_command(
     }
     let snapshot = @tracecite.DocumentSnapshot::{ version: 1, entries, }
     let destination = root_join(root, path)
-    let temporary = destination + ".tmp"
-    if !write_new_document_file(
-        temporary,
+    match
+      commit_document_snapshot(
+        destination,
+        destination_version,
         @json.to_json(snapshot).stringify(indent=2) + "\n",
+        input_versions,
+        initialize~,
       ) {
-      @stdio.stderr.write("Cannot write snapshot: \{path}\n")
-      return 1
-    }
-    @fs.rename(temporary, destination, replace=!initialize) catch {
-      _ => {
-        @fs.remove(temporary) catch {
-          _ => ()
-        }
-        @stdio.stderr.write("Cannot replace snapshot: \{path}\n")
+      Saved => ()
+      InputChanged(input) => {
+        @stdio.stderr.write(
+          "[CHECK_INPUT_CHANGED] Snapshot not written: \{input}; input changed after checking; rerun the check\n",
+        )
+        return 2
+      }
+      DestinationChanged => {
+        @stdio.stderr.write(
+          "[SNAPSHOT_CONFLICT] Snapshot not written: destination changed during this check; review the current baseline and rerun\n",
+        )
+        return 2
+      }
+      WriteFailed => {
+        @stdio.stderr.write(
+          "Cannot write snapshot: \{path}; check destination permissions and existing .tmp reservation\n",
+        )
         return 1
       }
     }

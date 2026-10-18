@@ -26,6 +26,14 @@ python3 scripts/engineering_demo.py --out _build/acceptance/engineering-local
 
 传入已构建或已安装的 CLI 可用 --binary 参数。额外传入 --compare-binary 指向正式 0.8.0 CLI，会增加步骤 04：在同一基线上断言旧版未展示第二处修改，两个版本的验证统计与完整候选保持一致。
 
-输出含 reports/ 下逐步原始 JSON、隔离项目和 receipt.json。[本轮保留的回执](../../docs/cases/engineering-0.9.0-development.json)包含实际对比、实现与二进制摘要。重复运行应选择新的输出目录，已有证据不会被覆盖。
+输出含 reports/ 下逐步原始 JSON、隔离项目和 receipt.json。[差异引擎阶段回执](../../docs/cases/engineering-0.9.0-development.json)包含该阶段的实际对比、实现与二进制摘要；后续一致性增强的摘要单独保存。重复运行应选择新的输出目录，已有证据不会被覆盖。
 
 技术职责、算法边界与组委会意见回应见 [工程说明](../../docs/engineering-depth.md)。来源差异不替代主张的语义判断，0.9.0 开发能力尚未包含在正式 0.8.0 安装包中。
+
+## 扫描后发生变化的四个案例
+
+Linux 环境可以执行 python3 scripts/consistency_demo.py --out _build/acceptance/consistency-local（输出目录须不存在）。可用 --binary 指向构建或安装后的 CLI。
+
+演示用容量为 4096 字节的 stdout 管道暂停在扫描完成、保存之前，再分别修改来源、文档、项目配置及目标基线。前三者得到 CHECK_INPUT_CHANGED，最后一项得到 SNAPSHOT_CONFLICT；全部退出 2，旧基线或另一写入者的内容保留，当前进程的临时文件清除。每一步保存扫描 JSON、提交 stderr 和摘要。[回执](../../docs/cases/consistency-0.9.0-development.json)记录实际结果。
+
+该屏障不使用等待时长猜测或运行时测试开关。管道容量控制依赖 Linux；核心保护另可通过 moon test cli/document_consistency_wbtest.mbt --deny-warn 运行七项 native 测试，覆盖同长度改写、首次字节观察、删除、链接改向、过期写入者、创建冲突和预约归属。当前实现属于乐观验证，不声称已经提供外部文件系统事务或跨运行候选确认。

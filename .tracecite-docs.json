@@ -1237,7 +1237,13 @@
     },
     {
       "document": "docs/engineering-depth.md",
-      "source": "../scripts/test_document_cli.py",
+      "source": "../cli/document_consistency.mbt",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "docs/engineering-depth.md",
+      "source": "../cli/document_consistency_wbtest.mbt",
       "kind": "link",
       "observed": ""
     },
@@ -1273,6 +1279,18 @@
     },
     {
       "document": "docs/engineering-depth.md",
+      "source": "cases/consistency-0.9.0-development.json",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "docs/engineering-depth.md",
+      "source": "../scripts/consistency_demo.py",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "docs/engineering-depth.md",
       "source": "../examples/engineering/README.md",
       "kind": "link",
       "observed": ""
@@ -1298,6 +1316,12 @@
     {
       "document": "examples/engineering/README.md",
       "source": "../../docs/engineering-depth.md",
+      "kind": "link",
+      "observed": ""
+    },
+    {
+      "document": "examples/engineering/README.md",
+      "source": "../../docs/cases/consistency-0.9.0-development.json",
       "kind": "link",
       "observed": ""
     }
